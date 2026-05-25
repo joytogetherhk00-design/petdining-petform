@@ -29,6 +29,8 @@ import TopupManagement from '@/pages/admin/TopupManagement';
 import SystemSettings from '@/pages/admin/SystemSettings';
 import AdminManagement from '@/pages/admin/AdminManagement';
 import AllBranches from '@/pages/admin/AllBranches';
+import ApplicationManagement from '@/pages/admin/ApplicationManagement';
+import Apply from '@/pages/Apply';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -52,8 +54,9 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-    {/* Onboarding - no layout wrapper */}
+    {/* Public pages - no layout wrapper */}
     <Route path="/onboarding" element={<Onboarding />} />
+    <Route path="/apply" element={<Apply />} />
 
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>
@@ -75,6 +78,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/settings" element={<SystemSettings />} />
         <Route path="/admin/admins" element={<AdminManagement />} />
         <Route path="/admin/branches" element={<AllBranches />} />
+        <Route path="/admin/applications" element={<ApplicationManagement />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

@@ -1,0 +1,88 @@
+{
+  "name": "Application",
+  "type": "object",
+  "properties": {
+    "company_name": {
+      "type": "string",
+      "description": "\u516c\u53f8\u540d\u7a31"
+    },
+    "contact": {
+      "type": "string",
+      "description": "\u806f\u7d61\u4eba"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u96fb\u8a71 (WhatsApp)"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u96fb\u90f5"
+    },
+    "delivery_address": {
+      "type": "string",
+      "description": "\u9001\u8ca8\u5730\u5740"
+    },
+    "branch_address": {
+      "type": "string",
+      "description": "\u5206\u5e97\u5730\u5740"
+    },
+    "br_address": {
+      "type": "string",
+      "description": "\u5546\u696d\u767b\u8a18\u5730\u5740"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "\u516c\u53f8 Logo URL"
+    },
+    "br_document_url": {
+      "type": "string",
+      "description": "\u5546\u696d\u767b\u8a18\u6587\u4ef6 URL"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "\u7533\u8acb\u72c0\u614b"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "\u62d2\u7d55\u539f\u56e0"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "plan_a",
+        "plan_b",
+        "plan_c",
+        "plan_d"
+      ],
+      "description": "\u8a08\u5283"
+    },
+    "region": {
+      "type": "string",
+      "description": "\u5340\u57df"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "\u6279\u51c6\u5f8c\u7684\u5ba2\u6236\u7de8\u865f"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u5099\u8a3b"
+    }
+  },
+  "required": [
+    "company_name",
+    "contact",
+    "phone",
+    "email",
+    "delivery_address",
+    "branch_address",
+    "br_address",
+    "br_document_url"
+  ]
+}

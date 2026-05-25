@@ -43,6 +43,7 @@ function SidebarLogo() {
 
 const adminNav = [
   { label: '控制台總覽', icon: LayoutDashboard, path: '/admin' },
+  { label: '帳戶申請', icon: ClipboardList, path: '/admin/applications', badge: true },
   { label: '客戶管理', icon: Users, path: '/admin/customers' },
   { label: '分店管理', icon: GitBranch, path: '/admin/branches' },
   { label: '訂單管理', icon: ClipboardList, path: '/admin/orders' },
@@ -65,6 +66,13 @@ export default function Sidebar({ isAdmin }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const nav = isAdmin ? adminNav : customerNav;
+
+  const { data: pendingApps = [] } = useQuery({
+    queryKey: ['pendingApplicationsCount'],
+    queryFn: () => base44.entities.Application.filter({ status: 'pending' }),
+    enabled: isAdmin,
+    staleTime: 30000,
+  });
 
   return (
     <>
@@ -111,6 +119,11 @@ export default function Sidebar({ isAdmin }) {
               >
                 <item.icon className="h-4.5 w-4.5 shrink-0" />
                 {item.label}
+                {item.badge && pendingApps.length > 0 && (
+                  <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
+                    {pendingApps.length}
+                  </span>
+                )}
               </Link>
             );
           })}

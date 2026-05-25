@@ -6,13 +6,17 @@
       "type": "string",
       "description": "\u516c\u53f8\u540d\u7a31"
     },
+    "logo_url": {
+      "type": "string",
+      "description": "Logo URL"
+    },
     "min_order_amount": {
       "type": "number",
       "description": "\u6700\u4f4e\u8a02\u55ae\u91d1\u984d"
     },
     "credits_reset_day": {
       "type": "number",
-      "description": "\u7a4d\u5206\u91cd\u7f6e\u65e5"
+      "description": "Credits\u91cd\u7f6e\u65e5"
     },
     "currency": {
       "type": "string",
@@ -34,6 +38,10 @@
     "fps_id": {
       "type": "string",
       "description": "FPS ID"
+    },
+    "stripe_publishable_key": {
+      "type": "string",
+      "description": "Stripe Publishable Key"
     }
   },
   "required": [

@@ -10,6 +10,14 @@
       "type": "string",
       "description": "\u516c\u53f8\u540d\u7a31"
     },
+    "logo_url": {
+      "type": "string",
+      "description": "\u516c\u53f8Logo URL"
+    },
+    "br_document_url": {
+      "type": "string",
+      "description": "\u5546\u696d\u767b\u8a18\u6587\u4ef6 URL"
+    },
     "contact": {
       "type": "string",
       "description": "\u806f\u7d61\u4eba"
@@ -49,12 +57,12 @@
     },
     "monthly_credits": {
       "type": "number",
-      "description": "\u6bcf\u6708\u7a4d\u5206"
+      "description": "\u6bcf\u6708Credits"
     },
     "credits_balance": {
       "type": "number",
       "default": 0,
-      "description": "\u7a4d\u5206\u9918\u984d"
+      "description": "Credits\u9918\u984d"
     },
     "discount": {
       "type": "number",

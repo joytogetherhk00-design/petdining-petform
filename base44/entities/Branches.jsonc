@@ -1,0 +1,42 @@
+{
+  "name": "Branches",
+  "type": "object",
+  "properties": {
+    "branch_id": {
+      "type": "string",
+      "description": "\u5206\u5e97\u7de8\u865f"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "\u5ba2\u6236\u7de8\u865f"
+    },
+    "area": {
+      "type": "string",
+      "description": "\u5730\u5340"
+    },
+    "brand": {
+      "type": "string",
+      "description": "\u54c1\u724c"
+    },
+    "contact_person": {
+      "type": "string",
+      "description": "\u806f\u7d61\u4eba"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u96fb\u8a71"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u96fb\u90f5"
+    },
+    "address": {
+      "type": "string",
+      "description": "\u5206\u5e97\u5730\u5740"
+    }
+  },
+  "required": [
+    "customer_id",
+    "brand"
+  ]
+}

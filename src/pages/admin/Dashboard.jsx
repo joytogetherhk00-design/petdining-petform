@@ -27,13 +27,13 @@ export default function Dashboard() {
 
   return (
     <div>
-      <PageHeader title="儀表板" description="PetDining 管理概覽" />
+      <PageHeader title="控制台總覽" description="PetDining 管理概覽" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard title="客戶數量" value={customers.length} icon={Users} />
         <StatsCard title="訂單總數" value={orders.length} icon={ShoppingCart} />
         <StatsCard title="產品數量" value={products.length} icon={Package} />
-        <StatsCard title="總積分餘額" value={totalCredits.toLocaleString()} icon={CreditCard} />
+        <StatsCard title="總 Credits 餘額" value={totalCredits.toLocaleString()} icon={CreditCard} />
       </div>
 
       <Card>

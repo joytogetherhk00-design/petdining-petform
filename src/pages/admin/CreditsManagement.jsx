@@ -47,7 +47,7 @@ export default function CreditsManagement() {
   return (
     <div>
       <PageHeader
-        title="積分管理"
+        title="Credits 管理"
         action={<Button variant="outline" onClick={exportCSV}><Download className="h-4 w-4 mr-2" />匯出 CSV</Button>}
       />
 
@@ -62,7 +62,7 @@ export default function CreditsManagement() {
             <TableRow>
               <TableHead>帳戶編號</TableHead>
               <TableHead>公司名稱</TableHead>
-              <TableHead>積分餘額</TableHead>
+              <TableHead>Credits 餘額</TableHead>
               <TableHead>合約到期</TableHead>
               <TableHead>操作</TableHead>
             </TableRow>

@@ -190,7 +190,7 @@ export default function Cart() {
 
             {customer && (
               <div className="text-sm p-3 bg-muted rounded-lg">
-                <span className="text-muted-foreground">積分餘額：</span>
+                <span className="text-muted-foreground">Credits 餘額：</span>
                 <span className="font-semibold">{creditsBalance.toLocaleString()}</span>
               </div>
             )}
@@ -211,10 +211,10 @@ export default function Cart() {
               <div className="space-y-2">
                 <div className="flex items-start gap-2 text-sm text-destructive bg-destructive/5 p-3 rounded-lg">
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <span>積分不足</span>
+                  <span>Credits 不足</span>
                 </div>
                 <Button variant="outline" className="w-full border-secondary text-secondary" onClick={() => navigate('/account')}>
-                  直接增值
+                  Credits Top-up
                 </Button>
               </div>
             )}

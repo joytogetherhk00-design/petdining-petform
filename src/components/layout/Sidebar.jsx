@@ -3,19 +3,53 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, ShoppingCart, Package, FolderOpen, 
   CreditCard, ArrowUpCircle, Settings, Shield, Menu, X,
-  Store, ClipboardList, User, PawPrint
+  Store, ClipboardList, User, PawPrint, GitBranch
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+
+function SidebarLogo() {
+  const { data: settings } = useQuery({
+    queryKey: ['appSettings'],
+    queryFn: async () => {
+      const s = await base44.entities.AppSettings.list();
+      return s[0] || {};
+    },
+    staleTime: 60000,
+  });
+
+  return (
+    <div className="p-5 border-b border-sidebar-border">
+      <div className="flex items-center gap-3">
+        {settings?.logo_url ? (
+          <img src={settings.logo_url} alt="logo" className="w-10 h-10 rounded-xl object-cover" />
+        ) : (
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+            <PawPrint className="h-5 w-5 text-white" />
+          </div>
+        )}
+        <div>
+          <h1 className="font-bold text-sidebar-foreground text-lg leading-tight">
+            {settings?.company_name || 'PetDining'}
+          </h1>
+          <p className="text-xs text-sidebar-foreground/60">PetForm</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const adminNav = [
-  { label: '儀表板', icon: LayoutDashboard, path: '/admin' },
+  { label: '控制台總覽', icon: LayoutDashboard, path: '/admin' },
   { label: '客戶管理', icon: Users, path: '/admin/customers' },
+  { label: '分店管理', icon: GitBranch, path: '/admin/branches' },
   { label: '訂單管理', icon: ClipboardList, path: '/admin/orders' },
   { label: '產品管理', icon: Package, path: '/admin/products' },
   { label: '分類管理', icon: FolderOpen, path: '/admin/categories' },
-  { label: '積分管理', icon: CreditCard, path: '/admin/credits' },
-  { label: '增值管理', icon: ArrowUpCircle, path: '/admin/topups' },
+  { label: 'Credits 管理', icon: CreditCard, path: '/admin/credits' },
+  { label: 'Top-up 管理', icon: ArrowUpCircle, path: '/admin/topups' },
   { label: '系統設定', icon: Settings, path: '/admin/settings' },
   { label: '管理員', icon: Shield, path: '/admin/admins' },
 ];
@@ -56,17 +90,7 @@ export default function Sidebar({ isAdmin }) {
         open ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
-        <div className="p-5 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <PawPrint className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-sidebar-foreground text-lg leading-tight">PetDining</h1>
-              <p className="text-xs text-sidebar-foreground/60">PetForm</p>
-            </div>
-          </div>
-        </div>
+        <SidebarLogo />
 
         {/* Nav */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">

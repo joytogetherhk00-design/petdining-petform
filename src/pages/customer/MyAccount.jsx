@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
+import DragDropUpload from '@/components/shared/DragDropUpload';
+import StripeTopup from '@/components/customer/StripeTopup';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,13 +12,14 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { CreditCard, MessageCircle, ArrowUpCircle, Pencil, Plus, MapPin, Building2 } from 'lucide-react';
-import { PLANS, PLAN_LABELS } from '@/lib/planConfig';
+import { PLANS } from '@/lib/planConfig';
 import { toast } from 'sonner';
 import { addDays, format } from 'date-fns';
 
 export default function MyAccount() {
   const [editOpen, setEditOpen] = useState(false);
   const [topupOpen, setTopupOpen] = useState(false);
+  const [topupMode, setTopupMode] = useState('stripe'); // 'stripe' | 'bank'
   const [topupAmount, setTopupAmount] = useState('');
   const [editData, setEditData] = useState({});
   const [newAddress, setNewAddress] = useState('');
@@ -46,27 +49,21 @@ export default function MyAccount() {
   });
 
   const hasPendingTopup = topupHistory.some(t => t.status === 'pending');
-
   const plan = customer?.plan ? PLANS[customer.plan] : null;
-  const nextReset = customer?.approved_date 
+  const nextReset = customer?.approved_date
     ? format(addDays(new Date(customer.approved_date), 30), 'yyyy/MM/dd')
     : '-';
 
   const submitEdit = async () => {
-    await base44.entities.Customers.update(customer.id, {
-      pending_changes: editData,
-    });
+    await base44.entities.Customers.update(customer.id, { pending_changes: editData });
     queryClient.invalidateQueries({ queryKey: ['myCustomer'] });
     setEditOpen(false);
     toast.success('已提交更改，待管理員審批');
   };
 
-  const submitTopup = async () => {
+  const submitBankTopup = async () => {
     const amount = Number(topupAmount);
-    if (amount < 1000) {
-      toast.error('最低增值金額為 HK$1,000');
-      return;
-    }
+    if (amount < 1000) { toast.error('最低 Top-up 金額為 HK$1,000'); return; }
     const me = await base44.auth.me();
     await base44.entities.CreditsTopup.create({
       customer_id: customer.customer_id,
@@ -78,7 +75,7 @@ export default function MyAccount() {
     queryClient.invalidateQueries({ queryKey: ['myTopups'] });
     setTopupOpen(false);
     setTopupAmount('');
-    toast.success('增值申請已提交');
+    toast.success('Top-up 申請已提交');
   };
 
   const addAddress = async () => {
@@ -88,6 +85,12 @@ export default function MyAccount() {
     queryClient.invalidateQueries({ queryKey: ['myCustomer'] });
     setNewAddress('');
     toast.success('地址已新增');
+  };
+
+  const handleStripeSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['myCustomer'] });
+    queryClient.invalidateQueries({ queryKey: ['myTopups'] });
+    setTopupOpen(false);
   };
 
   if (isLoading) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" /></div>;
@@ -113,11 +116,17 @@ export default function MyAccount() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base">公司資料</CardTitle>
-            <Button variant="ghost" size="icon" onClick={() => { setEditData({ company_name: customer.company_name, contact: customer.contact, phone: customer.phone, br_address: customer.br_address }); setEditOpen(true); }}>
+            <Button variant="ghost" size="icon" onClick={() => {
+              setEditData({ company_name: customer.company_name, contact: customer.contact, phone: customer.phone, br_address: customer.br_address });
+              setEditOpen(true);
+            }}>
               <Pencil className="h-4 w-4" />
             </Button>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
+            {customer.logo_url && (
+              <img src={customer.logo_url} alt="logo" className="w-16 h-16 rounded-xl object-cover" />
+            )}
             <div><span className="text-muted-foreground">帳戶編號：</span><span className="font-mono font-semibold">{customer.account_number || customer.customer_id}</span></div>
             <div><span className="text-muted-foreground">公司名稱：</span>{customer.company_name}</div>
             <div><span className="text-muted-foreground">聯絡人：</span>{customer.contact}</div>
@@ -131,29 +140,26 @@ export default function MyAccount() {
           </CardContent>
         </Card>
 
-        {/* Plan & Credits */}
+        {/* Credits */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />積分與計劃
+              <CreditCard className="h-4 w-4" />Credits 與計劃
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <div><span className="text-muted-foreground">計劃：</span>{plan ? `${plan.name} (HK$${plan.fee.toLocaleString()}/月, ${plan.credits.toLocaleString()}積分)` : '-'}</div>
+            <div><span className="text-muted-foreground">計劃：</span>{plan ? `${plan.name} (HK$${plan.fee.toLocaleString()}/月, ${plan.credits.toLocaleString()} Credits)` : '-'}</div>
             <div className="p-4 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl">
-              <p className="text-muted-foreground text-xs mb-1">積分餘額</p>
+              <p className="text-muted-foreground text-xs mb-1">Credits 餘額</p>
               <p className="text-3xl font-bold text-primary">{(customer.credits_balance || 0).toLocaleString()}</p>
             </div>
-            <div><span className="text-muted-foreground">每月積分：</span>{customer.monthly_credits || plan?.credits || '-'}</div>
+            <div><span className="text-muted-foreground">每月 Credits：</span>{customer.monthly_credits || plan?.credits || '-'}</div>
             <div><span className="text-muted-foreground">下次更新日期：</span>{nextReset}</div>
             {customer.contract_end_date && (
               <div><span className="text-muted-foreground">合約到期：</span>{customer.contract_end_date}</div>
             )}
-
             {(customer.plan === 'plan_a' || customer.plan === 'plan_b') && (
-              <Button variant="outline" className="w-full border-secondary text-secondary" size="sm">
-                升級計劃
-              </Button>
+              <Button variant="outline" className="w-full border-secondary text-secondary" size="sm">升級計劃</Button>
             )}
           </CardContent>
         </Card>
@@ -178,16 +184,21 @@ export default function MyAccount() {
         {/* Top-up */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><ArrowUpCircle className="h-4 w-4" />積分增值</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2"><ArrowUpCircle className="h-4 w-4" />Credits Top-up</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button className="w-full bg-primary" disabled={hasPendingTopup} onClick={() => setTopupOpen(true)}>
-              {hasPendingTopup ? '待審批中...' : '申請增值'}
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button className="bg-primary" onClick={() => { setTopupMode('stripe'); setTopupOpen(true); }}>
+                <CreditCard className="h-4 w-4 mr-2" />信用卡 Top-up
+              </Button>
+              <Button variant="outline" disabled={hasPendingTopup} onClick={() => { setTopupMode('bank'); setTopupOpen(true); }}>
+                {hasPendingTopup ? '轉帳審批中...' : '銀行轉帳'}
+              </Button>
+            </div>
 
             {topupHistory.length > 0 && (
-              <div className="space-y-2 mt-3">
-                <p className="text-xs font-medium text-muted-foreground">增值記錄</p>
+              <div className="space-y-2 mt-1">
+                <p className="text-xs font-medium text-muted-foreground">Top-up 記錄</p>
                 {topupHistory.map(t => (
                   <div key={t.id} className="flex items-center justify-between text-sm p-2 bg-muted rounded-lg">
                     <span>HK${t.amount?.toLocaleString()}</span>
@@ -201,7 +212,7 @@ export default function MyAccount() {
               href="https://api.whatsapp.com/send?phone=85298673497&text=你好，我想查詢有關我的帳戶"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full text-sm text-green-600 hover:text-green-700 py-2"
+              className="flex items-center justify-center gap-2 w-full text-sm text-green-600 hover:text-green-700 py-1"
             >
               <MessageCircle className="h-4 w-4" />WhatsApp 查詢
             </a>
@@ -226,27 +237,33 @@ export default function MyAccount() {
         </DialogContent>
       </Dialog>
 
-      {/* Topup dialog */}
+      {/* Top-up dialog */}
       <Dialog open={topupOpen} onOpenChange={setTopupOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>申請積分增值</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div className="p-4 bg-muted rounded-lg text-sm space-y-1">
-              {settings?.bank_name && <p>銀行：{settings.bank_name}</p>}
-              {settings?.bank_account && <p>帳號：{settings.bank_account}</p>}
-              {settings?.account_holder && <p>持有人：{settings.account_holder}</p>}
-              {settings?.fps_id && <p>FPS ID：{settings.fps_id}</p>}
-              <p className="text-xs text-muted-foreground mt-2">請轉帳到此帳戶，並保留收據</p>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{topupMode === 'stripe' ? '信用卡 Top-up' : '銀行轉帳 Top-up'}</DialogTitle>
+          </DialogHeader>
+          {topupMode === 'stripe' ? (
+            <StripeTopup customer={customer} onSuccess={handleStripeSuccess} onCancel={() => setTopupOpen(false)} />
+          ) : (
+            <div className="space-y-4">
+              <div className="p-4 bg-muted rounded-lg text-sm space-y-1">
+                {settings?.bank_name && <p>銀行：{settings.bank_name}</p>}
+                {settings?.bank_account && <p>帳號：{settings.bank_account}</p>}
+                {settings?.account_holder && <p>持有人：{settings.account_holder}</p>}
+                {settings?.fps_id && <p>FPS ID：{settings.fps_id}</p>}
+                <p className="text-xs text-muted-foreground mt-2">請轉帳到此帳戶，並保留收據</p>
+              </div>
+              <div>
+                <Label>Top-up 金額 (最低 HK$1,000)</Label>
+                <Input type="number" min={1000} step={100} value={topupAmount} onChange={e => setTopupAmount(e.target.value)} placeholder="1000" />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setTopupOpen(false)}>取消</Button>
+                <Button className="bg-primary" onClick={submitBankTopup}>申請 Top-up</Button>
+              </DialogFooter>
             </div>
-            <div>
-              <Label>增值金額 (最低 HK$1,000)</Label>
-              <Input type="number" min={1000} step={100} value={topupAmount} onChange={e => setTopupAmount(e.target.value)} placeholder="1000" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setTopupOpen(false)}>取消</Button>
-            <Button className="bg-primary" onClick={submitTopup}>申請增值</Button>
-          </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </div>

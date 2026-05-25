@@ -25,6 +25,7 @@ import CreditsManagement from '@/pages/admin/CreditsManagement';
 import TopupManagement from '@/pages/admin/TopupManagement';
 import SystemSettings from '@/pages/admin/SystemSettings';
 import AdminManagement from '@/pages/admin/AdminManagement';
+import AllBranches from '@/pages/admin/AllBranches';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/topups" element={<TopupManagement />} />
         <Route path="/admin/settings" element={<SystemSettings />} />
         <Route path="/admin/admins" element={<AdminManagement />} />
+        <Route path="/admin/branches" element={<AllBranches />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

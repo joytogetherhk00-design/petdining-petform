@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PageHeader from '@/components/shared/PageHeader';
+import DragDropUpload from '@/components/shared/DragDropUpload';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +14,7 @@ export default function SystemSettings() {
   const [form, setForm] = useState({
     company_name: '', min_order_amount: 500, credits_reset_day: 1,
     currency: 'HKD', bank_name: '', bank_account: '', account_holder: '', fps_id: '',
+    logo_url: '', stripe_publishable_key: '',
   });
   const queryClient = useQueryClient();
 
@@ -25,7 +27,7 @@ export default function SystemSettings() {
   });
 
   useEffect(() => {
-    if (settings) setForm({ ...form, ...settings });
+    if (settings) setForm(prev => ({ ...prev, ...settings }));
   }, [settings]);
 
   const handleSave = async () => {
@@ -46,6 +48,16 @@ export default function SystemSettings() {
         <Card>
           <CardHeader><CardTitle className="text-base">基本設定</CardTitle></CardHeader>
           <CardContent className="space-y-3">
+            <div>
+              <Label className="mb-1.5 block">系統 Logo</Label>
+              <DragDropUpload
+                value={form.logo_url}
+                onChange={url => setForm({ ...form, logo_url: url })}
+                accept="image/*"
+                label="上傳 Logo"
+                hint="建議尺寸 200×200px"
+              />
+            </div>
             <div><Label>公司名稱</Label><Input value={form.company_name} onChange={e => setForm({ ...form, company_name: e.target.value })} /></div>
             <div><Label>最低訂單金額 (HK$)</Label><Input type="number" value={form.min_order_amount} onChange={e => setForm({ ...form, min_order_amount: Number(e.target.value) })} /></div>
             <div><Label>貨幣</Label><Input value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} /></div>
@@ -59,6 +71,22 @@ export default function SystemSettings() {
             <div><Label>銀行帳號</Label><Input value={form.bank_account} onChange={e => setForm({ ...form, bank_account: e.target.value })} /></div>
             <div><Label>帳戶持有人</Label><Input value={form.account_holder} onChange={e => setForm({ ...form, account_holder: e.target.value })} /></div>
             <div><Label>FPS ID</Label><Input value={form.fps_id} onChange={e => setForm({ ...form, fps_id: e.target.value })} /></div>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader><CardTitle className="text-base">Stripe 付款設定</CardTitle></CardHeader>
+          <CardContent>
+            <div>
+              <Label>Stripe Publishable Key (pk_live_ 或 pk_test_)</Label>
+              <Input
+                value={form.stripe_publishable_key}
+                onChange={e => setForm({ ...form, stripe_publishable_key: e.target.value })}
+                placeholder="pk_live_..."
+                className="mt-1 font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground mt-1">用於客戶信用卡 Top-up。Secret Key 請在後台 Secrets 設定。</p>
+            </div>
           </CardContent>
         </Card>
       </div>

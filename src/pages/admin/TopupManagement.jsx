@@ -58,7 +58,7 @@ export default function TopupManagement() {
 
   return (
     <div>
-      <PageHeader title="增值管理" />
+      <PageHeader title="Top-up 管理" />
 
       <div className="overflow-x-auto">
         <Table>

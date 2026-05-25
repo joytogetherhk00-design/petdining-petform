@@ -9,6 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: '全部' },
@@ -21,6 +24,8 @@ const STATUS_OPTIONS = [
 export default function OrderManagement() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selected, setSelected] = useState(null);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const queryClient = useQueryClient();
 
   const { data: orders = [] } = useQuery({
@@ -34,7 +39,49 @@ export default function OrderManagement() {
     enabled: !!selected,
   });
 
-  const filtered = statusFilter === 'all' ? orders : orders.filter(o => o.status === statusFilter);
+  const filtered = orders.filter(o => {
+    if (statusFilter !== 'all' && o.status !== statusFilter) return false;
+    if (dateFrom && o.order_date && o.order_date < dateFrom) return false;
+    if (dateTo && o.order_date && o.order_date.slice(0, 10) > dateTo) return false;
+    return true;
+  });
+
+  const exportCSV = async () => {
+    // Fetch all order items for filtered orders
+    const allItems = await Promise.all(
+      filtered.map(o => base44.entities.OrderItems.filter({ order_id: o.id }))
+    );
+    const rows = [['訂單編號', '客戶編號', '訂單日期', '產品名稱', 'SKU', '數量', '單價', '小計', 'Credits', '訂單總計', '狀態', '送貨地址', '備註']];
+    filtered.forEach((o, i) => {
+      const items = allItems[i] || [];
+      if (items.length === 0) {
+        rows.push([o.order_number, o.customer_id, o.order_date ? format(new Date(o.order_date), 'yyyy/MM/dd') : '', '', '', '', '', '', o.credits_used || 0, o.total || 0, o.status, o.delivery_address || '', o.notes || '']);
+      } else {
+        items.forEach((item, idx) => {
+          rows.push([
+            idx === 0 ? o.order_number : '',
+            idx === 0 ? o.customer_id : '',
+            idx === 0 ? (o.order_date ? format(new Date(o.order_date), 'yyyy/MM/dd') : '') : '',
+            item.product_name, item.sku, item.qty, item.price, item.subtotal,
+            idx === 0 ? (o.credits_used || 0) : '',
+            idx === 0 ? (o.total || 0) : '',
+            idx === 0 ? o.status : '',
+            idx === 0 ? (o.delivery_address || '') : '',
+            idx === 0 ? (o.notes || '') : '',
+          ]);
+        });
+      }
+    });
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orders_${dateFrom || 'all'}_${dateTo || 'all'}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`已匯出 ${filtered.length} 筆訂單`);
+  };
 
   const updateStatus = async (order, newStatus) => {
     await base44.entities.Orders.update(order.id, { status: newStatus });
@@ -47,13 +94,26 @@ export default function OrderManagement() {
     <div>
       <PageHeader title="訂單管理" />
 
-      <div className="mb-4">
+      <div className="flex flex-wrap gap-3 mb-4 items-end">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
           <SelectContent>
             {STATUS_OPTIONS.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
           </SelectContent>
         </Select>
+        <div className="flex items-end gap-2">
+          <div>
+            <Label className="text-xs text-muted-foreground">由</Label>
+            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 h-9" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">至</Label>
+            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36 h-9" />
+          </div>
+        </div>
+        <Button variant="outline" onClick={exportCSV} className="gap-2">
+          <Download className="h-4 w-4" />匯出 CSV ({filtered.length})
+        </Button>
       </div>
 
       <div className="overflow-x-auto">

@@ -1,0 +1,37 @@
+{
+  "name": "CreditsTopup",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "\u5ba2\u6236\u7de8\u865f"
+    },
+    "amount": {
+      "type": "number",
+      "description": "\u589e\u503c\u91d1\u984d"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "\u72c0\u614b"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u7533\u8acb\u65e5\u671f"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "\u7528\u6236\u96fb\u90f5"
+    }
+  },
+  "required": [
+    "customer_id",
+    "amount"
+  ]
+}

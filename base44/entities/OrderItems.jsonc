@@ -1,0 +1,37 @@
+{
+  "name": "OrderItems",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "description": "\u8a02\u55aeID"
+    },
+    "sku": {
+      "type": "string",
+      "description": "\u7522\u54c1\u7de8\u865f"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "\u7522\u54c1\u540d\u7a31"
+    },
+    "qty": {
+      "type": "number",
+      "description": "\u6578\u91cf"
+    },
+    "price": {
+      "type": "number",
+      "description": "\u55ae\u50f9"
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "\u5c0f\u8a08"
+    }
+  },
+  "required": [
+    "order_id",
+    "sku",
+    "product_name",
+    "qty",
+    "price"
+  ]
+}

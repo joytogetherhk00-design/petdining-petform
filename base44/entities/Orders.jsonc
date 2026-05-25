@@ -1,0 +1,58 @@
+{
+  "name": "Orders",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "\u5ba2\u6236\u7de8\u865f"
+    },
+    "order_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u8a02\u55ae\u65e5\u671f"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "shipped",
+        "completed"
+      ],
+      "default": "pending",
+      "description": "\u72c0\u614b"
+    },
+    "subtotal": {
+      "type": "number",
+      "description": "\u5c0f\u8a08"
+    },
+    "credits_used": {
+      "type": "number",
+      "description": "\u4f7f\u7528\u7a4d\u5206"
+    },
+    "total": {
+      "type": "number",
+      "description": "\u7e3d\u8a08"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u5099\u8a3b"
+    },
+    "order_number": {
+      "type": "string",
+      "description": "\u8a02\u55ae\u7de8\u865f"
+    },
+    "delivery_address": {
+      "type": "string",
+      "description": "\u9001\u8ca8\u5730\u5740"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "\u7528\u6236\u96fb\u90f5"
+    }
+  },
+  "required": [
+    "customer_id",
+    "order_number"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "name": "AppSettings",
+  "type": "object",
+  "properties": {
+    "company_name": {
+      "type": "string",
+      "description": "\u516c\u53f8\u540d\u7a31"
+    },
+    "min_order_amount": {
+      "type": "number",
+      "description": "\u6700\u4f4e\u8a02\u55ae\u91d1\u984d"
+    },
+    "credits_reset_day": {
+      "type": "number",
+      "description": "\u7a4d\u5206\u91cd\u7f6e\u65e5"
+    },
+    "currency": {
+      "type": "string",
+      "default": "HKD",
+      "description": "\u8ca8\u5e63"
+    },
+    "bank_name": {
+      "type": "string",
+      "description": "\u9280\u884c\u540d\u7a31"
+    },
+    "bank_account": {
+      "type": "string",
+      "description": "\u9280\u884c\u5e33\u865f"
+    },
+    "account_holder": {
+      "type": "string",
+      "description": "\u5e33\u6236\u6301\u6709\u4eba"
+    },
+    "fps_id": {
+      "type": "string",
+      "description": "FPS ID"
+    }
+  },
+  "required": [
+    "company_name"
+  ]
+}

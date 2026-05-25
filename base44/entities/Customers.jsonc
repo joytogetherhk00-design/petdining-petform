@@ -1,0 +1,101 @@
+{
+  "name": "Customers",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "\u5ba2\u6236\u7de8\u865f (PDK/PDH/PDN/PDI format)"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "\u516c\u53f8\u540d\u7a31"
+    },
+    "contact": {
+      "type": "string",
+      "description": "\u806f\u7d61\u4eba"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u96fb\u8a71"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u96fb\u90f5"
+    },
+    "delivery_address": {
+      "type": "string",
+      "description": "\u9001\u8ca8\u5730\u5740"
+    },
+    "br_address": {
+      "type": "string",
+      "description": "\u5546\u696d\u767b\u8a18\u5730\u5740"
+    },
+    "multiple_addresses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u591a\u500b\u9001\u8ca8\u5730\u5740"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending",
+        "suspended"
+      ],
+      "default": "pending",
+      "description": "\u72c0\u614b"
+    },
+    "monthly_credits": {
+      "type": "number",
+      "description": "\u6bcf\u6708\u7a4d\u5206"
+    },
+    "credits_balance": {
+      "type": "number",
+      "default": 0,
+      "description": "\u7a4d\u5206\u9918\u984d"
+    },
+    "discount": {
+      "type": "number",
+      "description": "\u6298\u6263\u767e\u5206\u6bd4"
+    },
+    "plan": {
+      "type": "string",
+      "enum": [
+        "plan_a",
+        "plan_b",
+        "plan_c",
+        "plan_d"
+      ],
+      "description": "\u8a08\u5283"
+    },
+    "account_number": {
+      "type": "string",
+      "description": "\u5e33\u6236\u865f\u78bc"
+    },
+    "approved_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u6279\u51c6\u65e5\u671f"
+    },
+    "contract_end_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u5408\u7d04\u5230\u671f\u65e5"
+    },
+    "pending_changes": {
+      "type": "object",
+      "description": "\u5f85\u5be9\u6279\u7684\u66f4\u6539"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "\u95dc\u806f\u7684\u7528\u6236\u96fb\u90f5"
+    }
+  },
+  "required": [
+    "company_name",
+    "contact",
+    "email"
+  ]
+}

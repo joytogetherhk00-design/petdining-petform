@@ -1,0 +1,53 @@
+{
+  "name": "CreditsLog",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "\u5ba2\u6236\u7de8\u865f"
+    },
+    "month": {
+      "type": "string",
+      "description": "\u6708\u4efd (YYYY-MM)"
+    },
+    "allocated": {
+      "type": "number",
+      "description": "\u5206\u914d\u7a4d\u5206"
+    },
+    "used": {
+      "type": "number",
+      "description": "\u5df2\u4f7f\u7528\u7a4d\u5206"
+    },
+    "remaining": {
+      "type": "number",
+      "description": "\u5269\u9918\u7a4d\u5206"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date",
+      "description": "\u5230\u671f\u65e5"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "expired"
+      ],
+      "default": "active",
+      "description": "\u72c0\u614b"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "allocation",
+        "usage",
+        "topup",
+        "expiry"
+      ],
+      "description": "\u985e\u578b"
+    }
+  },
+  "required": [
+    "customer_id"
+  ]
+}

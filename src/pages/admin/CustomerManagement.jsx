@@ -19,12 +19,13 @@ import { toast } from 'sonner';
 
 export default function CustomerManagement() {
   const [search, setSearch] = useState('');
+  const [tab, setTab] = useState('pending');
   const [addOpen, setAddOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(null);
   const [pendingOpen, setPendingOpen] = useState(null);
   const [newCustomer, setNewCustomer] = useState({
     company_name: '', contact: '', phone: '', email: '',
-    delivery_address: '', br_address: '', plan: 'plan_a', region: 'PDK',
+    delivery_address: '', branch_address: '', br_address: '', plan: 'plan_a', region: 'PDK',
     logo_url: '', br_document_url: '',
   });
   const queryClient = useQueryClient();
@@ -34,7 +35,10 @@ export default function CustomerManagement() {
     queryFn: () => base44.entities.Customers.list('-created_date'),
   });
 
-  const filtered = customers.filter(c => {
+  const pendingCustomers = customers.filter(c => c.status === 'pending');
+  const activeCustomers = customers.filter(c => c.status === 'active' || c.status === 'suspended');
+
+  const filtered = (tab === 'pending' ? pendingCustomers : activeCustomers).filter(c => {
     const q = search.toLowerCase();
     return !search || c.customer_id?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q) || c.account_number?.toLowerCase().includes(q);
   });
@@ -55,6 +59,7 @@ export default function CustomerManagement() {
       phone: newCustomer.phone,
       email: newCustomer.email,
       delivery_address: newCustomer.delivery_address,
+      branch_address: newCustomer.branch_address,
       br_address: newCustomer.br_address,
       logo_url: newCustomer.logo_url,
       br_document_url: newCustomer.br_document_url,
@@ -76,7 +81,7 @@ export default function CustomerManagement() {
     });
     queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
     setAddOpen(false);
-    setNewCustomer({ company_name: '', contact: '', phone: '', email: '', delivery_address: '', br_address: '', plan: 'plan_a', region: 'PDK', logo_url: '', br_document_url: '' });
+    setNewCustomer({ company_name: '', contact: '', phone: '', email: '', delivery_address: '', branch_address: '', br_address: '', plan: 'plan_a', region: 'PDK', logo_url: '', br_document_url: '' });
     toast.success('客戶已新增');
   };
 
@@ -107,6 +112,34 @@ export default function CustomerManagement() {
         title="客戶管理"
         action={<Button className="bg-primary" onClick={() => setAddOpen(true)}><UserPlus className="h-4 w-4 mr-2" />新增客戶</Button>}
       />
+
+      {/* Sub-Buttons */}
+      <div className="flex gap-2 mb-4">
+        <Button
+          variant={tab === 'pending' ? 'default' : 'outline'}
+          className={tab === 'pending' ? 'bg-primary' : ''}
+          onClick={() => setTab('pending')}
+        >
+          🔔 帳戶申請
+          {pendingCustomers.length > 0 && (
+            <span className={`ml-1.5 text-xs font-bold rounded-full px-1.5 py-0.5 leading-none ${tab === 'pending' ? 'bg-white text-primary' : 'bg-primary text-white'}`}>
+              {pendingCustomers.length}
+            </span>
+          )}
+        </Button>
+        <Button
+          variant={tab === 'active' ? 'default' : 'outline'}
+          className={tab === 'active' ? 'bg-primary' : ''}
+          onClick={() => setTab('active')}
+        >
+          👥 現有帳戶
+          {activeCustomers.length > 0 && (
+            <span className={`ml-1.5 text-xs font-bold rounded-full px-1.5 py-0.5 leading-none ${tab === 'active' ? 'bg-white text-primary' : 'bg-primary text-white'}`}>
+              {activeCustomers.length}
+            </span>
+          )}
+        </Button>
+      </div>
 
       <div className="relative mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -191,6 +224,7 @@ export default function CustomerManagement() {
                   <div><span className="text-muted-foreground">每月 Credits：</span>{detailOpen.monthly_credits || '-'}</div>
                 </div>
                 <div><span className="text-muted-foreground">送貨地址：</span>{detailOpen.delivery_address || '-'}</div>
+                <div><span className="text-muted-foreground">分店地址：</span>{detailOpen.branch_address || '-'}</div>
                 <div><span className="text-muted-foreground">商業登記地址：</span>{detailOpen.br_address || '-'}</div>
               </TabsContent>
               <TabsContent value="branches" className="pt-3">
@@ -223,7 +257,8 @@ export default function CustomerManagement() {
             <div><Label>聯絡人</Label><Input value={newCustomer.contact} onChange={e => setNewCustomer({ ...newCustomer, contact: e.target.value })} /></div>
             <div><Label>電話</Label><Input value={newCustomer.phone} onChange={e => setNewCustomer({ ...newCustomer, phone: e.target.value })} /></div>
             <div><Label>電郵</Label><Input value={newCustomer.email} onChange={e => setNewCustomer({ ...newCustomer, email: e.target.value })} /></div>
-            <div><Label>送貨地址</Label><Input value={newCustomer.delivery_address} onChange={e => setNewCustomer({ ...newCustomer, delivery_address: e.target.value })} /></div>
+            <div><Label>送貨地址 <span className="text-destructive">*</span></Label><Input value={newCustomer.delivery_address} onChange={e => setNewCustomer({ ...newCustomer, delivery_address: e.target.value })} /></div>
+            <div><Label>分店地址 <span className="text-destructive">*</span></Label><Input value={newCustomer.branch_address} onChange={e => setNewCustomer({ ...newCustomer, branch_address: e.target.value })} /></div>
             <div><Label>商業登記地址</Label><Input value={newCustomer.br_address} onChange={e => setNewCustomer({ ...newCustomer, br_address: e.target.value })} /></div>
             <div>
               <Label className="mb-1.5 block">商業登記文件</Label>

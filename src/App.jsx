@@ -9,6 +9,9 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
 
+// Onboarding
+import Onboarding from '@/pages/Onboarding';
+
 // Customer pages
 import ProductCatalog from '@/pages/customer/ProductCatalog';
 import Cart from '@/pages/customer/Cart';
@@ -49,9 +52,12 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      {/* Customer side */}
-      <Route element={<AppLayout isAdmin={false} />}>
-        <Route path="/" element={<ProductCatalog />} />
+    {/* Onboarding - no layout wrapper */}
+    <Route path="/onboarding" element={<Onboarding />} />
+
+    {/* Customer side */}
+    <Route element={<AppLayout isAdmin={false} />}>
+      <Route path="/" element={<ProductCatalog />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<OrderHistory />} />
         <Route path="/account" element={<MyAccount />} />

@@ -99,9 +99,19 @@ export default function MyAccount() {
     return (
       <div>
         <PageHeader title="我的帳戶" />
-        <div className="text-center py-20 text-muted-foreground">
-          <Building2 className="h-10 w-10 mx-auto mb-3 opacity-50" />
-          <p>您的帳戶尚未設定，請聯絡管理員。</p>
+        <div className="text-center py-20">
+          <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+          <p className="text-lg font-medium mb-2">帳戶尚未開通</p>
+          <p className="text-muted-foreground mb-6">請聯絡客服開通帳戶</p>
+          <a
+            href="https://api.whatsapp.com/send?phone=85298673497&text=你好，我想開通帳戶"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button className="bg-green-500 hover:bg-green-600 text-white gap-2">
+              <MessageCircle className="h-4 w-4" />WhatsApp 聯絡客服
+            </Button>
+          </a>
         </div>
       </div>
     );

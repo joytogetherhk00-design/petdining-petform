@@ -1,0 +1,36 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "\u5c0d\u8a71 ID"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "\u7528\u6236\u96fb\u90f5"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "assistant"
+      ],
+      "description": "\u767c\u9001\u65b9"
+    },
+    "content": {
+      "type": "string",
+      "description": "\u8a0a\u606f\u5167\u5bb9"
+    },
+    "escalated_to_human": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u662f\u5426\u5df2\u8f49\u4eba\u5de5"
+    }
+  },
+  "required": [
+    "conversation_id",
+    "role",
+    "content"
+  ]
+}

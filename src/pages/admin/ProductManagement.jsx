@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PageHeader from '@/components/shared/PageHeader';
@@ -12,10 +12,65 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { Search, Plus, Pencil, Copy, Trash2, EyeOff } from 'lucide-react';
+import { Search, Plus, Pencil, Copy, Trash2, EyeOff, Check, X } from 'lucide-react';
 import ImageUploadRow from '@/components/admin/ImageUploadRow';
 import MeatBadge, { MEAT_TYPES } from '@/components/shared/MeatBadge';
 import { toast } from 'sonner';
+
+// Inline editable cell
+function InlineCell({ value, type = 'text', onSave, options, className = '' }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(value ?? '');
+  const inputRef = useRef(null);
+
+  useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
+
+  const commit = async () => {
+    setEditing(false);
+    if (val !== (value ?? '')) {
+      await onSave(type === 'number' ? Number(val) : val);
+    }
+  };
+
+  const cancel = () => { setVal(value ?? ''); setEditing(false); };
+
+  if (type === 'select' && editing) {
+    return (
+      <Select value={val} onValueChange={async v => { setVal(v); setEditing(false); await onSave(v); }}>
+        <SelectTrigger className="h-7 text-xs w-full min-w-[90px]"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          {options.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1">
+        <Input
+          ref={inputRef}
+          type={type}
+          value={val}
+          onChange={e => setVal(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') cancel(); }}
+          onBlur={commit}
+          className="h-7 text-xs w-full min-w-[70px] max-w-[120px]"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <span
+      className={`cursor-pointer hover:bg-muted/60 rounded px-1 py-0.5 transition-colors group flex items-center gap-1 ${className}`}
+      onClick={() => { setVal(value ?? ''); setEditing(true); }}
+    >
+      <span>{value ?? <span className="text-muted-foreground text-xs italic">—</span>}</span>
+      <Pencil className="h-2.5 w-2.5 text-muted-foreground opacity-0 group-hover:opacity-100 shrink-0" />
+    </span>
+  );
+}
 
 const emptyProduct = {
   sku: '', name: '', category: '', meat_type: '', description: '',
@@ -125,6 +180,13 @@ export default function ProductManagement() {
     setQuickDialogOpen(false);
   };
 
+  const handleInlineUpdate = async (productId, field, value) => {
+    await base44.entities.Products.update(productId, { [field]: value });
+    queryClient.invalidateQueries({ queryKey: ['allProducts'] });
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    toast.success('已更新');
+  };
+
   const handleImageUpload = async (file, field) => {
     if (!file) return;
     setUploadingField(field);
@@ -204,24 +266,66 @@ export default function ProductManagement() {
                       ? <img src={p.image1} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
                       : <div className="w-8 h-8 rounded bg-muted flex items-center justify-center shrink-0 text-muted-foreground text-xs">無</div>
                     }
-                    {p.sku}
+                    <InlineCell value={p.sku} onSave={v => handleInlineUpdate(p.id, 'sku', v)} className="font-mono text-sm" />
                   </div>
                 </TableCell>
-                <TableCell className="max-w-[160px] truncate">{p.name}</TableCell>
-                <TableCell className="text-sm">{p.category}</TableCell>
-                <TableCell><MeatBadge meatType={p.meat_type} /></TableCell>
-                <TableCell><OriginBadge origin={p.country_of_origin} /></TableCell>
-                <TableCell>HK${p.wholesale_price}</TableCell>
-                <TableCell>{p.stock}</TableCell>
-                <TableCell><StatusBadge status={p.status} /></TableCell>
+                <TableCell className="max-w-[180px]">
+                  <InlineCell value={p.name} onSave={v => handleInlineUpdate(p.id, 'name', v)} />
+                </TableCell>
                 <TableCell>
-                  {p.is_visible === false
-                    ? <span className="flex items-center gap-1 text-xs text-muted-foreground"><EyeOff className="h-3 w-3" />隱藏</span>
-                    : <span className="text-xs text-green-600">顯示</span>}
+                  <InlineCell
+                    value={p.category}
+                    type="select"
+                    options={categories.map(c => ({ value: c.name, label: c.name }))}
+                    onSave={v => handleInlineUpdate(p.id, 'category', v)}
+                  />
+                </TableCell>
+                <TableCell>
+                  <InlineCell
+                    value={p.meat_type}
+                    type="select"
+                    options={[{ value: '', label: '—' }, ...MEAT_TYPES.map(m => ({ value: m.value, label: m.label }))]}
+                    onSave={v => handleInlineUpdate(p.id, 'meat_type', v)}
+                  />
+                  {p.meat_type && <MeatBadge meatType={p.meat_type} />}
+                </TableCell>
+                <TableCell>
+                  <InlineCell
+                    value={p.country_of_origin}
+                    type="select"
+                    options={[{ value: '', label: '—' }, ...ORIGINS.map(o => ({ value: o, label: o }))]}
+                    onSave={v => handleInlineUpdate(p.id, 'country_of_origin', v)}
+                  />
+                  {p.country_of_origin && <OriginBadge origin={p.country_of_origin} size="sm" />}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-xs text-muted-foreground">HK$</span>
+                    <InlineCell value={p.wholesale_price} type="number" onSave={v => handleInlineUpdate(p.id, 'wholesale_price', v)} />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <InlineCell value={p.stock} type="number" onSave={v => handleInlineUpdate(p.id, 'stock', v)} />
+                </TableCell>
+                <TableCell>
+                  <InlineCell
+                    value={p.status}
+                    type="select"
+                    options={[{ value: 'active', label: '啟用' }, { value: 'inactive', label: '停用' }]}
+                    onSave={v => handleInlineUpdate(p.id, 'status', v)}
+                  />
+                  <StatusBadge status={p.status} />
+                </TableCell>
+                <TableCell>
+                  <Switch
+                    checked={p.is_visible !== false}
+                    onCheckedChange={v => handleInlineUpdate(p.id, 'is_visible', v)}
+                    className="scale-75"
+                  />
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}><Pencil className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)} title="完整編輯"><Pencil className="h-3.5 w-3.5" /></Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(p)}><Copy className="h-3.5 w-3.5" /></Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(p)}><Trash2 className="h-3.5 w-3.5" /></Button>
                   </div>

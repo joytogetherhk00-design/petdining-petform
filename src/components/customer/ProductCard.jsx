@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ImageOff } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,23 +9,20 @@ import MeatBadge from '@/components/shared/MeatBadge';
 export default function ProductCard({ product, onAddToCart, onViewDetail }) {
   const images = [product.image1, product.image2, product.image3].filter(Boolean);
   const [activeImg, setActiveImg] = useState(0);
-  const [imgError, setImgError] = useState(false);
 
   return (
     <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300">
       {/* Image */}
-      <div className="relative bg-muted overflow-hidden cursor-pointer flex items-center justify-center" style={{height: '200px'}} onClick={onViewDetail}>
-        {images.length > 0 && !imgError ? (
+      <div className="relative aspect-square bg-muted overflow-hidden cursor-pointer" onClick={onViewDetail}>
+        {images.length > 0 ? (
           <img
             src={images[activeImg]}
             alt={product.name}
-            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-            onError={() => setImgError(true)}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
-            <ImageOff className="h-8 w-8 opacity-40" />
-            <span className="text-xs">暫無圖片</span>
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+            暫無圖片
           </div>
         )}
         {images.length > 1 && (

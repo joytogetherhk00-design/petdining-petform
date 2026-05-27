@@ -18,16 +18,21 @@ export default function AppLayout({ isAdmin }) {
     // 管理員模式下，根據 URL 參數決定顯示哪個客戶端的導航
     userType = previewParam === 'general' || viewParam === 'general' ? 'general' : 'business';
   } else {
-    userType = user?.user_type || 'business'; // 默認商業客戶，確保看到產品目錄
+    // 非管理員模式下，如果有 preview 參數，說明是管理員預覽
+    if (previewParam || viewParam) {
+      userType = previewParam === 'general' || viewParam === 'general' ? 'general' : 'business';
+    } else {
+      userType = user?.user_type || 'business'; // 默認商業客戶，確保看到產品目錄
+    }
   }
   
   // 如果用戶已登入但 user_type 為空，刷新用戶數據
   useEffect(() => {
-    if (user && !user.user_type && !isAdmin) {
+    if (user && !user.user_type && !isAdmin && !previewParam && !viewParam) {
       console.log('User type missing, refreshing...');
       refreshUser();
     }
-  }, [user, isAdmin, refreshUser]);
+  }, [user, isAdmin, refreshUser, previewParam, viewParam]);
   
   if (isLoadingAuth) {
     return (
@@ -45,7 +50,7 @@ export default function AppLayout({ isAdmin }) {
           <Outlet />
         </div>
       </main>
-      {!isAdmin && <AIChatWidget />}
+      {!isAdmin && !previewParam && !viewParam && <AIChatWidget />}
     </div>
   );
 }

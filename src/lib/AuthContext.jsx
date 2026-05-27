@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -12,11 +13,45 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
   const [authError, setAuthError] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [appPublicSettings, setAppPublicSettings] = useState(null);
+  const [checkingPrivacy, setCheckingPrivacy] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkAppState();
   }, []);
+
+  // 檢查用戶是否已確認私隱政策
+  useEffect(() => {
+    if (user && !isLoadingAuth && !checkingPrivacy && isAuthenticated) {
+      checkPrivacyConsent();
+    }
+  }, [user, isLoadingAuth, isAuthenticated]);
+
+  const checkPrivacyConsent = async () => {
+    setCheckingPrivacy(true);
+    try {
+      const currentUser = await base44.auth.me();
+      
+      // 管理員豁免
+      if (currentUser?.role === 'admin') {
+        setCheckingPrivacy(false);
+        return;
+      }
+
+      // 如果未確認私隱政策，且不在同意頁面，則跳轉
+      if (!currentUser?.privacy_accepted) {
+        const pathname = window.location.pathname;
+        if (pathname !== '/privacy-consent' && pathname !== '/') {
+          navigate('/privacy-consent', { replace: true });
+        }
+      }
+    } catch (error) {
+      console.error('Error checking privacy consent:', error);
+    } finally {
+      setCheckingPrivacy(false);
+    }
+  };
 
   const checkAppState = async () => {
     try {
@@ -159,7 +194,8 @@ export const AuthProvider = ({ children }) => {
       navigateToLogin,
       checkUserAuth,
       checkAppState,
-      refreshUser
+      refreshUser,
+      checkPrivacyConsent
     }}>
       {children}
     </AuthContext.Provider>

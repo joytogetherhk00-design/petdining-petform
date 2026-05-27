@@ -14,6 +14,37 @@
     "customer_id": {
       "type": "string",
       "description": "\u5546\u696d\u5ba2\u6236 ID\uff08\u50c5 business \u985e\u578b\u9700\u8981\uff09"
+    },
+    "admin_role": {
+      "type": "string",
+      "enum": [
+        "super_admin",
+        "course_admin"
+      ],
+      "default": "super_admin",
+      "description": "\u7ba1\u7406\u54e1\u89d2\u8272\uff1asuper_admin\uff08\u8d85\u7d1a\u7ba1\u7406\u54e1\uff09\u6216 course_admin\uff08\u8ab2\u7a0b\u7ba1\u7406\u54e1\uff09"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active",
+      "description": "\u5e33\u6236\u72c0\u614b"
+    },
+    "privacy_accepted": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u5df2\u63a5\u53d7\u79c1\u96b1\u653f\u7b56"
+    },
+    "privacy_accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u63a5\u53d7\u6642\u9593"
     }
-  }
+  },
+  "required": [
+    "customer_id"
+  ]
 }

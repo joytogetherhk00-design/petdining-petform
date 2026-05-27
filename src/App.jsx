@@ -46,6 +46,7 @@ import CreditsSuccess from '@/pages/customer/CreditsSuccess';
 import CreditsCancel from '@/pages/customer/CreditsCancel';
 import Apply from '@/pages/Apply';
 import Privacy from '@/pages/Privacy';
+import PrivacyConsent from '@/pages/PrivacyConsent';
 import AdminLogin from '@/pages/AdminLogin';
 import TestEnrollmentFlow from '@/pages/TestEnrollmentFlow';
 import Welcome from '@/pages/Welcome';
@@ -92,6 +93,7 @@ const AuthenticatedApp = () => {
     <Route path="/onboarding" element={<Onboarding />} />
     <Route path="/apply" element={<Apply />} />
     <Route path="/privacy" element={<Privacy />} />
+    <Route path="/privacy-consent" element={<PrivacyConsent />} />
     <Route path="/admin-login" element={<AdminLogin />} />
     <Route path="/test-enrollment" element={<TestEnrollmentFlow />} />
     <Route path="/pending" element={<Pending />} />

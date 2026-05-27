@@ -13,14 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, CheckCircle, XCircle, Clock, Mail, Bell, Award, UserCheck, UserX, AlertCircle, Calendar, Filter, GraduationCap } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, Mail, Bell, Award, UserCheck, UserX, AlertCircle, Calendar, Filter } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
-import CourseStatsCard from '@/components/admin/CourseStatsCard';
 
 export default function EnrollmentManagement() {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterAttendance, setFilterAttendance] = useState('all');
@@ -33,20 +30,6 @@ export default function EnrollmentManagement() {
   const { data: enrollments = [], isLoading } = useQuery({
     queryKey: ['enrollments'],
     queryFn: () => base44.entities.Enrollments.list(),
-  });
-
-  const { data: schedules = [] } = useQuery({
-    queryKey: ['courseSchedules'],
-    queryFn: () => base44.entities.CourseSchedule.list(),
-  });
-
-  // 按課程分組統計
-  const courseStats = schedules.map(schedule => {
-    const enrolled = enrollments.filter(e => e.schedule_id === schedule.schedule_id).length;
-    return {
-      ...schedule,
-      enrolled_count: enrolled,
-    };
   });
 
   const updateMutation = useMutation({
@@ -149,52 +132,8 @@ export default function EnrollmentManagement() {
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="報名管理"
-          description="管理所有課程報名及學員"
+          description="管理所有課程報名記錄"
         />
-
-        <Tabs defaultValue="courses" className="mb-6">
-          <TabsList>
-            <TabsTrigger value="courses">
-              <GraduationCap className="w-4 h-4 mr-2" />
-              課程列表
-            </TabsTrigger>
-            <TabsTrigger value="students">
-              <UserCheck className="w-4 h-4 mr-2" />
-              學員管理
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="courses" className="mt-6">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courseStats.map((course) => (
-                <CourseStatsCard
-                  key={course.id}
-                  course={course}
-                  onDetailView={() => navigate(`/admin/enrollments/${course.schedule_id}`)}
-                />
-              ))}
-            </div>
-            {courseStats.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>暫無課程資料</p>
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="students" className="mt-6">
-            <div className="text-center py-12 text-muted-foreground">
-              <p>請使用左側導覽列的「學員管理」功能</p>
-              <Button 
-                variant="default" 
-                className="mt-4"
-                onClick={() => navigate('/admin/students')}
-              >
-                前往學員管理
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">

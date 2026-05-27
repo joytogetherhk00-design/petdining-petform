@@ -41,8 +41,6 @@ import InstructorManagement from '@/pages/admin/InstructorManagement';
 import EnrollmentManagement from '@/pages/admin/EnrollmentManagement';
 import CourseSchedule from '@/pages/admin/CourseSchedule';
 import UserManagement from '@/pages/admin/UserManagement';
-import StudentsManagement from '@/pages/admin/StudentsManagement';
-import CourseEnrollmentDetail from '@/pages/admin/CourseEnrollmentDetail';
 import CreditsTopup from '@/pages/customer/CreditsTopup';
 import CreditsSuccess from '@/pages/customer/CreditsSuccess';
 import CreditsCancel from '@/pages/customer/CreditsCancel';
@@ -179,8 +177,6 @@ const AuthenticatedApp = () => {
         <Route path="/admin/courses" element={<CourseManagement />} />
         <Route path="/admin/instructors" element={<InstructorManagement />} />
         <Route path="/admin/enrollments" element={<EnrollmentManagement />} />
-        <Route path="/admin/enrollments/:scheduleId" element={<CourseEnrollmentDetail />} />
-        <Route path="/admin/students" element={<StudentsManagement />} />
         <Route path="/admin/schedule" element={<CourseSchedule />} />
         <Route path="/admin/users" element={<UserManagement />} />
       </Route>

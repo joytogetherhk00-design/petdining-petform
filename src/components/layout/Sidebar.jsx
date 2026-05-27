@@ -44,7 +44,8 @@ function SidebarLogo() {
 const adminNav = [
   { label: '控制台總覽', icon: LayoutDashboard, path: '/admin' },
   { label: '帳戶申請', icon: ClipboardList, path: '/admin/applications', badge: true },
-  { label: '客戶管理', icon: Users, path: '/admin/customers' },
+  { label: '商業客戶管理', icon: Users, path: '/admin/customers' },
+  { label: '一般用戶管理', icon: UsersRound, path: '/admin/users' },
   { label: '分店管理', icon: GitBranch, path: '/admin/branches' },
   { label: '訂單管理', icon: ClipboardList, path: '/admin/orders' },
   { label: '產品管理', icon: Package, path: '/admin/products', stockBadge: true },
@@ -56,7 +57,6 @@ const adminNav = [
   { label: '導師管理', icon: UsersRound, path: '/admin/instructors' },
   { label: '報名管理', icon: UsersRound, path: '/admin/enrollments' },
   { label: '時間表', icon: Calendar, path: '/admin/schedule' },
-  { label: '一般用戶', icon: UsersRound, path: '/admin/users' },
   { label: '系統設定', icon: Settings, path: '/admin/settings' },
   { label: '管理員', icon: Shield, path: '/admin/admins' },
 ];

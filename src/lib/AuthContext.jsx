@@ -2,7 +2,6 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { appParams } from '@/lib/app-params';
 import { createAxiosClient } from '@base44/sdk/dist/utils/axios-client';
-import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -15,7 +14,6 @@ export const AuthProvider = ({ children }) => {
   const [authChecked, setAuthChecked] = useState(false);
   const [appPublicSettings, setAppPublicSettings] = useState(null);
   const [checkingPrivacy, setCheckingPrivacy] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     checkAppState();
@@ -43,7 +41,7 @@ export const AuthProvider = ({ children }) => {
       if (!currentUser?.privacy_accepted) {
         const pathname = window.location.pathname;
         if (pathname !== '/privacy-consent' && pathname !== '/') {
-          navigate('/privacy-consent', { replace: true });
+          window.location.href = '/privacy-consent';
         }
       }
     } catch (error) {
@@ -194,8 +192,7 @@ export const AuthProvider = ({ children }) => {
       navigateToLogin,
       checkUserAuth,
       checkAppState,
-      refreshUser,
-      checkPrivacyConsent
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>

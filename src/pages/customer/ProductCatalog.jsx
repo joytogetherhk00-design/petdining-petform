@@ -11,11 +11,13 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ORIGINS } from '@/components/shared/OriginBadge';
+import { MEAT_TYPES } from '@/components/shared/MeatBadge';
 
 export default function ProductCatalog() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeOrigin, setActiveOrigin] = useState('all');
+  const [activeMeat, setActiveMeat] = useState('all');
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
@@ -32,7 +34,8 @@ export default function ProductCatalog() {
     const matchSearch = !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase());
     const matchCat = activeCategory === 'all' || p.category === activeCategory;
     const matchOrigin = activeOrigin === 'all' || p.country_of_origin === activeOrigin;
-    return matchSearch && matchCat && matchOrigin;
+    const matchMeat = activeMeat === 'all' || p.meat_type === activeMeat;
+    return matchSearch && matchCat && matchOrigin && matchMeat;
   });
 
   const handleAdd = (product) => {
@@ -71,7 +74,7 @@ export default function ProductCatalog() {
       </div>
 
       {/* Origin filter */}
-      <div className="flex gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar">
+      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
         <Button variant={activeOrigin === 'all' ? 'default' : 'outline'} size="sm"
           className={cn('text-xs', activeOrigin === 'all' ? 'bg-primary' : '')} onClick={() => setActiveOrigin('all')}>
           全部產地
@@ -81,6 +84,21 @@ export default function ProductCatalog() {
             className={cn('whitespace-nowrap text-xs', activeOrigin === o && 'bg-primary')}
             onClick={() => setActiveOrigin(o)}>
             {o}
+          </Button>
+        ))}
+      </div>
+
+      {/* Meat filter */}
+      <div className="flex gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar">
+        <Button variant={activeMeat === 'all' ? 'default' : 'outline'} size="sm"
+          className={cn('text-xs', activeMeat === 'all' ? 'bg-primary' : '')} onClick={() => setActiveMeat('all')}>
+          全部肉類
+        </Button>
+        {MEAT_TYPES.map(m => (
+          <Button key={m.value} variant={activeMeat === m.value ? 'default' : 'outline'} size="sm"
+            className={cn('whitespace-nowrap text-xs', activeMeat === m.value && 'bg-primary')}
+            onClick={() => setActiveMeat(m.value)}>
+            {m.label}
           </Button>
         ))}
       </div>

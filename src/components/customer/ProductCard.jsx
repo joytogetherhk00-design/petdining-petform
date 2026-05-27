@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart } from 'lucide-react';
 import OriginBadge from '@/components/shared/OriginBadge';
+import MeatBadge from '@/components/shared/MeatBadge';
 
 export default function ProductCard({ product, onAddToCart }) {
   const images = [product.image1, product.image2, product.image3].filter(Boolean);
@@ -44,7 +45,8 @@ export default function ProductCard({ product, onAddToCart }) {
       <div className="p-4">
         <h3 className="font-semibold text-sm line-clamp-2 mb-2">{product.name}</h3>
         
-        <div className="mb-2">
+        <div className="flex flex-wrap gap-1 mb-2">
+          {product.meat_type && <MeatBadge meatType={product.meat_type} />}
           {product.country_of_origin
             ? <OriginBadge origin={product.country_of_origin} />
             : <span className="text-xs text-muted-foreground">未標示</span>}

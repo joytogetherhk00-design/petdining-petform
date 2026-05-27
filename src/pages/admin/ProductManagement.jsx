@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PageHeader from '@/components/shared/PageHeader';
@@ -122,11 +122,6 @@ export default function ProductManagement() {
     setQuickDialogOpen(false);
   };
 
-  const imageRef1 = useRef(null);
-  const imageRef2 = useRef(null);
-  const imageRef3 = useRef(null);
-  const imageRefs = { image1: imageRef1, image2: imageRef2, image3: imageRef3 };
-
   const handleImageUpload = async (file, field) => {
     if (!file) return;
     setUploadingField(field);
@@ -138,7 +133,6 @@ export default function ProductManagement() {
       toast.error('上傳失敗，請重試');
     } finally {
       setUploadingField(null);
-      if (imageRefs[field].current) imageRefs[field].current.value = '';
     }
   };
 
@@ -347,9 +341,9 @@ export default function ProductManagement() {
             </div>
 
             {/* Images */}
-            <ImageUploadRow field="image1" label="圖片 1" value={form.image1} uploading={uploadingField === 'image1'} inputRef={imageRef1} onUpload={handleImageUpload} />
-            <ImageUploadRow field="image2" label="圖片 2" value={form.image2} uploading={uploadingField === 'image2'} inputRef={imageRef2} onUpload={handleImageUpload} />
-            <ImageUploadRow field="image3" label="圖片 3" value={form.image3} uploading={uploadingField === 'image3'} inputRef={imageRef3} onUpload={handleImageUpload} />
+            <ImageUploadRow field="image1" label="圖片 1" value={form.image1} uploading={uploadingField === 'image1'} onUpload={handleImageUpload} />
+            <ImageUploadRow field="image2" label="圖片 2" value={form.image2} uploading={uploadingField === 'image2'} onUpload={handleImageUpload} />
+            <ImageUploadRow field="image3" label="圖片 3" value={form.image3} uploading={uploadingField === 'image3'} onUpload={handleImageUpload} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>

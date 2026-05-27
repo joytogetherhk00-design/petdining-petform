@@ -26,6 +26,13 @@ export default function MyAccount() {
   const [newAddress, setNewAddress] = useState('');
   const queryClient = useQueryClient();
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: async () => {
+      return await base44.auth.me();
+    },
+  });
+
   const { data: customer, isLoading } = useQuery({
     queryKey: ['myCustomer'],
     queryFn: async () => {
@@ -34,6 +41,9 @@ export default function MyAccount() {
       return customers[0] || null;
     },
   });
+
+  // 一般用戶顯示個人資料，商業用戶顯示公司資料
+  const isGeneralUser = user?.user_type === 'general' || !customer;
 
   const { data: settings } = useQuery({
     queryKey: ['appSettings'],
@@ -96,33 +106,29 @@ export default function MyAccount() {
 
   if (isLoading) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" /></div>;
 
-  if (!customer) {
-    return (
-      <div>
-        <PageHeader title="我的帳戶" />
-        <div className="text-center py-20">
-          <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <p className="text-lg font-medium mb-2">帳戶尚未開通</p>
-          <p className="text-muted-foreground mb-6">請聯絡客服開通帳戶</p>
-          <a
-            href="https://api.whatsapp.com/send?phone=85298673497&text=你好，我想開通帳戶"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button className="bg-green-500 hover:bg-green-600 text-white gap-2">
-              <MessageCircle className="h-4 w-4" />WhatsApp 聯絡客服
-            </Button>
-          </a>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" /></div>;
 
   return (
     <div>
       <PageHeader title="我的帳戶" />
 
-      <div className="grid md:grid-cols-2 gap-6">
+      {isGeneralUser ? (
+        // 一般用戶個人資料
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">個人資料</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div><span className="text-muted-foreground">姓名：</span>{user?.full_name || '-'}</div>
+              <div><span className="text-muted-foreground">電郵：</span>{user?.email}</div>
+              <div><span className="text-muted-foreground">用戶類型：</span>一般客戶</div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        // 商業用戶公司資料
+        <div className="grid md:grid-cols-2 gap-6">
         {/* Company Info */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -232,53 +238,58 @@ export default function MyAccount() {
           </CardContent>
         </Card>
       </div>
+      )}
 
-      {/* Edit dialog */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>修改公司資料</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div><Label>公司名稱</Label><Input value={editData.company_name || ''} onChange={e => setEditData({ ...editData, company_name: e.target.value })} /></div>
-            <div><Label>聯絡人</Label><Input value={editData.contact || ''} onChange={e => setEditData({ ...editData, contact: e.target.value })} /></div>
-            <div><Label>電話</Label><Input value={editData.phone || ''} onChange={e => setEditData({ ...editData, phone: e.target.value })} /></div>
-            <div><Label>商業登記地址</Label><Input value={editData.br_address || ''} onChange={e => setEditData({ ...editData, br_address: e.target.value })} /></div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>取消</Button>
-            <Button className="bg-primary" onClick={submitEdit}>提交審批</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Top-up dialog */}
-      <Dialog open={topupOpen} onOpenChange={setTopupOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{topupMode === 'stripe' ? '信用卡 Top-up' : '銀行轉帳 Top-up'}</DialogTitle>
-          </DialogHeader>
-          {topupMode === 'stripe' ? (
-            <StripeTopup customer={customer} onSuccess={handleStripeSuccess} onCancel={() => setTopupOpen(false)} />
-          ) : (
-            <div className="space-y-4">
-              <div className="p-4 bg-muted rounded-lg text-sm space-y-1">
-                {settings?.bank_name && <p>銀行：{settings.bank_name}</p>}
-                {settings?.bank_account && <p>帳號：{settings.bank_account}</p>}
-                {settings?.account_holder && <p>持有人：{settings.account_holder}</p>}
-                {settings?.fps_id && <p>FPS ID：{settings.fps_id}</p>}
-                <p className="text-xs text-muted-foreground mt-2">請轉帳到此帳戶，並保留收據</p>
-              </div>
-              <div>
-                <Label>Top-up 金額 (最低 HK$1,000)</Label>
-                <Input type="number" min={1000} step={100} value={topupAmount} onChange={e => setTopupAmount(e.target.value)} placeholder="1000" />
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setTopupOpen(false)}>取消</Button>
-                <Button className="bg-primary" onClick={submitBankTopup}>申請 Top-up</Button>
-              </DialogFooter>
+      {/* Edit dialog - only for business users */}
+      {!isGeneralUser && (
+        <>
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>修改公司資料</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <div><Label>公司名稱</Label><Input value={editData.company_name || ''} onChange={e => setEditData({ ...editData, company_name: e.target.value })} /></div>
+              <div><Label>聯絡人</Label><Input value={editData.contact || ''} onChange={e => setEditData({ ...editData, contact: e.target.value })} /></div>
+              <div><Label>電話</Label><Input value={editData.phone || ''} onChange={e => setEditData({ ...editData, phone: e.target.value })} /></div>
+              <div><Label>商業登記地址</Label><Input value={editData.br_address || ''} onChange={e => setEditData({ ...editData, br_address: e.target.value })} /></div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditOpen(false)}>取消</Button>
+              <Button className="bg-primary" onClick={submitEdit}>提交審批</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Top-up dialog */}
+        <Dialog open={topupOpen} onOpenChange={setTopupOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{topupMode === 'stripe' ? '信用卡 Top-up' : '銀行轉帳 Top-up'}</DialogTitle>
+            </DialogHeader>
+            {topupMode === 'stripe' ? (
+              <StripeTopup customer={customer} onSuccess={handleStripeSuccess} onCancel={() => setTopupOpen(false)} />
+            ) : (
+              <div className="space-y-4">
+                <div className="p-4 bg-muted rounded-lg text-sm space-y-1">
+                  {settings?.bank_name && <p>銀行：{settings.bank_name}</p>}
+                  {settings?.bank_account && <p>帳號：{settings.bank_account}</p>}
+                  {settings?.account_holder && <p>持有人：{settings.account_holder}</p>}
+                  {settings?.fps_id && <p>FPS ID：{settings.fps_id}</p>}
+                  <p className="text-xs text-muted-foreground mt-2">請轉帳到此帳戶，並保留收據</p>
+                </div>
+                <div>
+                  <Label>Top-up 金額 (最低 HK$1,000)</Label>
+                  <Input type="number" min={1000} step={100} value={topupAmount} onChange={e => setTopupAmount(e.target.value)} placeholder="1000" />
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setTopupOpen(false)}>取消</Button>
+                  <Button className="bg-primary" onClick={submitBankTopup}>申請 Top-up</Button>
+                </DialogFooter>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+        </>
+      )}
     </div>
   );
 }

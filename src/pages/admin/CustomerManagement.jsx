@@ -47,12 +47,12 @@ export default function CustomerManagement() {
   // 過濾一般用戶（排除 admin）
   const publicUsers = users.filter(u => u.role !== 'admin');
 
-  const filtered = (tab === 'pending' ? pendingCustomers : tab === 'active' ? activeCustomers : publicUsers).filter(c => {
+  const filtered = (tab === 'pending' ? pendingCustomers : tab === 'active' ? activeCustomers : publicUsers).filter(item => {
     const q = search.toLowerCase();
     if (tab === 'public') {
-      return !search || c.email?.toLowerCase().includes(q) || c.full_name?.toLowerCase().includes(q);
+      return !search || item.email?.toLowerCase().includes(q) || item.full_name?.toLowerCase().includes(q);
     }
-    return !search || c.customer_id?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q) || c.account_number?.toLowerCase().includes(q);
+    return !search || item.customer_id?.toLowerCase().includes(q) || item.company_name?.toLowerCase().includes(q) || item.account_number?.toLowerCase().includes(q);
   });
 
   const generateAccountNumber = (region) => {
@@ -195,14 +195,14 @@ export default function CustomerManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map(c => (
-              <TableRow key={c.id} className={tab !== 'public' ? 'cursor-pointer' : ''} onClick={() => tab !== 'public' && setDetailOpen(c)}>
+            {filtered.map(item => (
+              <TableRow key={item.id} className={tab !== 'public' ? 'cursor-pointer' : ''} onClick={() => tab !== 'public' && setDetailOpen(item)}>
                 {tab === 'public' ? (
                   <>
-                    <TableCell className="font-medium">{c.full_name || '未設定'}</TableCell>
-                    <TableCell>{c.email}</TableCell>
+                    <TableCell className="font-medium">{item.full_name || '未設定'}</TableCell>
+                    <TableCell>{item.email}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {new Date(c.created_date).toLocaleDateString('zh-HK')}
+                      {new Date(item.created_date).toLocaleDateString('zh-HK')}
                     </TableCell>
                     <TableCell>
                       <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
@@ -213,30 +213,30 @@ export default function CustomerManagement() {
                 ) : (
                   <>
                     <TableCell onClick={e => e.stopPropagation()}>
-                      {c.logo_url ? (
-                        <img src={c.logo_url} alt="logo" className="w-8 h-8 rounded-lg object-cover" />
+                      {item.logo_url ? (
+                        <img src={item.logo_url} alt="logo" className="w-8 h-8 rounded-lg object-cover" />
                       ) : (
                         <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
                           <Building2 className="h-4 w-4 text-muted-foreground" />
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-mono text-sm">{c.customer_id}</TableCell>
-                    <TableCell className="font-medium">{c.company_name}</TableCell>
-                    <TableCell className="text-sm">{c.contact}</TableCell>
-                    <TableCell className="text-sm">{PLANS[c.plan]?.name || '-'}</TableCell>
-                    <TableCell className="font-semibold">{(c.credits_balance || 0).toLocaleString()}</TableCell>
-                    <TableCell><StatusBadge status={c.status} /></TableCell>
+                    <TableCell className="font-mono text-sm">{item.customer_id}</TableCell>
+                    <TableCell className="font-medium">{item.company_name}</TableCell>
+                    <TableCell className="text-sm">{item.contact}</TableCell>
+                    <TableCell className="text-sm">{PLANS[item.plan]?.name || '-'}</TableCell>
+                    <TableCell className="font-semibold">{(item.credits_balance || 0).toLocaleString()}</TableCell>
+                    <TableCell><StatusBadge status={item.status} /></TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
                       <div className="flex gap-1">
-                        <Button variant="outline" size="sm" onClick={() => toggleStatus(c)}>
-                          {c.status === 'active' ? '暫停' : '啟用'}
+                        <Button variant="outline" size="sm" onClick={() => toggleStatus(item)}>
+                          {item.status === 'active' ? '暫停' : '啟用'}
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => setEditOpen({ ...c })}>
+                        <Button variant="outline" size="sm" onClick={() => setEditOpen({ ...item })}>
                           編輯
                         </Button>
-                        {c.pending_changes && (
-                          <Button variant="outline" size="sm" className="text-amber-600" onClick={() => setPendingOpen(c)}>
+                        {item.pending_changes && (
+                          <Button variant="outline" size="sm" className="text-amber-600" onClick={() => setPendingOpen(item)}>
                             審批
                           </Button>
                         )}

@@ -16,7 +16,7 @@ export default function Welcome() {
   const [user, setUser] = useState(null);
   const [customer, setCustomer] = useState(null);
 
-  // 檢查是否有預覽視角參數
+  // 檢查是否有預覽視角參數或管理員登入
   useEffect(() => {
     const viewParam = searchParams.get('view');
     if (viewParam) {
@@ -29,6 +29,15 @@ export default function Welcome() {
     }
     checkUser();
   }, []);
+
+  useEffect(() => {
+    if (user && !checking) {
+      // 管理員直接跳轉到後台
+      if (user.role === 'admin') {
+        navigate('/admin');
+      }
+    }
+  }, [user, checking]);
 
   const checkUser = async () => {
     try {

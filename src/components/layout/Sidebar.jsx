@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, ShoppingCart, Package, FolderOpen, 
   CreditCard, ArrowUpCircle, Settings, Shield, Menu, X,
-  Store, ClipboardList, User, PawPrint, GitBranch
+  Store, ClipboardList, User, PawPrint, GitBranch, GraduationCap, UsersRound, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -52,12 +52,17 @@ const adminNav = [
   { label: 'Credits 管理', icon: CreditCard, path: '/admin/credits' },
   { label: 'Top-up 管理', icon: ArrowUpCircle, path: '/admin/topups' },
   { label: '交易記錄', icon: CreditCard, path: '/admin/transactions' },
+  { label: '課程管理', icon: GraduationCap, path: '/admin/courses' },
+  { label: '導師管理', icon: UsersRound, path: '/admin/instructors' },
+  { label: '報名管理', icon: UsersRound, path: '/admin/enrollments' },
+  { label: '時間表', icon: Calendar, path: '/admin/schedule' },
   { label: '系統設定', icon: Settings, path: '/admin/settings' },
   { label: '管理員', icon: Shield, path: '/admin/admins' },
 ];
 
 const customerNav = [
   { label: '產品目錄', icon: Store, path: '/' },
+  { label: '課程目錄', icon: GraduationCap, path: '/courses' },
   { label: '購物車', icon: ShoppingCart, path: '/cart' },
   { label: '訂單記錄', icon: ClipboardList, path: '/orders' },
   { label: '我的帳戶', icon: User, path: '/account' },

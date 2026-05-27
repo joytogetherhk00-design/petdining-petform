@@ -17,6 +17,7 @@ import ProductCatalog from '@/pages/customer/ProductCatalog';
 import Cart from '@/pages/customer/Cart';
 import OrderHistory from '@/pages/customer/OrderHistory';
 import MyAccount from '@/pages/customer/MyAccount';
+import CourseCatalog from '@/pages/customer/CourseCatalog';
 
 // Admin pages
 import Dashboard from '@/pages/admin/Dashboard';
@@ -31,6 +32,10 @@ import AdminManagement from '@/pages/admin/AdminManagement';
 import AllBranches from '@/pages/admin/AllBranches';
 import ApplicationManagement from '@/pages/admin/ApplicationManagement';
 import TransactionManagement from '@/pages/admin/TransactionManagement';
+import CourseManagement from '@/pages/admin/CourseManagement';
+import InstructorManagement from '@/pages/admin/InstructorManagement';
+import EnrollmentManagement from '@/pages/admin/EnrollmentManagement';
+import CourseSchedule from '@/pages/admin/CourseSchedule';
 import CreditsTopup from '@/pages/customer/CreditsTopup';
 import CreditsSuccess from '@/pages/customer/CreditsSuccess';
 import CreditsCancel from '@/pages/customer/CreditsCancel';
@@ -86,6 +91,7 @@ const AuthenticatedApp = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<OrderHistory />} />
         <Route path="/account" element={<MyAccount />} />
+        <Route path="/courses" element={<CourseCatalog />} />
         <Route path="/credits/topup" element={<CreditsTopup />} />
         <Route path="/credits/success" element={<CreditsSuccess />} />
         <Route path="/credits/cancel" element={<CreditsCancel />} />
@@ -105,6 +111,10 @@ const AuthenticatedApp = () => {
         <Route path="/admin/branches" element={<AllBranches />} />
         <Route path="/admin/applications" element={<ApplicationManagement />} />
         <Route path="/admin/transactions" element={<TransactionManagement />} />
+        <Route path="/admin/courses" element={<CourseManagement />} />
+        <Route path="/admin/instructors" element={<InstructorManagement />} />
+        <Route path="/admin/enrollments" element={<EnrollmentManagement />} />
+        <Route path="/admin/schedule" element={<CourseSchedule />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

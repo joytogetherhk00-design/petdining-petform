@@ -1,0 +1,58 @@
+{
+  "name": "CourseSchedule",
+  "type": "object",
+  "properties": {
+    "schedule_id": {
+      "type": "string",
+      "description": "\u6642\u9593\u8868 ID"
+    },
+    "course_id": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b ID"
+    },
+    "course_title": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b\u540d\u7a31"
+    },
+    "start_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u958b\u59cb\u65e5\u671f\u6642\u9593"
+    },
+    "end_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u7d50\u675f\u65e5\u671f\u6642\u9593"
+    },
+    "location": {
+      "type": "string",
+      "description": "\u4e0a\u8ab2\u5730\u9ede"
+    },
+    "max_students": {
+      "type": "number",
+      "description": "\u6700\u5927\u5b78\u751f\u6578"
+    },
+    "enrolled_count": {
+      "type": "number",
+      "default": 0,
+      "description": "\u5df2\u5831\u540d\u4eba\u6578"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "ongoing",
+        "completed",
+        "cancelled"
+      ],
+      "default": "upcoming",
+      "description": "\u8ab2\u7a0b\u72c0\u614b"
+    }
+  },
+  "required": [
+    "course_id",
+    "start_datetime",
+    "end_datetime",
+    "max_students"
+  ]
+}

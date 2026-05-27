@@ -1,0 +1,67 @@
+{
+  "name": "Courses",
+  "type": "object",
+  "properties": {
+    "course_code": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b\u7de8\u865f"
+    },
+    "title": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b\u540d\u7a31"
+    },
+    "description": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b\u63cf\u8ff0"
+    },
+    "instructor_id": {
+      "type": "string",
+      "description": "\u5c0e\u5e2b ID"
+    },
+    "instructor_name": {
+      "type": "string",
+      "description": "\u5c0e\u5e2b\u540d\u7a31"
+    },
+    "price": {
+      "type": "number",
+      "default": 980,
+      "description": "\u8ab2\u7a0b\u50f9\u683c\uff08HKD\uff09"
+    },
+    "duration": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b\u6642\u9577\uff08\u4f8b\u5982\uff1a3 \u5c0f\u6642\uff09"
+    },
+    "location": {
+      "type": "string",
+      "description": "\u4e0a\u8ab2\u5730\u9ede"
+    },
+    "max_students": {
+      "type": "number",
+      "description": "\u6700\u5927\u5b78\u751f\u6578"
+    },
+    "enrolled_count": {
+      "type": "number",
+      "default": 0,
+      "description": "\u5df2\u5831\u540d\u4eba\u6578"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "full"
+      ],
+      "default": "active",
+      "description": "\u8ab2\u7a0b\u72c0\u614b"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b\u5716\u7247 URL"
+    }
+  },
+  "required": [
+    "title",
+    "price",
+    "max_students"
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "name": "Enrollments",
+  "type": "object",
+  "properties": {
+    "enrollment_id": {
+      "type": "string",
+      "description": "\u5831\u540d\u7de8\u865f"
+    },
+    "course_id": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b ID"
+    },
+    "course_title": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b\u540d\u7a31"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "\u7528\u6236\u96fb\u90f5"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "\u7528\u6236\u540d\u7a31"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "stripe",
+        "quota"
+      ],
+      "description": "\u652f\u4ed8\u65b9\u5f0f\uff1astripe\uff08\u4fe1\u7528\u5361\uff09/ quota\uff08\u5546\u696d\u5ba2\u6236\u540d\u984d\uff09"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "refunded"
+      ],
+      "default": "pending",
+      "description": "\u652f\u4ed8\u72c0\u614b"
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "Stripe Session ID"
+    },
+    "amount_paid": {
+      "type": "number",
+      "description": "\u652f\u4ed8\u91d1\u984d\uff08HKD\uff09"
+    },
+    "quota_used": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u662f\u5426\u4f7f\u7528\u4e86 Quota \u540d\u984d"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "\u5831\u540d\u72c0\u614b"
+    },
+    "enrollment_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u5831\u540d\u65e5\u671f"
+    },
+    "completion_certificate": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u662f\u5426\u5df2\u7372\u5f97\u8b49\u66f8"
+    }
+  },
+  "required": [
+    "course_id",
+    "user_email",
+    "payment_method"
+  ]
+}

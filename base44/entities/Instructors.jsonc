@@ -1,0 +1,50 @@
+{
+  "name": "Instructors",
+  "type": "object",
+  "properties": {
+    "instructor_id": {
+      "type": "string",
+      "description": "\u5c0e\u5e2b\u7de8\u865f"
+    },
+    "name": {
+      "type": "string",
+      "description": "\u5c0e\u5e2b\u540d\u7a31"
+    },
+    "email": {
+      "type": "string",
+      "description": "\u5c0e\u5e2b\u96fb\u90f5"
+    },
+    "phone": {
+      "type": "string",
+      "description": "\u5c0e\u5e2b\u96fb\u8a71"
+    },
+    "bio": {
+      "type": "string",
+      "description": "\u5c0e\u5e2b\u7c21\u4ecb"
+    },
+    "specialties": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u5c08\u9577\u9818\u57df"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "\u5c0e\u5e2b\u7167\u7247 URL"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active",
+      "description": "\u5c0e\u5e2b\u72c0\u614b"
+    }
+  },
+  "required": [
+    "name",
+    "email"
+  ]
+}

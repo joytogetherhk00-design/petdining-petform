@@ -29,14 +29,48 @@ Deno.serve(async (req) => {
       return Response.json({ received: true });
     }
 
-    const customerId = session.metadata?.customer_id;
-    const creditsAmount = Number(session.metadata?.credits_amount);
+    const base44 = createClientFromRequest(req);
+    const metadata = session.metadata || {};
+
+    // 檢查是否是課程報名支付
+    if (metadata.type === 'course_enrollment') {
+      const enrollmentId = metadata.enrollmentId;
+      
+      if (!enrollmentId) {
+        return Response.json({ error: 'Missing enrollmentId' }, { status: 400 });
+      }
+
+      // Idempotency check
+      const existingEnrollment = await base44.asServiceRole.entities.Enrollments.get(enrollmentId);
+      if (!existingEnrollment) {
+        return Response.json({ error: 'Enrollment not found' }, { status: 404 });
+      }
+
+      if (existingEnrollment.payment_status === 'paid') {
+        return Response.json({ received: true, already_processed: true });
+      }
+
+      // 更新報名記錄為已支付
+      await base44.asServiceRole.entities.Enrollments.update(enrollmentId, {
+        payment_status: 'paid',
+        status: 'confirmed',
+        stripe_session_id: session.id,
+      });
+
+      return Response.json({ 
+        received: true, 
+        enrollment_updated: enrollmentId,
+        type: 'course_enrollment'
+      });
+    }
+
+    // 原有的 Credits 處理邏輯
+    const customerId = metadata.customer_id;
+    const creditsAmount = Number(metadata.credits_amount);
 
     if (!customerId || !creditsAmount) {
       return Response.json({ error: 'Missing metadata' }, { status: 400 });
     }
-
-    const base44 = createClientFromRequest(req);
 
     // Idempotency check
     const existing = await base44.asServiceRole.entities.CreditTransaction.filter({

@@ -67,60 +67,120 @@ export default function Cart() {
   };
 
   const handleSubmit = async () => {
-    if (!customer) {
-      toast.error('請先完成帳戶設定');
-      return;
-    }
     setSubmitting(true);
+    
+    try {
+      // 分離課程和產品項目
+      const courseItems = items.filter(item => item.type === 'course');
+      const productItems = items.filter(item => item.type === 'product' || !item.type);
+      
+      // 處理課程報名
+      for (const item of courseItems) {
+        const me = await base44.auth.me();
+        
+        // 創建報名記錄
+        const enrollment = await base44.entities.Enrollments.create({
+          enrollment_id: `ENR-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
+          course_id: item.course_id,
+          course_title: item.course_title,
+          schedule_id: item.schedule_id,
+          schedule_date: item.schedule_date,
+          schedule_end: item.schedule_end,
+          location: item.location,
+          user_email: me.email,
+          user_name: me.full_name,
+          student_name: item.student_name,
+          student_gender: item.student_gender,
+          student_phone: item.student_phone,
+          student_email: item.student_email,
+          company: item.company,
+          branch: item.branch,
+          payment_method: 'stripe',
+          payment_status: 'pending',
+          amount_paid: item.price,
+          quota_used: false,
+          status: 'pending',
+          enrollment_date: new Date().toISOString(),
+        });
+        
+        // 創建 Stripe 結算
+        const checkoutResponse = await base44.functions.invoke('createCourseCheckoutSession', {
+          enrollmentId: enrollment.id,
+          courseId: item.course_id,
+          courseTitle: item.course_title,
+          amount: item.price,
+          studentName: item.student_name,
+          scheduleDate: item.schedule_date,
+          scheduleEnd: item.schedule_end,
+          location: item.location,
+        });
+        
+        if (checkoutResponse.url) {
+          // 跳轉到 Stripe 支付
+          window.location.href = checkoutResponse.url;
+          return;
+        }
+      }
+      
+      // 處理產品訂單（原有的邏輯）
+      if (productItems.length > 0) {
+        if (!customer) {
+          toast.error('請先完成帳戶設定');
+          return;
+        }
+        
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
+        const orders = await base44.entities.Orders.filter({ customer_id: customer.customer_id });
+        const orderNum = `${customer.customer_id}${String(orders.length + 1).padStart(2, '0')}${month}${year}`;
 
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const year = String(now.getFullYear()).slice(-2);
-    const orders = await base44.entities.Orders.filter({ customer_id: customer.customer_id });
-    const orderNum = `${customer.customer_id}${String(orders.length + 1).padStart(2, '0')}${month}${year}`;
+        const order = await base44.entities.Orders.create({
+          customer_id: customer.customer_id,
+          order_date: now.toISOString(),
+          status: 'pending',
+          subtotal: total,
+          credits_used: total,
+          total: total,
+          notes: notes,
+          order_number: orderNum,
+          delivery_address: selectedAddress || customer.delivery_address,
+          user_email: customer.user_email,
+        });
 
-    const order = await base44.entities.Orders.create({
-      customer_id: customer.customer_id,
-      order_date: now.toISOString(),
-      status: 'pending',
-      subtotal: total,
-      credits_used: total,
-      total: total,
-      notes: notes,
-      order_number: orderNum,
-      delivery_address: selectedAddress || customer.delivery_address,
-      user_email: customer.user_email,
-    });
+        for (const item of productItems) {
+          await base44.entities.OrderItems.create({
+            order_id: order.id,
+            sku: item.sku,
+            product_name: item.product_name,
+            qty: item.qty,
+            price: item.price,
+            subtotal: item.price * item.qty,
+          });
+        }
 
-    for (const item of items) {
-      await base44.entities.OrderItems.create({
-        order_id: order.id,
-        sku: item.sku,
-        product_name: item.product_name,
-        qty: item.qty,
-        price: item.price,
-        subtotal: item.price * item.qty,
-      });
+        await base44.entities.Customers.update(customer.id, {
+          credits_balance: creditsBalance - total,
+        });
+
+        await base44.entities.CreditsLog.create({
+          customer_id: customer.customer_id,
+          month: `${now.getFullYear()}-${month}`,
+          used: total,
+          type: 'usage',
+          status: 'active',
+        });
+
+        clearCart();
+        setItems([]);
+        queryClient.invalidateQueries({ queryKey: ['myCustomer'] });
+        toast.success('訂單已提交！');
+        navigate('/orders');
+      }
+    } catch (error) {
+      toast.error('提交失敗：' + error.message);
+      setSubmitting(false);
     }
-
-    await base44.entities.Customers.update(customer.id, {
-      credits_balance: creditsBalance - total,
-    });
-
-    await base44.entities.CreditsLog.create({
-      customer_id: customer.customer_id,
-      month: `${now.getFullYear()}-${month}`,
-      used: total,
-      type: 'usage',
-      status: 'active',
-    });
-
-    clearCart();
-    setItems([]);
-    queryClient.invalidateQueries({ queryKey: ['myCustomer'] });
-    toast.success('訂單已提交！');
-    setSubmitting(false);
-    navigate('/orders');
   };
 
   const addresses = [

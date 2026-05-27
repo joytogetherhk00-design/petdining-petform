@@ -26,14 +26,9 @@ export default function CourseEnrollmentDetail() {
   const { data: schedule, isLoading: isLoadingSchedule } = useQuery({
     queryKey: ['schedule', scheduleId],
     queryFn: async () => {
-      // 先嘗試用 schedule_id 查找
-      let schedules = await base44.entities.CourseSchedule.filter({ schedule_id: scheduleId });
-      if (schedules.length === 0) {
-        // 如果找不到，嘗試用 id 查找（兼容舊數據）
-        schedules = await base44.entities.CourseSchedule.list();
-        return schedules.find(s => s.id === scheduleId) || null;
-      }
-      return schedules[0];
+      // 直接用 id 查找（因為 schedule_id 字段可能為空）
+      const schedules = await base44.entities.CourseSchedule.list();
+      return schedules.find(s => s.id === scheduleId || s.schedule_id === scheduleId) || null;
     },
     enabled: !!scheduleId,
   });
@@ -41,15 +36,12 @@ export default function CourseEnrollmentDetail() {
   const { data: enrollments = [] } = useQuery({
     queryKey: ['enrollments', scheduleId],
     queryFn: async () => {
-      // 先嘗試用 schedule_id 查找
-      let results = await base44.entities.Enrollments.filter({ schedule_id: scheduleId });
-      if (results.length === 0 && schedule) {
-        // 如果找不到，嘗試用 course_id 查找（兼容舊數據）
-        results = await base44.entities.Enrollments.filter({ course_id: schedule.course_id });
-      }
+      if (!schedule) return [];
+      // 用 course_id 查找學員（因為 schedule_id 可能為空）
+      const results = await base44.entities.Enrollments.filter({ course_id: schedule.course_id });
       return results;
     },
-    enabled: !!scheduleId,
+    enabled: !!scheduleId && !!schedule,
   });
 
   const updateMutation = useMutation({

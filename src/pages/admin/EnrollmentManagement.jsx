@@ -46,7 +46,7 @@ export default function EnrollmentManagement() {
             const isLow = remaining <= 5 && remaining > 0;
             
             return (
-              <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/admin/enrollments/${course.schedule_id}`)}>
+              <Card key={course.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate(`/admin/enrollments/${course.id}`)}>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">

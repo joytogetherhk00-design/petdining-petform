@@ -58,15 +58,17 @@ export default function Onboarding() {
 
     // Find existing pending customer record by user email
     const existing = await base44.entities.Customers.filter({ user_email: user.email });
+    let customerRecord;
 
     if (existing.length > 0) {
+      customerRecord = existing[0];
       await base44.entities.Customers.update(existing[0].id, {
         ...form,
         onboarding_completed: true,
         status: 'pending',
       });
     } else {
-      await base44.entities.Customers.create({
+      customerRecord = await base44.entities.Customers.create({
         ...form,
         status: 'pending',
         onboarding_completed: true,
@@ -75,9 +77,15 @@ export default function Onboarding() {
       });
     }
 
+    // 更新用戶的 user_type 為 business
+    await base44.entities.User.update(user.id, {
+      user_type: 'business',
+      customer_id: customerRecord.customer_id,
+    });
+
     queryClient.invalidateQueries({ queryKey: ['customer'] });
     toast.success('資料已提交，等待審批！');
-    navigate('/');
+    navigate('/pending');
   };
 
   return (

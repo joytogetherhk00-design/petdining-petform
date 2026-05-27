@@ -94,6 +94,7 @@ export const AuthProvider = ({ children }) => {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
+      console.log('Current user data:', currentUser);
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -111,6 +112,19 @@ export const AuthProvider = ({ children }) => {
           message: 'Authentication required'
         });
       }
+    }
+  };
+
+  // 添加刷新用戶數據的方法
+  const refreshUser = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      console.log('Refreshed user data:', currentUser);
+      setUser(currentUser);
+      return currentUser;
+    } catch (error) {
+      console.error('Refresh user failed:', error);
+      throw error;
     }
   };
 
@@ -144,7 +158,8 @@ export const AuthProvider = ({ children }) => {
       logout,
       navigateToLogin,
       checkUserAuth,
-      checkAppState
+      checkAppState,
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>

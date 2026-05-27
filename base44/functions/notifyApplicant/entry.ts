@@ -74,6 +74,15 @@ Deno.serve(async (req) => {
         region: regionCode,
       });
 
+      // 查找並更新用戶的 user_type 為 business
+      const users = await base44.asServiceRole.entities.User.filter({ email: app.email });
+      if (users.length > 0) {
+        await base44.asServiceRole.entities.User.update(users[0].id, {
+          user_type: 'business',
+          customer_id: customerId,
+        });
+      }
+
       // Send approval email with WhatsApp invite link
       const whatsappMsg = encodeURIComponent(
         `🎉 恭喜！您的 PetDining PetForm 帳戶申請已獲批准！\n\n` +

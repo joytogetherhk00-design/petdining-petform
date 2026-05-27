@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import AIChatWidget from '@/components/customer/AIChatWidget';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function AppLayout({ isAdmin }) {
-  const { user, isLoadingAuth } = useAuth();
+  const { user, isLoadingAuth, refreshUser } = useAuth();
   
   // 從 URL 參數獲取視角（管理員預覽用）
   const urlParams = new URLSearchParams(window.location.search);
@@ -18,6 +18,14 @@ export default function AppLayout({ isAdmin }) {
   } else {
     userType = user?.user_type || 'business'; // 默認商業客戶，確保看到產品目錄
   }
+  
+  // 如果用戶已登入但 user_type 為空，刷新用戶數據
+  useEffect(() => {
+    if (user && !user.user_type && !isAdmin) {
+      console.log('User type missing, refreshing...');
+      refreshUser();
+    }
+  }, [user, isAdmin, refreshUser]);
   
   if (isLoadingAuth) {
     return (

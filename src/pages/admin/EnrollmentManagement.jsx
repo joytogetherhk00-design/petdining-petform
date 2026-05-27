@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, CheckCircle, XCircle, Clock, Mail, Bell, Award, UserCheck, UserX, AlertCircle } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, Mail, Bell, Award, UserCheck, UserX, AlertCircle, Calendar, Filter } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { toast } from 'sonner';
 
@@ -22,6 +22,9 @@ export default function EnrollmentManagement() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterAttendance, setFilterAttendance] = useState('all');
   const [attendanceMode, setAttendanceMode] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [filterCourse, setFilterCourse] = useState('all');
   const queryClient = useQueryClient();
 
   const { data: enrollments = [], isLoading } = useQuery({
@@ -111,8 +114,18 @@ export default function EnrollmentManagement() {
     const matchesAttendance = filterAttendance === 'all' || 
                               (filterAttendance === 'checked' && enrollment.attendance_status !== 'not_checked') ||
                               (filterAttendance === 'not_checked' && enrollment.attendance_status === 'not_checked');
-    return matchesSearch && matchesStatus && matchesAttendance;
+    const matchesCourse = filterCourse === 'all' || enrollment.course_title === filterCourse;
+    
+    // 日期範圍篩選
+    const enrollmentDate = new Date(enrollment.enrollment_date);
+    const matchesDateFrom = !dateFrom || enrollmentDate >= new Date(dateFrom);
+    const matchesDateTo = !dateTo || enrollmentDate <= new Date(dateTo);
+    
+    return matchesSearch && matchesStatus && matchesAttendance && matchesCourse && matchesDateFrom && matchesDateTo;
   });
+
+  // 獲取所有課程類別（用於篩選器）
+  const uniqueCourses = [...new Set(enrollments.map(e => e.course_title))].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -132,7 +145,56 @@ export default function EnrollmentManagement() {
               className="pl-10"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Select value={filterCourse} onValueChange={setFilterCourse}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="課程類別" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部課程</SelectItem>
+                {uniqueCourses.map(course => (
+                  <SelectItem key={course} value={course}>{course}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="pl-8 w-[150px]"
+                  placeholder="開始日期"
+                />
+              </div>
+              <span className="text-muted-foreground">至</span>
+              <div className="relative">
+                <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="pl-8 w-[150px]"
+                  placeholder="結束日期"
+                />
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setDateFrom('');
+                setDateTo('');
+                setFilterCourse('all');
+              }}
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              清除篩選
+            </Button>
+
             <Button
               variant={attendanceMode ? 'default' : 'outline'}
               size="sm"

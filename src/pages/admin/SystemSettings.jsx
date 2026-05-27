@@ -14,7 +14,7 @@ export default function SystemSettings() {
   const [form, setForm] = useState({
     company_name: '', min_order_amount: 500, credits_reset_day: 1,
     currency: 'HKD', bank_name: '', bank_account: '', account_holder: '', fps_id: '',
-    logo_url: '', stripe_publishable_key: '',
+    logo_url: '', stripe_publishable_key: '', low_stock_threshold: 10,
   });
   const queryClient = useQueryClient();
 
@@ -61,6 +61,11 @@ export default function SystemSettings() {
             <div><Label>公司名稱</Label><Input value={form.company_name} onChange={e => setForm({ ...form, company_name: e.target.value })} /></div>
             <div><Label>最低訂單金額 (HK$)</Label><Input type="number" value={form.min_order_amount} onChange={e => setForm({ ...form, min_order_amount: Number(e.target.value) })} /></div>
             <div><Label>貨幣</Label><Input value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} /></div>
+            <div>
+              <Label>庫存警戒水平（件數）</Label>
+              <Input type="number" value={form.low_stock_threshold} onChange={e => setForm({ ...form, low_stock_threshold: Number(e.target.value) })} />
+              <p className="text-xs text-muted-foreground mt-1">庫存 ≤ 此數值時顯示紅色警告，預設為 10 件</p>
+            </div>
           </CardContent>
         </Card>
 

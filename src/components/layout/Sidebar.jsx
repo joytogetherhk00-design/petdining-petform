@@ -47,7 +47,7 @@ const adminNav = [
   { label: '客戶管理', icon: Users, path: '/admin/customers' },
   { label: '分店管理', icon: GitBranch, path: '/admin/branches' },
   { label: '訂單管理', icon: ClipboardList, path: '/admin/orders' },
-  { label: '產品管理', icon: Package, path: '/admin/products' },
+  { label: '產品管理', icon: Package, path: '/admin/products', stockBadge: true },
   { label: '分類管理', icon: FolderOpen, path: '/admin/categories' },
   { label: 'Credits 管理', icon: CreditCard, path: '/admin/credits' },
   { label: 'Top-up 管理', icon: ArrowUpCircle, path: '/admin/topups' },
@@ -73,6 +73,23 @@ export default function Sidebar({ isAdmin }) {
     enabled: isAdmin,
     staleTime: 30000,
   });
+
+  const { data: settings } = useQuery({
+    queryKey: ['appSettings'],
+    queryFn: async () => { const s = await base44.entities.AppSettings.list(); return s[0] || {}; },
+    enabled: isAdmin,
+    staleTime: 60000,
+  });
+
+  const { data: allProducts = [] } = useQuery({
+    queryKey: ['allProducts'],
+    queryFn: () => base44.entities.Products.list(),
+    enabled: isAdmin,
+    staleTime: 60000,
+  });
+
+  const threshold = settings?.low_stock_threshold ?? 10;
+  const lowStockCount = allProducts.filter(p => p.status === 'active' && (p.stock ?? 0) <= threshold).length;
 
   return (
     <>
@@ -122,6 +139,11 @@ export default function Sidebar({ isAdmin }) {
                 {item.badge && pendingApps.length > 0 && (
                   <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
                     {pendingApps.length}
+                  </span>
+                )}
+                {item.stockBadge && lowStockCount > 0 && (
+                  <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
+                    {lowStockCount}
                   </span>
                 )}
               </Link>

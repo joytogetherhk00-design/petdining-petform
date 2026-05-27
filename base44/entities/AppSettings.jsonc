@@ -42,6 +42,11 @@
     "stripe_publishable_key": {
       "type": "string",
       "description": "Stripe Publishable Key"
+    },
+    "low_stock_threshold": {
+      "type": "number",
+      "default": 10,
+      "description": "\u4f4e\u5eab\u5b58\u8b66\u6212\u6c34\u5e73"
     }
   },
   "required": [

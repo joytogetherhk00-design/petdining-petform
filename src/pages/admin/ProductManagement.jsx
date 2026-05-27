@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { Search, Plus, Pencil, Copy, Trash2, EyeOff } from 'lucide-react';
+import { Search, Plus, Pencil, Copy, Trash2, EyeOff, CheckCircle2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const emptyProduct = {
@@ -32,6 +32,8 @@ export default function ProductManagement() {
   const [editProduct, setEditProduct] = useState(null);
   const [form, setForm] = useState(emptyProduct);
   const [quickForm, setQuickForm] = useState({ sku: '', name: '', category: '', wholesale_price: '', stock: 0, unit: '件' });
+  const [uploadingField, setUploadingField] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const queryClient = useQueryClient();
 
   const { data: products = [] } = useQuery({
@@ -51,10 +53,22 @@ export default function ProductManagement() {
     return matchSearch && matchCat && matchOrigin;
   });
 
-  const openAdd = () => { setEditProduct(null); setForm(emptyProduct); setDialogOpen(true); };
-  const openEdit = (p) => { setEditProduct(p); setForm({ ...emptyProduct, ...p, wholesale_price: p.wholesale_price || '' }); setDialogOpen(true); };
+  const openAdd = () => { setEditProduct(null); setForm(emptyProduct); setFormErrors({}); setDialogOpen(true); };
+  const openEdit = (p) => { setEditProduct(p); setForm({ ...emptyProduct, ...p, wholesale_price: p.wholesale_price || '' }); setFormErrors({}); setDialogOpen(true); };
 
   const handleSave = async () => {
+    const errors = {};
+    if (!form.sku) errors.sku = true;
+    if (!form.name) errors.name = true;
+    if (!form.category) errors.category = true;
+    if (!form.country_of_origin) errors.country_of_origin = true;
+    if (!form.wholesale_price) errors.wholesale_price = true;
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      toast.error('請填寫所有必填欄位 (*)');
+      return;
+    }
+    setFormErrors({});
     const data = {
       ...form,
       wholesale_price: Number(form.wholesale_price),
@@ -110,8 +124,11 @@ export default function ProductManagement() {
   const handleImageUpload = async (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
+    setUploadingField(field);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setForm(prev => ({ ...prev, [field]: file_url }));
+    setUploadingField(null);
+    toast.success(`圖片已上傳`);
   };
 
   return (
@@ -235,35 +252,49 @@ export default function ProductManagement() {
           <div className="space-y-3">
             {/* Basic */}
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>SKU *</Label><Input value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} /></div>
-              <div><Label>產品名稱 *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+              <div>
+                <Label className={formErrors.sku ? 'text-destructive' : ''}>SKU *</Label>
+                <Input value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} className={formErrors.sku ? 'border-destructive' : ''} />
+                {formErrors.sku && <p className="text-xs text-destructive mt-1">必填</p>}
+              </div>
+              <div>
+                <Label className={formErrors.name ? 'text-destructive' : ''}>產品名稱 *</Label>
+                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className={formErrors.name ? 'border-destructive' : ''} />
+                {formErrors.name && <p className="text-xs text-destructive mt-1">必填</p>}
+              </div>
             </div>
 
             {/* Category + Origin */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>分類 *</Label>
+                <Label className={formErrors.category ? 'text-destructive' : ''}>分類 *</Label>
                 <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
-                  <SelectTrigger><SelectValue placeholder="選擇分類" /></SelectTrigger>
+                  <SelectTrigger className={formErrors.category ? 'border-destructive' : ''}><SelectValue placeholder="選擇分類" /></SelectTrigger>
                   <SelectContent>
                     {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                {formErrors.category && <p className="text-xs text-destructive mt-1">必填</p>}
               </div>
               <div>
-                <Label>產地 *</Label>
+                <Label className={formErrors.country_of_origin ? 'text-destructive' : ''}>產地 *</Label>
                 <Select value={form.country_of_origin} onValueChange={v => setForm({ ...form, country_of_origin: v })}>
-                  <SelectTrigger><SelectValue placeholder="選擇產地" /></SelectTrigger>
+                  <SelectTrigger className={formErrors.country_of_origin ? 'border-destructive' : ''}><SelectValue placeholder="選擇產地" /></SelectTrigger>
                   <SelectContent>
                     {ORIGINS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                {formErrors.country_of_origin && <p className="text-xs text-destructive mt-1">必填</p>}
               </div>
             </div>
 
             {/* Price + Min Order + Stock */}
             <div className="grid grid-cols-3 gap-3">
-              <div><Label>批發價 *</Label><Input type="number" value={form.wholesale_price} onChange={e => setForm({ ...form, wholesale_price: e.target.value })} /></div>
+              <div>
+                <Label className={formErrors.wholesale_price ? 'text-destructive' : ''}>批發價 *</Label>
+                <Input type="number" value={form.wholesale_price} onChange={e => setForm({ ...form, wholesale_price: e.target.value })} className={formErrors.wholesale_price ? 'border-destructive' : ''} />
+                {formErrors.wholesale_price && <p className="text-xs text-destructive mt-1">必填</p>}
+              </div>
               <div><Label>最低訂購</Label><Input type="number" value={form.min_order} onChange={e => setForm({ ...form, min_order: e.target.value })} /></div>
               <div><Label>庫存</Label><Input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} /></div>
             </div>
@@ -309,8 +340,19 @@ export default function ProductManagement() {
               <div key={field}>
                 <Label>圖片 {i + 1}</Label>
                 <div className="flex gap-2 items-center">
-                  <Input type="file" accept="image/*" onChange={e => handleImageUpload(e, field)} />
-                  {form[field] && <img src={form[field]} alt="" className="w-10 h-10 rounded object-cover" />}
+                  <label className="flex-1 cursor-pointer">
+                    <div className={`flex items-center justify-center gap-2 h-9 px-3 rounded-md border text-sm transition-colors ${form[field] ? 'border-green-500 bg-green-50 text-green-700' : 'border-input bg-transparent hover:bg-muted text-muted-foreground'}`}>
+                      {uploadingField === field ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" />上傳中...</>
+                      ) : form[field] ? (
+                        <><CheckCircle2 className="h-4 w-4 text-green-600" />已上傳 ✓ (點擊更換)</>
+                      ) : (
+                        <>選擇圖片</>
+                      )}
+                    </div>
+                    <input type="file" accept="image/*" className="hidden" onChange={e => handleImageUpload(e, field)} />
+                  </label>
+                  {form[field] && <img src={form[field]} alt="" className="w-10 h-10 rounded object-cover shrink-0 border" />}
                 </div>
               </div>
             ))}

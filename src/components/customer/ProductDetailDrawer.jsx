@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ImageOff } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +9,7 @@ import MeatBadge from '@/components/shared/MeatBadge';
 
 export default function ProductDetailDrawer({ product, open, onClose, onAddToCart }) {
   const [activeImg, setActiveImg] = useState(0);
+  const [imgError, setImgError] = useState(false);
 
   if (!product) return null;
 
@@ -23,8 +25,21 @@ export default function ProductDetailDrawer({ product, open, onClose, onAddToCar
         {/* Images */}
         {images.length > 0 ? (
           <div className="mb-4">
-            <div className="aspect-square rounded-xl overflow-hidden bg-muted mb-2">
-              <img src={images[activeImg]} alt={product.name} className="w-full h-full object-cover" />
+            <div className="rounded-xl overflow-hidden bg-muted mb-2 flex items-center justify-center" style={{height: '300px'}}>
+              {!imgError ? (
+                <img
+                  src={images[activeImg]}
+                  alt={product.name}
+                  className="max-w-full max-h-full object-contain"
+                  style={{maxHeight: '300px'}}
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-muted-foreground gap-2">
+                  <ImageOff className="h-10 w-10 opacity-40" />
+                  <span className="text-sm">圖片載入失敗</span>
+                </div>
+              )}
             </div>
             {images.length > 1 && (
               <div className="flex gap-2">
@@ -41,8 +56,9 @@ export default function ProductDetailDrawer({ product, open, onClose, onAddToCar
             )}
           </div>
         ) : (
-          <div className="aspect-square rounded-xl bg-muted flex items-center justify-center text-muted-foreground mb-4">
-            暫無圖片
+          <div className="rounded-xl bg-muted flex flex-col items-center justify-center text-muted-foreground mb-4 gap-2" style={{height: '300px'}}>
+            <ImageOff className="h-10 w-10 opacity-40" />
+            <span className="text-sm">暫無圖片</span>
           </div>
         )}
 

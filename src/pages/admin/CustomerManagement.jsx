@@ -242,7 +242,7 @@ export default function CustomerManagement() {
               <TabsContent value="branches" className="pt-3">
                 <BranchManagement customerId={detailOpen.customer_id} />
               </TabsContent>
-              {detailOpen.br_document_url && (
+              {detailOpen?.br_document_url && (
                 <TabsContent value="br" className="pt-3">
                   {detailOpen.br_document_url.endsWith('.pdf') ? (
                     <a href={detailOpen.br_document_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">查看商業登記文件 (PDF)</a>
@@ -309,22 +309,22 @@ export default function CustomerManagement() {
           <div className="space-y-3">
             <div>
               <Label className="mb-1.5 block">公司 Logo</Label>
-              <DragDropUpload value={editOpen.logo_url || ''} onChange={url => setEditOpen({ ...editOpen, logo_url: url })} accept="image/*" label="上傳 Logo" hint="PNG / JPG" />
+              <DragDropUpload value={editOpen?.logo_url || ''} onChange={url => setEditOpen({ ...editOpen, logo_url: url })} accept="image/*" label="上傳 Logo" hint="PNG / JPG" />
             </div>
-            <div><Label>公司名稱</Label><Input value={editOpen.company_name || ''} onChange={e => setEditOpen({ ...editOpen, company_name: e.target.value })} /></div>
-            <div><Label>聯絡人</Label><Input value={editOpen.contact || ''} onChange={e => setEditOpen({ ...editOpen, contact: e.target.value })} /></div>
-            <div><Label>電話</Label><Input value={editOpen.phone || ''} onChange={e => setEditOpen({ ...editOpen, phone: e.target.value })} /></div>
-            <div><Label>電郵</Label><Input value={editOpen.email || ''} onChange={e => setEditOpen({ ...editOpen, email: e.target.value })} /></div>
-            <div><Label>送貨地址</Label><Input value={editOpen.delivery_address || ''} onChange={e => setEditOpen({ ...editOpen, delivery_address: e.target.value })} /></div>
-            <div><Label>分店地址</Label><Input value={editOpen.branch_address || ''} onChange={e => setEditOpen({ ...editOpen, branch_address: e.target.value })} /></div>
-            <div><Label>商業登記地址</Label><Input value={editOpen.br_address || ''} onChange={e => setEditOpen({ ...editOpen, br_address: e.target.value })} /></div>
+            <div><Label>公司名稱</Label><Input value={editOpen?.company_name || ''} onChange={e => setEditOpen({ ...editOpen, company_name: e.target.value })} /></div>
+            <div><Label>聯絡人</Label><Input value={editOpen?.contact || ''} onChange={e => setEditOpen({ ...editOpen, contact: e.target.value })} /></div>
+            <div><Label>電話</Label><Input value={editOpen?.phone || ''} onChange={e => setEditOpen({ ...editOpen, phone: e.target.value })} /></div>
+            <div><Label>電郵</Label><Input value={editOpen?.email || ''} onChange={e => setEditOpen({ ...editOpen, email: e.target.value })} /></div>
+            <div><Label>送貨地址</Label><Input value={editOpen?.delivery_address || ''} onChange={e => setEditOpen({ ...editOpen, delivery_address: e.target.value })} /></div>
+            <div><Label>分店地址</Label><Input value={editOpen?.branch_address || ''} onChange={e => setEditOpen({ ...editOpen, branch_address: e.target.value })} /></div>
+            <div><Label>商業登記地址</Label><Input value={editOpen?.br_address || ''} onChange={e => setEditOpen({ ...editOpen, br_address: e.target.value })} /></div>
             <div>
               <Label className="mb-1.5 block">商業登記文件</Label>
-              <DragDropUpload value={editOpen.br_document_url || ''} onChange={url => setEditOpen({ ...editOpen, br_document_url: url })} accept="image/*,.pdf" label="上傳商業登記 (BR)" hint="PNG / JPG / PDF，最大 10MB" />
+              <DragDropUpload value={editOpen?.br_document_url || ''} onChange={url => setEditOpen({ ...editOpen, br_document_url: url })} accept="image/*,.pdf" label="上傳商業登記 (BR)" hint="PNG / JPG / PDF，最大 10MB" />
             </div>
             <div>
               <Label>計劃</Label>
-              <Select value={editOpen.plan || 'plan_a'} onValueChange={v => setEditOpen({ ...editOpen, plan: v })}>
+              <Select value={editOpen?.plan || 'plan_a'} onValueChange={v => setEditOpen({ ...editOpen, plan: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {Object.entries(PLAN_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
@@ -333,7 +333,7 @@ export default function CustomerManagement() {
             </div>
             <div>
               <Label>每月 Credits</Label>
-              <Input type="number" value={editOpen.monthly_credits || 0} onChange={e => setEditOpen({ ...editOpen, monthly_credits: Number(e.target.value) })} />
+              <Input type="number" value={editOpen?.monthly_credits || 0} onChange={e => setEditOpen({ ...editOpen, monthly_credits: Number(e.target.value) })} />
             </div>
           </div>
           <DialogFooter>

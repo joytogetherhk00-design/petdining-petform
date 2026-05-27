@@ -7,6 +7,10 @@ export default function UserTypeGuard({ children, allowedTypes }) {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
+  // 檢查是否為管理員預覽模式
+  const urlParams = new URLSearchParams(location.search);
+  const previewParam = urlParams.get('preview');
+
   useEffect(() => {
     checkUser();
   }, []);
@@ -36,6 +40,15 @@ export default function UserTypeGuard({ children, allowedTypes }) {
 
   if (!user) {
     return <Navigate to="/" state={{ from: location }} replace />;
+  }
+
+  // 如果有 preview 參數，跳過用戶類型檢查（管理員預覽模式）
+  if (previewParam) {
+    const previewType = previewParam === 'general' ? 'general' : 'business';
+    if (!allowedTypes.includes(previewType)) {
+      return <Navigate to="/courses" replace />;
+    }
+    return children;
   }
 
   const userType = user.user_type || 'general';

@@ -36,9 +36,10 @@ import CreditsSuccess from '@/pages/customer/CreditsSuccess';
 import CreditsCancel from '@/pages/customer/CreditsCancel';
 import Apply from '@/pages/Apply';
 import Privacy from '@/pages/Privacy';
+import AdminLogin from '@/pages/AdminLogin';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -48,11 +49,25 @@ const AuthenticatedApp = () => {
     );
   }
 
+  // 如果已登入但不是 admin，嘗試訪問後台時跳轉到登入頁
+  if (user && user.role !== 'admin') {
+    const pathname = window.location.pathname;
+    if (pathname.startsWith('/admin')) {
+      window.location.href = '/admin-login';
+      return null;
+    }
+  }
+
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      navigateToLogin();
+      const pathname = window.location.pathname;
+      if (pathname.startsWith('/admin')) {
+        window.location.href = '/admin-login';
+      } else {
+        navigateToLogin();
+      }
       return null;
     }
   }
@@ -63,6 +78,7 @@ const AuthenticatedApp = () => {
     <Route path="/onboarding" element={<Onboarding />} />
     <Route path="/apply" element={<Apply />} />
     <Route path="/privacy" element={<Privacy />} />
+    <Route path="/admin-login" element={<AdminLogin />} />
 
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>

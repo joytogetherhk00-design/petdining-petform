@@ -23,10 +23,16 @@ export default function CourseEnrollmentDetail() {
   const queryClient = useQueryClient();
   const [attendanceMode, setAttendanceMode] = useState(false);
 
-  const { data: schedule } = useQuery({
+  const { data: schedule, isLoading: isLoadingSchedule } = useQuery({
     queryKey: ['schedule', scheduleId],
     queryFn: async () => {
-      const schedules = await base44.entities.CourseSchedule.filter({ schedule_id: scheduleId });
+      // 先嘗試用 schedule_id 查找
+      let schedules = await base44.entities.CourseSchedule.filter({ schedule_id: scheduleId });
+      if (schedules.length === 0) {
+        // 如果找不到，嘗試用 id 查找（兼容舊數據）
+        schedules = await base44.entities.CourseSchedule.list();
+        return schedules.find(s => s.id === scheduleId) || null;
+      }
       return schedules[0];
     },
     enabled: !!scheduleId,
@@ -34,7 +40,15 @@ export default function CourseEnrollmentDetail() {
 
   const { data: enrollments = [] } = useQuery({
     queryKey: ['enrollments', scheduleId],
-    queryFn: () => base44.entities.Enrollments.filter({ schedule_id: scheduleId }),
+    queryFn: async () => {
+      // 先嘗試用 schedule_id 查找
+      let results = await base44.entities.Enrollments.filter({ schedule_id: scheduleId });
+      if (results.length === 0 && schedule) {
+        // 如果找不到，嘗試用 course_id 查找（兼容舊數據）
+        results = await base44.entities.Enrollments.filter({ course_id: schedule.course_id });
+      }
+      return results;
+    },
     enabled: !!scheduleId,
   });
 
@@ -98,12 +112,25 @@ export default function CourseEnrollmentDetail() {
     toast.success('已匯出學員名單');
   };
 
+  if (isLoadingSchedule) {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12 text-muted-foreground">
+            <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+            <p>載入中...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!schedule) {
     return (
       <div className="min-h-screen bg-background p-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-12 text-muted-foreground">
-            <p>載入中...</p>
+            <p>找不到課程資料</p>
           </div>
         </div>
       </div>

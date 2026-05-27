@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+import UserTypeGuard from '@/components/UserTypeGuard';
 
 // Layout
 import AppLayout from '@/components/layout/AppLayout';
@@ -94,14 +95,49 @@ const AuthenticatedApp = () => {
 
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>
-        <Route path="/products" element={<ProductCatalog />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/orders" element={<OrderHistory />} />
-        <Route path="/account" element={<MyAccount />} />
-        <Route path="/courses" element={<CourseCatalog />} />
-        <Route path="/credits/topup" element={<CreditsTopup />} />
-        <Route path="/credits/success" element={<CreditsSuccess />} />
-        <Route path="/credits/cancel" element={<CreditsCancel />} />
+        {/* General client routes - courses only */}
+        <Route path="/courses" element={
+          <UserTypeGuard allowedTypes={['general', 'business']}>
+            <CourseCatalog />
+          </UserTypeGuard>
+        } />
+        
+        {/* Business client routes - products, orders, etc. */}
+        <Route path="/products" element={
+          <UserTypeGuard allowedTypes={['business']}>
+            <ProductCatalog />
+          </UserTypeGuard>
+        } />
+        <Route path="/cart" element={
+          <UserTypeGuard allowedTypes={['business']}>
+            <Cart />
+          </UserTypeGuard>
+        } />
+        <Route path="/orders" element={
+          <UserTypeGuard allowedTypes={['business']}>
+            <OrderHistory />
+          </UserTypeGuard>
+        } />
+        <Route path="/account" element={
+          <UserTypeGuard allowedTypes={['business']}>
+            <MyAccount />
+          </UserTypeGuard>
+        } />
+        <Route path="/credits/topup" element={
+          <UserTypeGuard allowedTypes={['business']}>
+            <CreditsTopup />
+          </UserTypeGuard>
+        } />
+        <Route path="/credits/success" element={
+          <UserTypeGuard allowedTypes={['business']}>
+            <CreditsSuccess />
+          </UserTypeGuard>
+        } />
+        <Route path="/credits/cancel" element={
+          <UserTypeGuard allowedTypes={['business']}>
+            <CreditsCancel />
+          </UserTypeGuard>
+        } />
       </Route>
 
       {/* Admin side */}

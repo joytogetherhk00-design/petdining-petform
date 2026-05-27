@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Building2, ArrowRight, Loader2, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Users, Building2, ArrowRight, Loader2, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function Welcome() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [userType, setUserType] = useState(null);
   const [checking, setChecking] = useState(false);
   const [user, setUser] = useState(null);
@@ -25,6 +27,7 @@ export default function Welcome() {
         const userData = await base44.auth.me();
         setUser(userData);
         
+        // 檢查是否為商業客戶
         const customers = await base44.entities.Customers.filter({ user_email: userData.email });
         if (customers.length > 0) {
           setCustomer(customers[0]);
@@ -36,6 +39,19 @@ export default function Welcome() {
       setChecking(false);
     }
   };
+
+  const updateUserTypeMutation = useMutation({
+    mutationFn: async (type) => {
+      if (!user) throw new Error('用戶未登入');
+      await base44.entities.User.update(user.id, { 
+        user_type: type,
+        customer_id: type === 'business' && customer ? customer.customer_id : null
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+    },
+  });
 
   const handleSelectType = async (type) => {
     setUserType(type);
@@ -53,8 +69,11 @@ export default function Welcome() {
         return;
       }
       
-      // 已登入，根據類型跳轉
-      if (userType === 'public') {
+      // 更新用戶類型
+      updateUserTypeMutation.mutate(userType);
+      
+      // 根據類型跳轉
+      if (userType === 'general') {
         navigate('/courses');
       } else if (userType === 'business') {
         if (customer) {
@@ -99,7 +118,7 @@ export default function Welcome() {
           {!userType ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
-                onClick={() => handleSelectType('public')}
+                onClick={() => handleSelectType('general')}
                 className="group p-6 rounded-xl border-2 border-input hover:border-primary hover:bg-primary/5 transition-all duration-200 text-left"
               >
                 <div className="flex flex-col items-center text-center space-y-3">
@@ -107,10 +126,11 @@ export default function Welcome() {
                     <Users className="h-8 w-8 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">🐾 一般用戶（公眾）</h3>
+                    <h3 className="font-semibold text-lg">🐾 一般客戶</h3>
                     <p className="text-sm text-muted-foreground mt-2 space-y-1 block">
                       <span className="block">只需註冊，無需審批</span>
                       <span className="block">只可報讀課程</span>
+                      <span className="block">Stripe 全費支付</span>
                     </p>
                   </div>
                   <ArrowRight className="h-5 w-5 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -126,10 +146,11 @@ export default function Welcome() {
                     <Building2 className="h-8 w-8 text-secondary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">🏢 商業客戶（批發）</h3>
+                    <h3 className="font-semibold text-lg">🏢 商業客戶</h3>
                     <p className="text-sm text-muted-foreground mt-2 space-y-1 block">
                       <span className="block">需要審批，享有多功能</span>
                       <span className="block">包括課程及產品訂貨</span>
+                      <span className="block">月費 Plan 包含課程名額</span>
                     </p>
                   </div>
                   <ArrowRight className="h-5 w-5 text-secondary opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -140,13 +161,13 @@ export default function Welcome() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {userType === 'public' ? (
+                  {userType === 'general' ? (
                     <Users className="h-5 w-5 text-primary" />
                   ) : (
                     <Building2 className="h-5 w-5 text-secondary" />
                   )}
                   <span className="font-medium">
-                    {userType === 'public' ? '一般用戶' : '商業客戶'}
+                    {userType === 'general' ? '一般客戶' : '商業客戶'}
                   </span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setUserType(null)}>
@@ -156,10 +177,10 @@ export default function Welcome() {
 
               <div className="bg-muted/50 p-6 rounded-lg space-y-4">
                 <h3 className="font-semibold">
-                  {userType === 'public' ? '一般用戶須知' : '商業客戶須知'}
+                  {userType === 'general' ? '一般客戶須知' : '商業客戶須知'}
                 </h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  {userType === 'public' ? (
+                  {userType === 'general' ? (
                     <>
                       <li className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-primary" />
@@ -171,7 +192,7 @@ export default function Welcome() {
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-primary" />
-                        即時確認報名
+                        Stripe 全費支付
                       </li>
                     </>
                   ) : (
@@ -186,7 +207,7 @@ export default function Welcome() {
                       </li>
                       <li className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-secondary" />
-                        享有商業客戶專屬優惠
+                        月費 Plan 包含課程名額
                       </li>
                     </>
                   )}

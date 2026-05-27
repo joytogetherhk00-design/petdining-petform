@@ -14,6 +14,19 @@
       "type": "string",
       "description": "\u7522\u54c1\u5206\u985e"
     },
+    "meat_type": {
+      "type": "string",
+      "enum": [
+        "duck",
+        "chicken",
+        "beef",
+        "lamb",
+        "fish",
+        "seafood",
+        "other"
+      ],
+      "description": "\u8089\u985e Series"
+    },
     "description": {
       "type": "string",
       "description": "\u7522\u54c1\u63cf\u8ff0"

@@ -14,10 +14,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Search, Plus, Pencil, Copy, Trash2, EyeOff } from 'lucide-react';
 import ImageUploadRow from '@/components/admin/ImageUploadRow';
+import MeatBadge, { MEAT_TYPES } from '@/components/shared/MeatBadge';
 import { toast } from 'sonner';
 
 const emptyProduct = {
-  sku: '', name: '', category: '', description: '',
+  sku: '', name: '', category: '', meat_type: '', description: '',
   wholesale_price: '', min_order: 1, unit: '件', stock: 0,
   net_weight: '', nutrition_info: '',
   image1: '', image2: '', image3: '',
@@ -28,6 +29,7 @@ export default function ProductManagement() {
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
   const [originFilter, setOriginFilter] = useState('all');
+  const [meatFilter, setMeatFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [quickDialogOpen, setQuickDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
@@ -51,7 +53,8 @@ export default function ProductManagement() {
     const matchSearch = !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase());
     const matchCat = catFilter === 'all' || p.category === catFilter;
     const matchOrigin = originFilter === 'all' || p.country_of_origin === originFilter;
-    return matchSearch && matchCat && matchOrigin;
+    const matchMeat = meatFilter === 'all' || p.meat_type === meatFilter;
+    return matchSearch && matchCat && matchOrigin && matchMeat;
   });
 
   const openAdd = () => { setEditProduct(null); setForm(emptyProduct); setFormErrors({}); setDialogOpen(true); };
@@ -167,6 +170,13 @@ export default function ProductManagement() {
             {ORIGINS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Select value={meatFilter} onValueChange={setMeatFilter}>
+          <SelectTrigger className="w-36"><SelectValue placeholder="全部肉類" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部肉類</SelectItem>
+            {MEAT_TYPES.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="overflow-x-auto">
@@ -176,6 +186,7 @@ export default function ProductManagement() {
               <TableHead>SKU</TableHead>
               <TableHead>名稱</TableHead>
               <TableHead>分類</TableHead>
+              <TableHead>肉類</TableHead>
               <TableHead>產地</TableHead>
               <TableHead>批發價</TableHead>
               <TableHead>庫存</TableHead>
@@ -198,6 +209,7 @@ export default function ProductManagement() {
                 </TableCell>
                 <TableCell className="max-w-[160px] truncate">{p.name}</TableCell>
                 <TableCell className="text-sm">{p.category}</TableCell>
+                <TableCell><MeatBadge meatType={p.meat_type} /></TableCell>
                 <TableCell><OriginBadge origin={p.country_of_origin} /></TableCell>
                 <TableCell>HK${p.wholesale_price}</TableCell>
                 <TableCell>{p.stock}</TableCell>
@@ -269,7 +281,7 @@ export default function ProductManagement() {
               </div>
             </div>
 
-            {/* Category + Origin */}
+            {/* Category + Meat + Origin */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className={formErrors.category ? 'text-destructive' : ''}>分類 *</Label>
@@ -282,15 +294,24 @@ export default function ProductManagement() {
                 {formErrors.category && <p className="text-xs text-destructive mt-1">必填</p>}
               </div>
               <div>
-                <Label className={formErrors.country_of_origin ? 'text-destructive' : ''}>產地 *</Label>
-                <Select value={form.country_of_origin} onValueChange={v => setForm({ ...form, country_of_origin: v })}>
-                  <SelectTrigger className={formErrors.country_of_origin ? 'border-destructive' : ''}><SelectValue placeholder="選擇產地" /></SelectTrigger>
+                <Label>肉類 Series</Label>
+                <Select value={form.meat_type} onValueChange={v => setForm({ ...form, meat_type: v })}>
+                  <SelectTrigger><SelectValue placeholder="選擇肉類" /></SelectTrigger>
                   <SelectContent>
-                    {ORIGINS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    {MEAT_TYPES.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                {formErrors.country_of_origin && <p className="text-xs text-destructive mt-1">必填</p>}
               </div>
+            </div>
+            <div>
+              <Label className={formErrors.country_of_origin ? 'text-destructive' : ''}>產地 *</Label>
+              <Select value={form.country_of_origin} onValueChange={v => setForm({ ...form, country_of_origin: v })}>
+                <SelectTrigger className={formErrors.country_of_origin ? 'border-destructive' : ''}><SelectValue placeholder="選擇產地" /></SelectTrigger>
+                <SelectContent>
+                  {ORIGINS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {formErrors.country_of_origin && <p className="text-xs text-destructive mt-1">必填</p>}
             </div>
 
             {/* Price + Min Order + Stock */}

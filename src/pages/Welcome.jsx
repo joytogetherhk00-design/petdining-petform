@@ -3,19 +3,30 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Building2, ArrowRight, Loader2, CheckCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function Welcome() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [userType, setUserType] = useState(null);
   const [checking, setChecking] = useState(false);
   const [user, setUser] = useState(null);
   const [customer, setCustomer] = useState(null);
 
+  // 檢查是否有預覽視角參數
   useEffect(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam) {
+      // 管理員預覽模式，直接跳轉
+      if (viewParam === 'business') {
+        navigate('/products');
+      } else if (viewParam === 'general') {
+        navigate('/courses');
+      }
+    }
     checkUser();
   }, []);
 

@@ -162,16 +162,49 @@ export default function Sidebar({ isAdmin }) {
         </nav>
 
         {/* Switch mode */}
-        <div className="p-3 border-t border-sidebar-border">
-          <Link
-            to={isAdmin ? '/' : '/admin'}
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
-          >
-            {isAdmin ? <Store className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
-            {isAdmin ? '切換至客戶端' : '管理後台'}
-          </Link>
-        </div>
+        {isAdmin && (
+          <div className="p-3 border-t border-sidebar-border space-y-2">
+            <div className="text-xs text-sidebar-foreground/50 font-medium mb-2">預覽視角</div>
+            <Link
+              to="/?view=business"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+            >
+              <Users className="h-4 w-4" />
+              商業客戶端
+            </Link>
+            <Link
+              to="/?view=general"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+            >
+              <GraduationCap className="h-4 w-4" />
+              一般客戶端
+            </Link>
+            <div className="pt-2 border-t border-sidebar-border mt-2">
+              <Link
+                to="/"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+              >
+                <Store className="h-4 w-4" />
+                返回客戶端
+              </Link>
+            </div>
+          </div>
+        )}
+        {!isAdmin && (
+          <div className="p-3 border-t border-sidebar-border">
+            <Link
+              to="/admin"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+            >
+              <Shield className="h-4 w-4" />
+              管理後台
+            </Link>
+          </div>
+        )}
       </aside>
     </>
   );

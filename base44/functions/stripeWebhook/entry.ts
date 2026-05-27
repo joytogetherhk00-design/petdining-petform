@@ -68,6 +68,30 @@ Deno.serve(async (req) => {
         });
       }
 
+      // 獲取課程及時間表詳情
+      let scheduleDetails = '';
+      if (enrollment.schedule_id) {
+        const schedules = await base44.asServiceRole.entities.CourseSchedule.filter({ schedule_id: enrollment.schedule_id });
+        if (schedules.length > 0) {
+          const schedule = schedules[0];
+          const startDate = new Date(schedule.start_datetime).toLocaleString('zh-HK', {
+            dateStyle: 'full',
+            timeStyle: 'short',
+          });
+          const endDate = new Date(schedule.end_datetime).toLocaleString('zh-HK', {
+            timeStyle: 'short',
+          });
+          scheduleDetails = `
+            <div style="background:#eff6ff;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #3b82f6;">
+              <p style="margin:4px 0;color:#1e40af;font-weight:600;">📅 課程時間及地點</p>
+              <p style="margin:8px 0;"><strong>日期：</strong>${startDate}</p>
+              <p style="margin:4px 0;"><strong>時間：</strong>${startDate.split(' ')[1]} - ${endDate.split(' ')[1]}</p>
+              <p style="margin:4px 0;"><strong>地點：</strong>${schedule.location || enrollment.location || '待定'}</p>
+            </div>
+          `;
+        }
+      }
+
       // 發送確認郵件給用戶
       try {
         await base44.asServiceRole.integrations.Core.SendEmail({
@@ -83,14 +107,24 @@ Deno.serve(async (req) => {
     <p>感謝您報名參加我們的課程！您的報名已獲確認。</p>
     
     <div style="background:#f9fafb;padding:16px;border-radius:8px;margin:16px 0;">
-      <p style="margin:4px 0;"><strong>課程名稱：</strong>${enrollment.course_title}</p>
-      <p style="margin:4px 0;"><strong>報名編號：</strong>#${enrollment.enrollment_id || enrollment.id}</p>
-      <p style="margin:4px 0;"><strong>支付狀態：</strong>✅ 已支付</p>
+      <p style="margin:4px 0;"><strong>📚 課程名稱：</strong>${enrollment.course_title}</p>
+      <p style="margin:4px 0;"><strong>🔖 報名編號：</strong>#${enrollment.enrollment_id || enrollment.id}</p>
+      <p style="margin:4px 0;"><strong>💰 支付狀態：</strong>✅ 已支付</p>
       ${enrollment.payment_method === 'quota' ? '<p style="margin:4px 0;"><strong>支付方式：</strong>Quota（商業客戶名額）</p>' : ''}
       ${enrollment.amount_paid ? `<p style="margin:4px 0;"><strong>支付金額：</strong>HK$${enrollment.amount_paid.toLocaleString()}</p>` : ''}
+      ${enrollment.student_name ? `<p style="margin:4px 0;"><strong>學員姓名：</strong>${enrollment.student_name}</p>` : ''}
+      ${enrollment.student_email ? `<p style="margin:4px 0;"><strong>學員電郵：</strong>${enrollment.student_email}</p>` : ''}
+      ${enrollment.student_phone ? `<p style="margin:4px 0;"><strong>學員電話：</strong>${enrollment.student_phone}</p>` : ''}
     </div>
 
-    <p>我們的團隊會在課程開始前與您聯絡，提供進一步詳情。</p>
+    ${scheduleDetails}
+
+    <div style="background:#fef3c7;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #f59e0b;">
+      <p style="margin:0;color:#92400e;font-size:14px;">
+        <strong>📌 溫馨提示：</strong><br>
+        我們的團隊會在課程開始前 1-2 天透過 WhatsApp 或電郵與您聯絡，提供課堂詳情及注意事項。
+      </p>
+    </div>
     
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
     <p style="font-size:13px;color:#6b7280;">如有查詢，請聯絡我們：<br>

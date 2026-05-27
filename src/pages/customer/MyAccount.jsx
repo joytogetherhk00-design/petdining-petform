@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 import { CreditCard, MessageCircle, ArrowUpCircle, Pencil, Plus, MapPin, Building2 } from 'lucide-react';
 import { PLANS } from '@/lib/planConfig';
 import { toast } from 'sonner';
@@ -198,9 +199,11 @@ export default function MyAccount() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              <Button className="bg-primary" onClick={() => { setTopupMode('stripe'); setTopupOpen(true); }}>
-                <CreditCard className="h-4 w-4 mr-2" />信用卡 Top-up
-              </Button>
+              <Link to="/credits/topup" className="flex-1">
+                <Button className="w-full bg-primary">
+                  <CreditCard className="h-4 w-4 mr-2" />信用卡 Top-up
+                </Button>
+              </Link>
               <Button variant="outline" disabled={hasPendingTopup} onClick={() => { setTopupMode('bank'); setTopupOpen(true); }}>
                 {hasPendingTopup ? '轉帳審批中...' : '銀行轉帳'}
               </Button>

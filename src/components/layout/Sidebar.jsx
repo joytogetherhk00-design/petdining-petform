@@ -51,6 +51,7 @@ const adminNav = [
   { label: '分類管理', icon: FolderOpen, path: '/admin/categories' },
   { label: 'Credits 管理', icon: CreditCard, path: '/admin/credits' },
   { label: 'Top-up 管理', icon: ArrowUpCircle, path: '/admin/topups' },
+  { label: '交易記錄', icon: CreditCard, path: '/admin/transactions' },
   { label: '系統設定', icon: Settings, path: '/admin/settings' },
   { label: '管理員', icon: Shield, path: '/admin/admins' },
 ];

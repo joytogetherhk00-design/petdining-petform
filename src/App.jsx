@@ -30,6 +30,10 @@ import SystemSettings from '@/pages/admin/SystemSettings';
 import AdminManagement from '@/pages/admin/AdminManagement';
 import AllBranches from '@/pages/admin/AllBranches';
 import ApplicationManagement from '@/pages/admin/ApplicationManagement';
+import TransactionManagement from '@/pages/admin/TransactionManagement';
+import CreditsTopup from '@/pages/customer/CreditsTopup';
+import CreditsSuccess from '@/pages/customer/CreditsSuccess';
+import CreditsCancel from '@/pages/customer/CreditsCancel';
 import Apply from '@/pages/Apply';
 
 const AuthenticatedApp = () => {
@@ -64,6 +68,9 @@ const AuthenticatedApp = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<OrderHistory />} />
         <Route path="/account" element={<MyAccount />} />
+        <Route path="/credits/topup" element={<CreditsTopup />} />
+        <Route path="/credits/success" element={<CreditsSuccess />} />
+        <Route path="/credits/cancel" element={<CreditsCancel />} />
       </Route>
 
       {/* Admin side */}
@@ -79,6 +86,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/admins" element={<AdminManagement />} />
         <Route path="/admin/branches" element={<AllBranches />} />
         <Route path="/admin/applications" element={<ApplicationManagement />} />
+        <Route path="/admin/transactions" element={<TransactionManagement />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

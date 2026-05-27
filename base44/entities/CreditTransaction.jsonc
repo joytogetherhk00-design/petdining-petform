@@ -1,0 +1,55 @@
+{
+  "name": "CreditTransaction",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "\u5ba2\u6236\u7de8\u865f"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "\u5ba2\u6236\u96fb\u90f5"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Credits \u91d1\u984d"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "topup",
+        "deduction",
+        "refund"
+      ],
+      "default": "topup",
+      "description": "\u4ea4\u6613\u985e\u578b"
+    },
+    "payment_amount": {
+      "type": "number",
+      "description": "\u5be6\u969b\u4ed8\u6b3e\u91d1\u984d (HKD)"
+    },
+    "stripe_session_id": {
+      "type": "string",
+      "description": "Stripe Session ID"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "\u72c0\u614b"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u5099\u8a3b"
+    }
+  },
+  "required": [
+    "customer_id",
+    "amount",
+    "type"
+  ]
+}

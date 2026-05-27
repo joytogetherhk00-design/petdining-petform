@@ -204,7 +204,13 @@ export default function CustomerManagement() {
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              {detailOpen?.logo_url && <img src={detailOpen.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover" />}
+              {detailOpen?.logo_url ? (
+                <img src={detailOpen.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover" />
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                </div>
+              )}
               {detailOpen?.company_name}
             </DialogTitle>
           </DialogHeader>

@@ -19,6 +19,9 @@ import Cart from '@/pages/customer/Cart';
 import OrderHistory from '@/pages/customer/OrderHistory';
 import MyAccount from '@/pages/customer/MyAccount';
 import CourseCatalog from '@/pages/customer/CourseCatalog';
+import EnrollmentForm from '@/pages/customer/EnrollmentForm';
+import EnrollmentSuccess from '@/pages/customer/EnrollmentSuccess';
+import MyCourses from '@/pages/customer/MyCourses';
 
 // Admin pages
 import Dashboard from '@/pages/admin/Dashboard';
@@ -99,6 +102,21 @@ const AuthenticatedApp = () => {
         <Route path="/courses" element={
           <UserTypeGuard allowedTypes={['general', 'business']}>
             <CourseCatalog />
+          </UserTypeGuard>
+        } />
+        <Route path="/courses/:courseId/enroll" element={
+          <UserTypeGuard allowedTypes={['general', 'business']}>
+            <EnrollmentForm />
+          </UserTypeGuard>
+        } />
+        <Route path="/enrollment/success" element={
+          <UserTypeGuard allowedTypes={['general', 'business']}>
+            <EnrollmentSuccess />
+          </UserTypeGuard>
+        } />
+        <Route path="/my-courses" element={
+          <UserTypeGuard allowedTypes={['general', 'business']}>
+            <MyCourses />
           </UserTypeGuard>
         } />
         <Route path="/cart" element={

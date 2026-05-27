@@ -10,11 +10,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { enrollmentId, courseId, courseTitle, amount } = await req.json();
+    const { enrollmentId, courseId, courseTitle, amount, studentName, scheduleDate, scheduleEnd, location } = await req.json();
 
-    if (!enrollmentId || !courseId || !courseTitle || !amount) {
+    if (!courseId || !courseTitle || !amount) {
       return Response.json({ 
-        error: 'Missing required fields: enrollmentId, courseId, courseTitle, amount' 
+        error: 'Missing required fields: courseId, courseTitle, amount' 
       }, { status: 400 });
     }
 
@@ -37,10 +37,10 @@ Deno.serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin')}/courses?payment=success`,
+      success_url: `${req.headers.get('origin')}/enrollment/success?enrollment_id=${enrollmentId}`,
       cancel_url: `${req.headers.get('origin')}/courses?payment=cancelled`,
       metadata: {
-        enrollmentId,
+        enrollmentId: enrollmentId || '',
         courseId,
         userEmail: user.email,
         type: 'course_enrollment',

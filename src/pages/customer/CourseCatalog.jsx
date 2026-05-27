@@ -48,57 +48,27 @@ export default function CourseCatalog() {
     return matchesSearch && matchesStatus;
   });
 
+  const handleSelectSchedule = (course, schedule) => {
+    // 跳轉到報名表單頁面
+    window.location.href = `/courses/${course.id}/enroll?schedule_id=${schedule.id}`;
+  };
+
   const handleEnroll = async (course) => {
     try {
-      const user = await base44.auth.me();
+      // 檢查該課程是否有日程
+      const courseSchedules = schedules.filter(s => s.course_id === course.id);
       
-      // 檢查用戶是否有可用 Quota
-      let paymentMethod = 'stripe';
-      let amountPaid = course.price;
-      
-      if (user.user_type === 'business') {
-        // TODO: 檢查商業客戶的課程 Quota
-        // 如果有 Quota，可以免費報名
-        paymentMethod = 'quota';
-        amountPaid = 0;
+      if (courseSchedules.length === 0) {
+        toast.error('該課程暫無可報名的時間');
+        return;
       }
 
-      // 創建報名記錄
-      const enrollment = await base44.entities.Enrollments.create({
-        course_id: course.id,
-        course_title: course.title,
-        user_email: user.email,
-        user_name: user.full_name,
-        payment_method: paymentMethod,
-        payment_status: paymentMethod === 'quota' ? 'paid' : 'pending',
-        amount_paid: amountPaid,
-        quota_used: paymentMethod === 'quota',
-        status: 'pending',
-        enrollment_date: new Date().toISOString(),
-      });
-
-      // 更新課程已報名人數
-      await base44.entities.Courses.update(course.id, {
-        enrolled_count: (course.enrolled_count || 0) + 1
-      });
-
-      toast.success('報名成功！');
-      
-      if (paymentMethod === 'stripe') {
-        // 創建 Stripe Checkout Session
-        const response = await base44.functions.invoke('createCourseCheckoutSession', {
-          enrollmentId: enrollment.id,
-          courseId: course.id,
-          courseTitle: course.title,
-          amount: course.price,
-        });
-
-        if (response.data.url) {
-          // 跳轉到 Stripe 支付頁面
-          window.location.href = response.data.url;
-        } else {
-          toast.error('無法創建支付連結');
-        }
+      if (courseSchedules.length === 1) {
+        // 只有一個時間，直接跳轉到報名表單
+        handleSelectSchedule(course, courseSchedules[0]);
+      } else {
+        // 多個時間，打開選擇對話框
+        setViewScheduleCourse(course);
       }
     } catch (error) {
       toast.error('報名失敗：' + error.message);
@@ -233,8 +203,11 @@ export default function CourseCatalog() {
                   schedules
                     .filter(sched => sched.course_id === viewScheduleCourse.id)
                     .map((sched) => (
-                      <Card key={sched.id} className="p-4">
-                        <div className="space-y-2">
+                      <Card key={sched.id} className="p-4 cursor-pointer hover:shadow-md transition-shadow">
+                        <div 
+                          className="space-y-2"
+                          onClick={() => handleSelectSchedule(viewScheduleCourse, sched)}
+                        >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <CalendarDays className="w-4 h-4 text-primary" />
@@ -263,6 +236,9 @@ export default function CourseCatalog() {
                               <Users className="w-3 h-3" />
                               <span>{sched.enrolled_count || 0} / {sched.max_students} 人</span>
                             </div>
+                          </div>
+                          <div className="flex justify-end mt-2">
+                            <Button size="sm">選擇此時間</Button>
                           </div>
                         </div>
                       </Card>

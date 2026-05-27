@@ -50,12 +50,49 @@ Deno.serve(async (req) => {
         return Response.json({ received: true, already_processed: true });
       }
 
+      // 獲取報名記錄
+      const enrollment = await base44.asServiceRole.entities.Enrollments.get(enrollmentId);
+      
       // 更新報名記錄為已支付
       await base44.asServiceRole.entities.Enrollments.update(enrollmentId, {
         payment_status: 'paid',
         status: 'confirmed',
         stripe_session_id: session.id,
       });
+
+      // 更新課程已報名人數
+      if (enrollment?.course_id) {
+        const course = await base44.asServiceRole.entities.Courses.get(enrollment.course_id);
+        await base44.asServiceRole.entities.Courses.update(enrollment.course_id, {
+          enrolled_count: (course.enrolled_count || 0) + 1
+        });
+      }
+
+      // 發送確認郵件給用戶
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: enrollment.user_email,
+          subject: `課程報名確認 - ${enrollment.course_title}`,
+          body: `
+尊敬的 ${enrollment.student_name || enrollment.user_name}，
+
+感謝您報名參加我們的課程！
+
+【課程資料】
+課程名稱：${enrollment.course_title}
+報名編號：#${enrollment.enrollment_id || enrollment.id}
+支付金額：HK${enrollment.amount_paid?.toLocaleString()}
+
+我們的團隊會盡快與您確認課程詳情。
+
+如有任何疑問，請隨時聯絡我們。
+
+PetDining PetForm 團隊
+          `,
+        });
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+      }
 
       return Response.json({ 
         received: true, 

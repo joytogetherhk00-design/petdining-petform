@@ -221,6 +221,17 @@ export default function Sidebar({ isAdmin, userType }) {
               <Shield className="h-4 w-4" />
               管理後台
             </Link>
+            {/* 商業客戶專屬：返回產品目錄 */}
+            {userType === 'business' && (
+              <Link
+                to="/products"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+              >
+                <Package className="h-4 w-4" />
+                產品目錄
+              </Link>
+            )}
           </div>
         )}
       </aside>

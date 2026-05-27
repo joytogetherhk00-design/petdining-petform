@@ -14,6 +14,7 @@ export default function AppLayout({ isAdmin }) {
   // 決定用戶類型：管理員預覽 > 實際用戶類型 > 默認商業客戶
   let userType;
   if (isAdmin) {
+    // 管理員模式下，根據 URL 參數決定顯示哪個客戶端的導航
     userType = viewParam === 'general' ? 'general' : 'business';
   } else {
     userType = user?.user_type || 'business'; // 默認商業客戶，確保看到產品目錄

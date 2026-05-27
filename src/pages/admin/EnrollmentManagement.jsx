@@ -13,13 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, CheckCircle, XCircle, Clock, Mail, Bell, Award } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, Mail, Bell, Award, UserCheck, UserX, AlertCircle } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { toast } from 'sonner';
 
 export default function EnrollmentManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterAttendance, setFilterAttendance] = useState('all');
+  const [attendanceMode, setAttendanceMode] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: enrollments = [], isLoading } = useQuery({
@@ -72,12 +74,44 @@ export default function EnrollmentManagement() {
     });
   };
 
+  const handleAttendanceCheck = async (enrollment, status) => {
+    const user = await base44.auth.me();
+    updateMutation.mutate({
+      id: enrollment.id,
+      data: {
+        attendance_status: status,
+        attendance_checked_at: new Date().toISOString(),
+        attendance_checked_by: user?.email || 'unknown',
+      }
+    });
+  };
+
+  const getAttendanceBadge = (status) => {
+    const config = {
+      not_checked: { label: '未簽到', variant: 'outline', icon: Clock },
+      attended: { label: '已出席', variant: 'default', icon: CheckCircle },
+      absent: { label: '缺席', variant: 'destructive', icon: UserX },
+      late: { label: '遲到', variant: 'secondary', icon: AlertCircle },
+    };
+    const { label, variant, icon: Icon } = config[status] || config.not_checked;
+    const BadgeIcon = Icon;
+    return (
+      <Badge variant={variant} className="gap-1">
+        <BadgeIcon className="w-3 h-3" />
+        {label}
+      </Badge>
+    );
+  };
+
   const filteredEnrollments = enrollments.filter(enrollment => {
     const matchesSearch = enrollment.user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         enrollment.course_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         enrollment.user_name?.toLowerCase().includes(searchTerm.toLowerCase());
+                          enrollment.course_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          enrollment.user_name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || enrollment.status === filterStatus;
-    return matchesSearch && matchesStatus;
+    const matchesAttendance = filterAttendance === 'all' || 
+                              (filterAttendance === 'checked' && enrollment.attendance_status !== 'not_checked') ||
+                              (filterAttendance === 'not_checked' && enrollment.attendance_status === 'not_checked');
+    return matchesSearch && matchesStatus && matchesAttendance;
   });
 
   return (
@@ -98,16 +132,29 @@ export default function EnrollmentManagement() {
               className="pl-10"
             />
           </div>
-          <Tabs value={filterStatus} onValueChange={setFilterStatus}>
-            <TabsList>
-              <TabsTrigger value="all">全部</TabsTrigger>
-              <TabsTrigger value="pending">待處理</TabsTrigger>
-              <TabsTrigger value="confirmed">已確認</TabsTrigger>
-              <TabsTrigger value="completed">已完成</TabsTrigger>
-              <TabsTrigger value="cancelled">已取消</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex gap-2">
+            <Button
+              variant={attendanceMode ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setAttendanceMode(!attendanceMode)}
+            >
+              <UserCheck className="w-4 h-4 mr-2" />
+              {attendanceMode ? '退出簽到' : '簽到模式'}
+            </Button>
+          </div>
         </div>
+
+        {attendanceMode && (
+          <div className="mb-4 flex gap-2">
+            <Tabs value={filterAttendance} onValueChange={setFilterAttendance}>
+              <TabsList>
+                <TabsTrigger value="all">全部</TabsTrigger>
+                <TabsTrigger value="not_checked">未簽到</TabsTrigger>
+                <TabsTrigger value="checked">已簽到</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        )}
 
         <div className="space-y-4">
           {filteredEnrollments.map((enrollment) => (
@@ -129,7 +176,7 @@ export default function EnrollmentManagement() {
                       )}
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm mt-4">
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm mt-4">
                       <div>
                         <p className="text-muted-foreground">學員</p>
                         <p className="font-medium">{enrollment.student_name || enrollment.user_name}</p>
@@ -159,66 +206,112 @@ export default function EnrollmentManagement() {
                           {new Date(enrollment.enrollment_date).toLocaleDateString('zh-HK')}
                         </p>
                       </div>
+                      <div>
+                        <p className="text-muted-foreground">出席狀態</p>
+                        {getAttendanceBadge(enrollment.attendance_status || 'not_checked')}
+                        {enrollment.attendance_checked_at && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(enrollment.attendance_checked_at).toLocaleString('zh-HK')}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-2">
-                    {enrollment.status === 'pending' && (
-                      <>
+                    {attendanceMode && enrollment.status !== 'cancelled' && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">快速簽到：</p>
                         <Button
                           size="sm"
-                          onClick={() => handleStatusChange(enrollment, 'confirmed')}
+                          variant={enrollment.attendance_status === 'attended' ? 'default' : 'outline'}
+                          onClick={() => handleAttendanceCheck(enrollment, 'attended')}
+                          className="w-full"
                         >
                           <CheckCircle className="w-4 h-4 mr-2" />
-                          確認
+                          出席
                         </Button>
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => handleStatusChange(enrollment, 'cancelled')}
+                          variant={enrollment.attendance_status === 'absent' ? 'destructive' : 'outline'}
+                          onClick={() => handleAttendanceCheck(enrollment, 'absent')}
+                          className="w-full"
                         >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          取消
+                          <UserX className="w-4 h-4 mr-2" />
+                          缺席
                         </Button>
                         <Button
                           size="sm"
-                          variant="secondary"
-                          onClick={() => handleSendNotification(enrollment, 'confirmation')}
+                          variant={enrollment.attendance_status === 'late' ? 'secondary' : 'outline'}
+                          onClick={() => handleAttendanceCheck(enrollment, 'late')}
+                          className="w-full"
                         >
-                          <Mail className="w-4 h-4 mr-2" />
-                          發送確認
+                          <AlertCircle className="w-4 h-4 mr-2" />
+                          遲到
                         </Button>
-                      </>
+                      </div>
                     )}
-                    {enrollment.status === 'confirmed' && (
+
+                    {!attendanceMode && (
                       <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleStatusChange(enrollment, 'completed')}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          標記為完成
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleSendNotification(enrollment, 'reminder')}
-                        >
-                          <Bell className="w-4 h-4 mr-2" />
-                          發送提醒
-                        </Button>
+                        {enrollment.status === 'pending' && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleStatusChange(enrollment, 'confirmed')}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              確認
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleStatusChange(enrollment, 'cancelled')}
+                            >
+                              <XCircle className="w-4 h-4 mr-2" />
+                              取消
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleSendNotification(enrollment, 'confirmation')}
+                            >
+                              <Mail className="w-4 h-4 mr-2" />
+                              發送確認
+                            </Button>
+                          </>
+                        )}
+                        {enrollment.status === 'confirmed' && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleStatusChange(enrollment, 'completed')}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              標記為完成
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => handleSendNotification(enrollment, 'reminder')}
+                            >
+                              <Bell className="w-4 h-4 mr-2" />
+                              發送提醒
+                            </Button>
+                          </>
+                        )}
+                        {enrollment.status === 'completed' && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleSendNotification(enrollment, 'completion')}
+                          >
+                            <Award className="w-4 h-4 mr-2" />
+                            發送完成證書
+                          </Button>
+                        )}
                       </>
-                    )}
-                    {enrollment.status === 'completed' && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleSendNotification(enrollment, 'completion')}
-                      >
-                        <Award className="w-4 h-4 mr-2" />
-                        發送完成證書
-                      </Button>
                     )}
                   </div>
                 </div>

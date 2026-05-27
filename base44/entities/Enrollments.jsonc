@@ -119,6 +119,30 @@
       "type": "boolean",
       "default": false,
       "description": "\u662f\u5426\u5df2\u7372\u5f97\u8b49\u66f8"
+    },
+    "attendance_status": {
+      "type": "string",
+      "enum": [
+        "not_checked",
+        "attended",
+        "absent",
+        "late"
+      ],
+      "default": "not_checked",
+      "description": "\u51fa\u5e2d\u72c0\u614b"
+    },
+    "attendance_checked_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u7c3d\u5230\u6642\u9593"
+    },
+    "attendance_checked_by": {
+      "type": "string",
+      "description": "\u7c3d\u5230\u7ba1\u7406\u54e1"
+    },
+    "attendance_notes": {
+      "type": "string",
+      "description": "\u5099\u8a3b"
     }
   },
   "required": [

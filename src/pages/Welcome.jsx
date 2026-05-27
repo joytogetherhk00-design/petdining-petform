@@ -39,6 +39,10 @@ export default function Welcome() {
 
   const handleSelectType = async (type) => {
     setUserType(type);
+  };
+
+  const handleContinue = async () => {
+    if (!userType) return;
     
     try {
       const isLoggedIn = await base44.auth.isAuthenticated();
@@ -50,9 +54,9 @@ export default function Welcome() {
       }
       
       // 已登入，根據類型跳轉
-      if (type === 'public') {
+      if (userType === 'public') {
         navigate('/courses');
-      } else if (type === 'business') {
+      } else if (userType === 'business') {
         if (customer) {
           if (customer.status === 'approved') {
             navigate('/admin');
@@ -64,7 +68,7 @@ export default function Welcome() {
         }
       }
     } catch (error) {
-      console.error('Select type error:', error);
+      console.error('Continue error:', error);
       toast.error('操作失敗');
     }
   };
@@ -198,7 +202,7 @@ export default function Welcome() {
                   </Button>
                   <Button 
                     className="flex-1"
-                    onClick={() => handleSelectType(userType)}
+                    onClick={handleContinue}
                   >
                     繼續
                   </Button>

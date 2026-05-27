@@ -98,15 +98,6 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
       setAuthChecked(true);
-
-      // Redirect non-admin users to onboarding if they haven't completed it
-      if (currentUser.role !== 'admin') {
-        const customers = await base44.entities.Customers.filter({ user_email: currentUser.email });
-        const hasCompleted = customers.some(c => c.onboarding_completed);
-        if (!hasCompleted && window.location.pathname !== '/onboarding') {
-          window.location.href = '/onboarding';
-        }
-      }
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);

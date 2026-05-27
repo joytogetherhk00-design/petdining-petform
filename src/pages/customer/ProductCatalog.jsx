@@ -23,7 +23,11 @@ export default function ProductCatalog() {
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
-    queryFn: () => base44.entities.Products.filter({ status: 'active' }),
+    queryFn: async () => {
+      const all = await base44.entities.Products.list();
+      // 只顯示 active 且 is_visible 為 true 的產品
+      return all.filter(p => p.status === 'active' && p.is_visible !== false);
+    },
   });
 
   const { data: categories = [] } = useQuery({

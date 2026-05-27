@@ -16,18 +16,37 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [filterType, setFilterType] = useState('all'); // 'all', 'business', 'general'
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['allUsers'],
     queryFn: () => base44.entities.User.list('-created_date'),
   });
 
+  // 獲取用戶的客戶資料以判斷用戶類型
+  const { data: customers = [] } = useQuery({
+    queryKey: ['allCustomersForUserMgmt'],
+    queryFn: () => base44.entities.Customers.list(),
+  });
+
   const filteredUsers = users.filter(user => {
     const q = search.toLowerCase();
-    return !search || 
+    const matchesSearch = !search || 
       user.email?.toLowerCase().includes(q) || 
       user.full_name?.toLowerCase().includes(q) ||
       user.role?.toLowerCase().includes(q);
+    
+    // 根據用戶類型過濾
+    let matchesType = true;
+    if (filterType === 'business') {
+      const customerEmails = customers.filter(c => c.status === 'active' || c.status === 'pending').map(c => c.user_email);
+      matchesType = customerEmails.includes(user.email);
+    } else if (filterType === 'general') {
+      const customerEmails = customers.map(c => c.user_email);
+      matchesType = !customerEmails.includes(user.email);
+    }
+    
+    return matchesSearch && matchesType;
   });
 
   const handleDisableUser = async (user) => {
@@ -62,11 +81,34 @@ export default function UserManagement() {
   return (
     <div>
       <PageHeader
-        title="一般用戶管理"
-        description="查看所有註冊用戶的詳細資料及狀態"
+        title="用戶管理"
+        description="查看所有註冊用戶（商業客戶 + 一般客戶）的詳細資料及狀態"
       />
 
       <Card className="p-4 mb-4">
+        <div className="flex gap-4 mb-4">
+          <Button
+            variant={filterType === 'all' ? 'default' : 'outline'}
+            className={filterType === 'all' ? 'bg-primary' : ''}
+            onClick={() => setFilterType('all')}
+          >
+            所有用戶
+          </Button>
+          <Button
+            variant={filterType === 'business' ? 'default' : 'outline'}
+            className={filterType === 'business' ? 'bg-primary' : ''}
+            onClick={() => setFilterType('business')}
+          >
+            商業客戶
+          </Button>
+          <Button
+            variant={filterType === 'general' ? 'default' : 'outline'}
+            className={filterType === 'general' ? 'bg-primary' : ''}
+            onClick={() => setFilterType('general')}
+          >
+            一般客戶
+          </Button>
+        </div>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
@@ -125,9 +167,26 @@ export default function UserManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`text-xs px-2 py-1 rounded-full ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
-                        {user.role === 'admin' ? '管理員' : '一般用戶'}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className={`text-xs px-2 py-1 rounded-full w-fit ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {user.role === 'admin' ? '管理員' : '用戶'}
+                        </span>
+                        {(() => {
+                          const customer = customers.find(c => c.user_email === user.email);
+                          if (customer) {
+                            return (
+                              <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">
+                                商業客戶 - {customer.customer_id}
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground w-fit">
+                              一般客戶
+                            </span>
+                          );
+                        })()}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">

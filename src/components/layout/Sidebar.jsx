@@ -70,31 +70,12 @@ const businessClientNav = [
   { label: '我的帳戶', icon: User, path: '/account' },
 ];
 
-const generalClientNav = [
-  { label: '課程目錄', icon: GraduationCap, path: '/courses' },
-];
-
 export default function Sidebar({ isAdmin }) {
   const [open, setOpen] = useState(false);
-  const [userType, setUserType] = useState('general');
   const location = useLocation();
   
-  useEffect(() => {
-    const checkUserType = async () => {
-      try {
-        const isLoggedIn = await base44.auth.isAuthenticated();
-        if (isLoggedIn) {
-          const user = await base44.auth.me();
-          setUserType(user.user_type || 'general');
-        }
-      } catch (error) {
-        console.error('Check user type error:', error);
-      }
-    };
-    checkUserType();
-  }, []);
-  
-  const nav = isAdmin ? adminNav : (userType === 'business' ? businessClientNav : generalClientNav);
+  // Admin 直接顯示所有管理功能，不需要檢查用戶類型
+  const nav = isAdmin ? adminNav : businessClientNav;
 
   const { data: pendingApps = [] } = useQuery({
     queryKey: ['pendingApplicationsCount'],

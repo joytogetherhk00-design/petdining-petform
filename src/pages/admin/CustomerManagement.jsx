@@ -196,7 +196,7 @@ export default function CustomerManagement() {
           </TableHeader>
           <TableBody>
             {filtered.map(c => (
-              <TableRow key={c.id} className="cursor-pointer" onClick={() => tab !== 'public' && setDetailOpen(c)}>
+              <TableRow key={c.id} className={tab !== 'public' ? 'cursor-pointer' : ''} onClick={() => tab !== 'public' && setDetailOpen(c)}>
                 {tab === 'public' ? (
                   <>
                     <TableCell className="font-medium">{c.full_name || '未設定'}</TableCell>

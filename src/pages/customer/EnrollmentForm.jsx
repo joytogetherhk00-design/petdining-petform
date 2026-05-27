@@ -18,6 +18,7 @@ export default function EnrollmentForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     student_name: '',
+    student_id: '',
     gender: '',
     phone: '',
     email: '',
@@ -42,7 +43,7 @@ export default function EnrollmentForm() {
   const handleAddToCart = async () => {
     try {
       // 驗證必填欄位
-      if (!formData.student_name || !formData.gender || !formData.phone || !formData.email) {
+      if (!formData.student_name || !formData.student_id || !formData.gender || !formData.phone || !formData.email) {
         toast.error('請填寫所有必填欄位');
         return;
       }
@@ -59,6 +60,7 @@ export default function EnrollmentForm() {
         schedule_end: schedule.end_datetime,
         location: schedule.location,
         student_name: formData.student_name,
+        student_id: formData.student_id,
         student_gender: formData.gender,
         student_phone: formData.phone,
         student_email: formData.email,
@@ -138,6 +140,21 @@ export default function EnrollmentForm() {
                     className="pl-10"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="student_id">
+                  身份證號碼（前 4 位）*
+                </Label>
+                <Input
+                  id="student_id"
+                  placeholder="例如：A123"
+                  value={formData.student_id}
+                  onChange={(e) => handleInputChange('student_id', e.target.value.toUpperCase())}
+                  maxLength={4}
+                  className="uppercase"
+                />
+                <p className="text-xs text-muted-foreground">只需填寫前 4 位，如 A123456(7) 只需填 A123</p>
               </div>
 
               <div className="space-y-2">

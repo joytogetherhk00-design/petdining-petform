@@ -22,6 +22,52 @@
       "type": "string",
       "description": "\u7528\u6236\u540d\u7a31"
     },
+    "student_name": {
+      "type": "string",
+      "description": "\u5b78\u54e1\u59d3\u540d"
+    },
+    "student_id": {
+      "type": "string",
+      "description": "\u5b78\u54e1\u8eab\u4efd\u8b49\u865f\u78bc\uff08\u524d 4 \u4f4d\uff09"
+    },
+    "student_gender": {
+      "type": "string",
+      "description": "\u5b78\u54e1\u6027\u5225"
+    },
+    "student_phone": {
+      "type": "string",
+      "description": "\u5b78\u54e1\u806f\u7d61\u96fb\u8a71"
+    },
+    "student_email": {
+      "type": "string",
+      "description": "\u5b78\u54e1\u96fb\u90f5"
+    },
+    "company": {
+      "type": "string",
+      "description": "\u6240\u5c6c\u516c\u53f8"
+    },
+    "branch": {
+      "type": "string",
+      "description": "\u5206\u5e97"
+    },
+    "schedule_id": {
+      "type": "string",
+      "description": "\u8ab2\u7a0b\u6642\u9593\u8868 ID"
+    },
+    "schedule_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u8ab2\u7a0b\u65e5\u671f"
+    },
+    "schedule_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u8ab2\u7a0b\u7d50\u675f\u6642\u9593"
+    },
+    "location": {
+      "type": "string",
+      "description": "\u4e0a\u8ab2\u5730\u9ede"
+    },
     "payment_method": {
       "type": "string",
       "enum": [

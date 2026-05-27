@@ -23,8 +23,8 @@ export default function ProductDetailDrawer({ product, open, onClose, onAddToCar
         {/* Images */}
         {images.length > 0 ? (
           <div className="mb-4">
-            <div className="aspect-square rounded-xl overflow-hidden bg-muted mb-2">
-              <img src={images[activeImg]} alt={product.name} className="w-full h-full object-cover" />
+            <div className="aspect-video rounded-xl overflow-hidden bg-muted mb-2">
+              <img src={images[activeImg]} alt={product.name} className="w-full h-full object-contain" />
             </div>
             {images.length > 1 && (
               <div className="flex gap-2">

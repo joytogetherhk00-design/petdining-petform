@@ -30,6 +30,7 @@ export default function CourseCatalog() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [viewScheduleCourse, setViewScheduleCourse] = useState(null);
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: courses = [], isLoading } = useQuery({

@@ -50,7 +50,8 @@ export default function AppLayout({ isAdmin }) {
           <Outlet />
         </div>
       </main>
-      {!isAdmin && !previewParam && !viewParam && <AIChatWidget />}
+      {/* AI 助手顯示在商業及一般用戶端的所有頁面 */}
+      {!isAdmin && <AIChatWidget />}
     </div>
   );
 }

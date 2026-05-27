@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, Mail, Bell, Award } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { toast } from 'sonner';
 
@@ -34,6 +34,36 @@ export default function EnrollmentManagement() {
       toast.success('已更新');
     },
   });
+
+  const sendNotificationMutation = useMutation({
+    mutationFn: ({ enrollmentId, notificationType }) => 
+      base44.functions.invoke('notifyEnrollment', { enrollmentId, notificationType }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['enrollments'] });
+    },
+  });
+
+  const handleSendNotification = (enrollment, type) => {
+    const labels = {
+      confirmation: '確認通知',
+      reminder: '提醒通知',
+      completion: '完成通知',
+    };
+    
+    if (window.confirm(`確定要發送${labels[type]}給 ${enrollment.user_name}？`)) {
+      sendNotificationMutation.mutate({
+        enrollmentId: enrollment.id,
+        notificationType: type,
+      }, {
+        onSuccess: () => {
+          toast.success(`${labels[type]}已發送`);
+        },
+        onError: (error) => {
+          toast.error(`發送失敗：${error.message}`);
+        },
+      });
+    }
+  };
 
   const handleStatusChange = (enrollment, newStatus) => {
     updateMutation.mutate({
@@ -99,11 +129,16 @@ export default function EnrollmentManagement() {
                       )}
                     </div>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm mt-4">
                       <div>
                         <p className="text-muted-foreground">學員</p>
-                        <p className="font-medium">{enrollment.user_name}</p>
+                        <p className="font-medium">{enrollment.student_name || enrollment.user_name}</p>
                         <p className="text-xs text-muted-foreground">{enrollment.user_email}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">課程</p>
+                        <p className="font-medium">{enrollment.course_title}</p>
+                        <p className="text-xs text-muted-foreground">#{enrollment.enrollment_id?.slice(-6) || enrollment.id.slice(-6)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">支付方式</p>
@@ -145,16 +180,44 @@ export default function EnrollmentManagement() {
                           <XCircle className="w-4 h-4 mr-2" />
                           取消
                         </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleSendNotification(enrollment, 'confirmation')}
+                        >
+                          <Mail className="w-4 h-4 mr-2" />
+                          發送確認
+                        </Button>
                       </>
                     )}
                     {enrollment.status === 'confirmed' && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleStatusChange(enrollment, 'completed')}
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          標記為完成
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleSendNotification(enrollment, 'reminder')}
+                        >
+                          <Bell className="w-4 h-4 mr-2" />
+                          發送提醒
+                        </Button>
+                      </>
+                    )}
+                    {enrollment.status === 'completed' && (
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => handleStatusChange(enrollment, 'completed')}
+                        variant="secondary"
+                        onClick={() => handleSendNotification(enrollment, 'completion')}
                       >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        標記為完成
+                        <Award className="w-4 h-4 mr-2" />
+                        發送完成證書
                       </Button>
                     )}
                   </div>

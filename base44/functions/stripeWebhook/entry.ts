@@ -72,23 +72,34 @@ Deno.serve(async (req) => {
       try {
         await base44.asServiceRole.integrations.Core.SendEmail({
           to: enrollment.user_email,
-          subject: `課程報名確認 - ${enrollment.course_title}`,
+          subject: `✅ 課程報名已確認 - ${enrollment.course_title}`,
           body: `
-尊敬的 ${enrollment.student_name || enrollment.user_name}，
+<div style="font-family:sans-serif;max-width:600px;margin:auto;color:#1f2937;">
+  <div style="background:#10b981;padding:24px;border-radius:12px 12px 0 0;text-align:center;">
+    <h1 style="color:#fff;margin:0;font-size:24px;">✅ 報名已確認</h1>
+  </div>
+  <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
+    <p>親愛的 <strong>${enrollment.student_name || enrollment.user_name}</strong>，</p>
+    <p>感謝您報名參加我們的課程！您的報名已獲確認。</p>
+    
+    <div style="background:#f9fafb;padding:16px;border-radius:8px;margin:16px 0;">
+      <p style="margin:4px 0;"><strong>課程名稱：</strong>${enrollment.course_title}</p>
+      <p style="margin:4px 0;"><strong>報名編號：</strong>#${enrollment.enrollment_id || enrollment.id}</p>
+      <p style="margin:4px 0;"><strong>支付狀態：</strong>✅ 已支付</p>
+      ${enrollment.payment_method === 'quota' ? '<p style="margin:4px 0;"><strong>支付方式：</strong>Quota（商業客戶名額）</p>' : ''}
+      ${enrollment.amount_paid ? `<p style="margin:4px 0;"><strong>支付金額：</strong>HK$${enrollment.amount_paid.toLocaleString()}</p>` : ''}
+    </div>
 
-感謝您報名參加我們的課程！
-
-【課程資料】
-課程名稱：${enrollment.course_title}
-報名編號：#${enrollment.enrollment_id || enrollment.id}
-支付金額：HK${enrollment.amount_paid?.toLocaleString()}
-
-我們的團隊會盡快與您確認課程詳情。
-
-如有任何疑問，請隨時聯絡我們。
-
-PetDining PetForm 團隊
+    <p>我們的團隊會在課程開始前與您聯絡，提供進一步詳情。</p>
+    
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+    <p style="font-size:13px;color:#6b7280;">如有查詢，請聯絡我們：<br>
+    WhatsApp：<a href="https://wa.me/85298673497">9867 3497</a><br>
+    Email：info@petdininghk.com</p>
+  </div>
+</div>
           `,
+          from_name: 'PetDining PetForm',
         });
       } catch (emailError) {
         console.error('Failed to send confirmation email:', emailError);

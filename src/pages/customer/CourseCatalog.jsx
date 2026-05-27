@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,7 +51,7 @@ export default function CourseCatalog() {
 
   const handleSelectSchedule = (course, schedule) => {
     // 跳轉到報名表單頁面
-    window.location.href = `/courses/${course.id}/enroll?schedule_id=${schedule.id}`;
+    navigate(`/courses/${course.id}/enroll?schedule_id=${schedule.id}`);
   };
 
   const handleEnroll = async (course) => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,9 @@ import { toast } from 'sonner';
 import PageHeader from '@/components/shared/PageHeader';
 
 export default function EnrollmentForm() {
-  const { courseId, scheduleId } = useParams();
+  const { courseId } = useParams();
+  const [searchParams] = useSearchParams();
+  const scheduleId = searchParams.get('schedule_id');
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     student_name: '',
@@ -69,8 +71,25 @@ export default function EnrollmentForm() {
       // 讀取現有購物車
       const existingCart = localStorage.getItem('cart');
       const cart = existingCart ? JSON.parse(existingCart) : [];
+      
+      // 檢查是否已存在相同的課程和時間表
+      const exists = cart.some(item => 
+        item.type === 'course' && 
+        item.course_id === course.id && 
+        item.schedule_id === schedule.id &&
+        item.student_name === formData.student_name
+      );
+      
+      if (exists) {
+        toast.error('您已報名此課程的相同時間段');
+        return;
+      }
+      
       cart.push(cartItem);
       localStorage.setItem('cart', JSON.stringify(cart));
+      
+      // 觸發購物車更新事件
+      window.dispatchEvent(new Event('cart-updated'));
 
       toast.success('已加入購物車');
       navigate('/cart');

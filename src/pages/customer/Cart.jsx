@@ -74,8 +74,9 @@ export default function Cart() {
       const courseItems = items.filter(item => item.type === 'course');
       const productItems = items.filter(item => item.type === 'product' || !item.type);
       
-      // 處理課程報名
-      for (const item of courseItems) {
+      // 如果有課程項目，直接跳轉到 Stripe 支付（不處理產品）
+      if (courseItems.length > 0) {
+        const item = courseItems[0]; // 只處理第一個課程
         const me = await base44.auth.me();
         
         // 創建報名記錄
@@ -116,6 +117,11 @@ export default function Cart() {
         });
         
         if (checkoutResponse.url) {
+          // 清除購物車中的課程項目
+          const newCart = items.filter(i => i.type !== 'course');
+          localStorage.setItem('cart', JSON.stringify(newCart));
+          window.dispatchEvent(new Event('cart-updated'));
+          
           // 跳轉到 Stripe 支付
           window.location.href = checkoutResponse.url;
           return;
@@ -126,6 +132,7 @@ export default function Cart() {
       if (productItems.length > 0) {
         if (!customer) {
           toast.error('請先完成帳戶設定');
+          setSubmitting(false);
           return;
         }
         
@@ -175,6 +182,7 @@ export default function Cart() {
         setItems([]);
         queryClient.invalidateQueries({ queryKey: ['myCustomer'] });
         toast.success('訂單已提交！');
+        setSubmitting(false);
         navigate('/orders');
       }
     } catch (error) {

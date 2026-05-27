@@ -42,6 +42,7 @@ import CreditsCancel from '@/pages/customer/CreditsCancel';
 import Apply from '@/pages/Apply';
 import Privacy from '@/pages/Privacy';
 import AdminLogin from '@/pages/AdminLogin';
+import TestEnrollmentFlow from '@/pages/TestEnrollmentFlow';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
     <Route path="/apply" element={<Apply />} />
     <Route path="/privacy" element={<Privacy />} />
     <Route path="/admin-login" element={<AdminLogin />} />
+    <Route path="/test-enrollment" element={<TestEnrollmentFlow />} />
 
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>

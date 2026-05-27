@@ -28,8 +28,10 @@ export default function ProductManagement() {
   const [catFilter, setCatFilter] = useState('all');
   const [originFilter, setOriginFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [quickDialogOpen, setQuickDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [form, setForm] = useState(emptyProduct);
+  const [quickForm, setQuickForm] = useState({ sku: '', name: '', category: '', wholesale_price: '', stock: 0, unit: '件' });
   const queryClient = useQueryClient();
 
   const { data: products = [] } = useQuery({
@@ -85,6 +87,26 @@ export default function ProductManagement() {
     toast.success('產品已刪除');
   };
 
+  const handleQuickSave = async () => {
+    if (!quickForm.sku || !quickForm.name || !quickForm.category || !quickForm.wholesale_price) {
+      toast.error('請填寫所有必填欄位');
+      return;
+    }
+    await base44.entities.Products.create({
+      ...quickForm,
+      wholesale_price: Number(quickForm.wholesale_price),
+      stock: Number(quickForm.stock),
+      min_order: 1,
+      status: 'active',
+      is_visible: true,
+    });
+    toast.success('產品已快速新增');
+    queryClient.invalidateQueries({ queryKey: ['allProducts'] });
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    setQuickForm({ sku: '', name: '', category: '', wholesale_price: '', stock: 0, unit: '件' });
+    setQuickDialogOpen(false);
+  };
+
   const handleImageUpload = async (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -96,7 +118,12 @@ export default function ProductManagement() {
     <div>
       <PageHeader
         title="產品管理"
-        action={<Button className="bg-primary" onClick={openAdd}><Plus className="h-4 w-4 mr-2" />新增產品</Button>}
+        action={
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setQuickDialogOpen(true)}><Plus className="h-4 w-4 mr-2" />⚡ 快速新增</Button>
+            <Button className="bg-primary" onClick={openAdd}><Plus className="h-4 w-4 mr-2" />完整新增</Button>
+          </div>
+        }
       />
 
       <div className="flex flex-wrap gap-3 mb-4">
@@ -162,6 +189,37 @@ export default function ProductManagement() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Quick Add Dialog */}
+      <Dialog open={quickDialogOpen} onOpenChange={setQuickDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>⚡ 快速新增產品</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>SKU *</Label><Input value={quickForm.sku} onChange={e => setQuickForm({ ...quickForm, sku: e.target.value })} placeholder="e.g. PD-001" /></div>
+              <div><Label>產品名稱 *</Label><Input value={quickForm.name} onChange={e => setQuickForm({ ...quickForm, name: e.target.value })} placeholder="產品名稱" /></div>
+            </div>
+            <div>
+              <Label>分類 *</Label>
+              <Select value={quickForm.category} onValueChange={v => setQuickForm({ ...quickForm, category: v })}>
+                <SelectTrigger><SelectValue placeholder="選擇分類" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div><Label>批發價 (HKD) *</Label><Input type="number" value={quickForm.wholesale_price} onChange={e => setQuickForm({ ...quickForm, wholesale_price: e.target.value })} placeholder="0" /></div>
+              <div><Label>庫存</Label><Input type="number" value={quickForm.stock} onChange={e => setQuickForm({ ...quickForm, stock: e.target.value })} /></div>
+              <div><Label>單位</Label><Input value={quickForm.unit} onChange={e => setQuickForm({ ...quickForm, unit: e.target.value })} /></div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setQuickDialogOpen(false)}>取消</Button>
+            <Button className="bg-primary" onClick={handleQuickSave}>快速新增</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">

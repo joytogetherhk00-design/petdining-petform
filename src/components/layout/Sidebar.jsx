@@ -62,7 +62,6 @@ const adminNav = [
 ];
 
 const businessClientNav = [
-  { label: '首頁', icon: Store, path: '/' },
   { label: '課程目錄', icon: GraduationCap, path: '/courses' },
   { label: '我的課程', icon: GraduationCap, path: '/my-courses' },
   { label: '產品目錄', icon: Package, path: '/products' },
@@ -72,7 +71,6 @@ const businessClientNav = [
 ];
 
 const generalClientNav = [
-  { label: '首頁', icon: Store, path: '/' },
   { label: '課程目錄', icon: GraduationCap, path: '/courses' },
   { label: '我的課程', icon: GraduationCap, path: '/my-courses' },
   { label: '購物車', icon: ShoppingCart, path: '/cart' },

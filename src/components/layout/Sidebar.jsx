@@ -73,6 +73,9 @@ const businessClientNav = [
 const generalClientNav = [
   { label: '首頁', icon: Store, path: '/' },
   { label: '課程目錄', icon: GraduationCap, path: '/courses' },
+  { label: '購物車', icon: ShoppingCart, path: '/cart' },
+  { label: '訂單記錄', icon: ClipboardList, path: '/orders' },
+  { label: '我的帳戶', icon: User, path: '/account' },
 ];
 
 export default function Sidebar({ isAdmin, userType }) {

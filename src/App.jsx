@@ -95,32 +95,32 @@ const AuthenticatedApp = () => {
 
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>
-        {/* General client routes - courses only */}
+        {/* General client routes - courses, cart, orders */}
         <Route path="/courses" element={
           <UserTypeGuard allowedTypes={['general', 'business']}>
             <CourseCatalog />
           </UserTypeGuard>
         } />
-        
-        {/* Business client routes - products, orders, etc. */}
-        <Route path="/products" element={
-          <UserTypeGuard allowedTypes={['business']}>
-            <ProductCatalog />
-          </UserTypeGuard>
-        } />
         <Route path="/cart" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <Cart />
           </UserTypeGuard>
         } />
         <Route path="/orders" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <OrderHistory />
           </UserTypeGuard>
         } />
         <Route path="/account" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <MyAccount />
+          </UserTypeGuard>
+        } />
+        
+        {/* Business client routes - products only */}
+        <Route path="/products" element={
+          <UserTypeGuard allowedTypes={['business']}>
+            <ProductCatalog />
           </UserTypeGuard>
         } />
         <Route path="/credits/topup" element={

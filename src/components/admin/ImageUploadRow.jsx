@@ -34,7 +34,6 @@ export default function ImageUploadRow({ field, label, value, uploading, onUploa
               const file = e.target.files?.[0];
               if (file) {
                 onUpload(file, field);
-                e.target.value = '';
               }
             }}
           />

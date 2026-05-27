@@ -15,12 +15,12 @@ export default function ProductCard({ product, onAddToCart, onViewDetail }) {
   return (
     <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300">
       {/* Image */}
-      <div className="relative bg-muted overflow-hidden cursor-pointer" style={{height: '200px'}} onClick={onViewDetail}>
+      <div className="relative bg-muted overflow-hidden cursor-pointer flex items-center justify-center" style={{height: '200px'}} onClick={onViewDetail}>
         {images.length > 0 && !imgError ? (
           <img
             src={images[activeImg]}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
             onError={() => setImgError(true)}
           />
         ) : (

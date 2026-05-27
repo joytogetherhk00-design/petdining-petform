@@ -69,7 +69,10 @@ export default function StudentsManagement() {
     const matchesSearch = 
       student.student_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.student_phone?.includes(searchTerm) ||
-      student.student_email?.toLowerCase().includes(searchTerm.toLowerCase());
+      student.student_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.courses.some(course => 
+        course.course_title?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     
     const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
     
@@ -202,7 +205,7 @@ export default function StudentsManagement() {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="搜尋學員（姓名/電話/電郵）"
+              placeholder="搜尋學員（姓名/電話/電郵/課程名稱）"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"

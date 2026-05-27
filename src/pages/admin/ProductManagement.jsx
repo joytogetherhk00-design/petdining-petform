@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
-import { Search, Plus, Pencil, Copy, Trash2, EyeOff, CheckCircle2, Loader2 } from 'lucide-react';
+import { Search, Plus, Pencil, Copy, Trash2, EyeOff } from 'lucide-react';
+import ImageUploadRow from '@/components/admin/ImageUploadRow';
 import { toast } from 'sonner';
 
 const emptyProduct = {
@@ -121,24 +122,23 @@ export default function ProductManagement() {
     setQuickDialogOpen(false);
   };
 
-  const imageInputRefs = {
-    image1: useRef(null),
-    image2: useRef(null),
-    image3: useRef(null),
-  };
+  const imageRef1 = useRef(null);
+  const imageRef2 = useRef(null);
+  const imageRef3 = useRef(null);
+  const imageRefs = { image1: imageRef1, image2: imageRef2, image3: imageRef3 };
 
-  const handleImageUpload = async (e, field) => {
-    const file = e.target.files[0];
+  const handleImageUpload = async (file, field) => {
     if (!file) return;
     setUploadingField(field);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       setForm(prev => ({ ...prev, [field]: file_url }));
-      toast.success(`圖片已上傳`);
+      toast.success('圖片已上傳');
+    } catch (err) {
+      toast.error('上傳失敗，請重試');
     } finally {
       setUploadingField(null);
-      // Reset input so the same file can be re-selected
-      if (imageInputRefs[field].current) imageInputRefs[field].current.value = '';
+      if (imageRefs[field].current) imageRefs[field].current.value = '';
     }
   };
 
@@ -347,35 +347,9 @@ export default function ProductManagement() {
             </div>
 
             {/* Images */}
-            {['image1', 'image2', 'image3'].map((field, i) => (
-              <div key={field}>
-                <Label>圖片 {i + 1}</Label>
-                <div className="flex gap-2 items-center">
-                  <button
-                    type="button"
-                    disabled={uploadingField === field}
-                    onClick={() => imageInputRefs[field].current?.click()}
-                    className={`flex-1 flex items-center justify-center gap-2 h-9 px-3 rounded-md border text-sm transition-colors cursor-pointer disabled:opacity-50 ${form[field] ? 'border-green-500 bg-green-50 text-green-700' : 'border-input bg-transparent hover:bg-muted text-muted-foreground'}`}
-                  >
-                    {uploadingField === field ? (
-                      <><Loader2 className="h-4 w-4 animate-spin" />上傳中...</>
-                    ) : form[field] ? (
-                      <><CheckCircle2 className="h-4 w-4 text-green-600" />已上傳 ✓ (點擊更換)</>
-                    ) : (
-                      <>選擇圖片</>
-                    )}
-                  </button>
-                  <input
-                    ref={imageInputRefs[field]}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={e => handleImageUpload(e, field)}
-                  />
-                  {form[field] && <img src={form[field]} alt="" className="w-10 h-10 rounded object-cover shrink-0 border" />}
-                </div>
-              </div>
-            ))}
+            <ImageUploadRow field="image1" label="圖片 1" value={form.image1} uploading={uploadingField === 'image1'} inputRef={imageRef1} onUpload={handleImageUpload} />
+            <ImageUploadRow field="image2" label="圖片 2" value={form.image2} uploading={uploadingField === 'image2'} inputRef={imageRef2} onUpload={handleImageUpload} />
+            <ImageUploadRow field="image3" label="圖片 3" value={form.image3} uploading={uploadingField === 'image3'} inputRef={imageRef3} onUpload={handleImageUpload} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>取消</Button>

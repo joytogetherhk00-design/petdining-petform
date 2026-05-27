@@ -16,6 +16,7 @@ export default function UserTypeGuard({ children, allowedTypes }) {
       const isLoggedIn = await base44.auth.isAuthenticated();
       if (isLoggedIn) {
         const userData = await base44.auth.me();
+        console.log('User data:', userData);
         setUser(userData);
       }
     } catch (error) {

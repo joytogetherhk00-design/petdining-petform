@@ -43,13 +43,20 @@ export default function Welcome() {
   const updateUserTypeMutation = useMutation({
     mutationFn: async (type) => {
       if (!user) throw new Error('用戶未登入');
+      console.log('Updating user type to:', type);
       await base44.entities.User.update(user.id, { 
         user_type: type,
         customer_id: type === 'business' && customer ? customer.customer_id : null
       });
+      console.log('User type updated successfully');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
+      toast.success('用戶類型已更新');
+    },
+    onError: (error) => {
+      console.error('Update user type error:', error);
+      toast.error('更新失敗：' + error.message);
     },
   });
 
@@ -69,8 +76,13 @@ export default function Welcome() {
         return;
       }
       
-      // 更新用戶類型
-      updateUserTypeMutation.mutate(userType);
+      // 更新用戶類型並等待完成
+      await new Promise((resolve, reject) => {
+        updateUserTypeMutation.mutate(userType, {
+          onSuccess: resolve,
+          onError: reject
+        });
+      });
       
       // 根據類型跳轉
       if (userType === 'general') {

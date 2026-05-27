@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, ShoppingCart, Package, FolderOpen, 
@@ -61,7 +61,7 @@ const adminNav = [
   { label: '管理員', icon: Shield, path: '/admin/admins' },
 ];
 
-const customerNav = [
+const businessClientNav = [
   { label: '首頁', icon: Store, path: '/' },
   { label: '課程目錄', icon: GraduationCap, path: '/courses' },
   { label: '產品目錄', icon: Package, path: '/products' },
@@ -70,10 +70,31 @@ const customerNav = [
   { label: '我的帳戶', icon: User, path: '/account' },
 ];
 
+const generalClientNav = [
+  { label: '課程目錄', icon: GraduationCap, path: '/courses' },
+];
+
 export default function Sidebar({ isAdmin }) {
   const [open, setOpen] = useState(false);
+  const [userType, setUserType] = useState('general');
   const location = useLocation();
-  const nav = isAdmin ? adminNav : customerNav;
+  
+  useEffect(() => {
+    const checkUserType = async () => {
+      try {
+        const isLoggedIn = await base44.auth.isAuthenticated();
+        if (isLoggedIn) {
+          const user = await base44.auth.me();
+          setUserType(user.user_type || 'general');
+        }
+      } catch (error) {
+        console.error('Check user type error:', error);
+      }
+    };
+    checkUserType();
+  }, []);
+  
+  const nav = isAdmin ? adminNav : (userType === 'business' ? businessClientNav : generalClientNav);
 
   const { data: pendingApps = [] } = useQuery({
     queryKey: ['pendingApplicationsCount'],

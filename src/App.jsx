@@ -43,6 +43,8 @@ import Apply from '@/pages/Apply';
 import Privacy from '@/pages/Privacy';
 import AdminLogin from '@/pages/AdminLogin';
 import TestEnrollmentFlow from '@/pages/TestEnrollmentFlow';
+import Welcome from '@/pages/Welcome';
+import Pending from '@/pages/Pending';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
@@ -81,15 +83,17 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
     {/* Public pages - no layout wrapper */}
+    <Route path="/" element={<Welcome />} />
     <Route path="/onboarding" element={<Onboarding />} />
     <Route path="/apply" element={<Apply />} />
     <Route path="/privacy" element={<Privacy />} />
     <Route path="/admin-login" element={<AdminLogin />} />
     <Route path="/test-enrollment" element={<TestEnrollmentFlow />} />
+    <Route path="/pending" element={<Pending />} />
 
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>
-      <Route path="/" element={<ProductCatalog />} />
+        <Route path="/products" element={<ProductCatalog />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/orders" element={<OrderHistory />} />
         <Route path="/account" element={<MyAccount />} />

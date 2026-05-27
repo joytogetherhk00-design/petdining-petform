@@ -91,6 +91,16 @@ export default function AdminLogin() {
             <div className="text-center text-sm text-muted-foreground">
               需要管理員權限才能訪問後台系統
             </div>
+
+            <div className="pt-4 border-t">
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => window.location.href = '/welcome'}
+              >
+                返回用戶選擇頁面
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

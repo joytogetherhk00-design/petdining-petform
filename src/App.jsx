@@ -35,6 +35,7 @@ import CreditsTopup from '@/pages/customer/CreditsTopup';
 import CreditsSuccess from '@/pages/customer/CreditsSuccess';
 import CreditsCancel from '@/pages/customer/CreditsCancel';
 import Apply from '@/pages/Apply';
+import Privacy from '@/pages/Privacy';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -61,6 +62,7 @@ const AuthenticatedApp = () => {
     {/* Public pages - no layout wrapper */}
     <Route path="/onboarding" element={<Onboarding />} />
     <Route path="/apply" element={<Apply />} />
+    <Route path="/privacy" element={<Privacy />} />
 
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>

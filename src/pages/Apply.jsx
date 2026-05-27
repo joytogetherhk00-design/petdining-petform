@@ -5,15 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import DragDropUpload from '@/components/shared/DragDropUpload';
 import { toast } from 'sonner';
 import { CheckCircle2, PawPrint } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const REQUIRED_FIELDS = ['company_name', 'contact', 'phone', 'email', 'delivery_address', 'branch_address', 'br_address', 'br_document_url'];
 
 export default function Apply() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
   const [form, setForm] = useState({
     logo_url: '',
     company_name: '',
@@ -39,6 +42,10 @@ export default function Apply() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
       toast.error('請輸入有效電郵地址');
+      return false;
+    }
+    if (!agreedToPrivacy) {
+      toast.error('請先同意私隱條款');
       return false;
     }
     return true;
@@ -149,6 +156,25 @@ export default function Apply() {
             <Field label="備註（可選）">
               <Textarea value={form.notes} onChange={set('notes')} placeholder="其他補充資料..." rows={2} />
             </Field>
+
+            <div className="flex items-start space-x-2 py-2">
+              <Checkbox
+                id="privacy"
+                checked={agreedToPrivacy}
+                onCheckedChange={setAgreedToPrivacy}
+              />
+              <div className="grid gap-1.5 leading-none">
+                <label
+                  htmlFor="privacy"
+                  className="text-sm text-muted-foreground cursor-pointer"
+                >
+                  我已閱讀並同意{' '}
+                  <Link to="/privacy" target="_blank" className="text-primary underline">
+                    私隱條款
+                  </Link>
+                </label>
+              </div>
+            </div>
 
             <Button
               className="w-full bg-primary h-11 text-base font-semibold"

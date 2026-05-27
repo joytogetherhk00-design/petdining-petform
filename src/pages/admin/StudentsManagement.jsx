@@ -13,10 +13,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Download, GraduationCap, Mail, Phone, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { Search, Download, GraduationCap, Mail, Phone, CheckCircle, XCircle, Clock, AlertCircle, FileSpreadsheet, FileText } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function StudentsManagement() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -70,7 +76,7 @@ export default function StudentsManagement() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleExportCSV = () => {
+  const handleExportExcel = () => {
     const headers = ['姓名', '電話', '電郵', '公司', '分店', '已報課程數', '狀態'];
     const rows = filteredStudents.map(s => [
       s.student_name,
@@ -87,9 +93,64 @@ export default function StudentsManagement() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `學員名單_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `學員名單_${new Date().toISOString().split('T')[0]}.xlsx`;
     link.click();
-    toast.success('已匯出學員名單');
+    toast.success('已匯出 Excel');
+  };
+
+  const handleExportPDF = () => {
+    toast.info('正在生成 PDF...');
+    // 簡單 PDF 匯出 - 使用瀏覽器列印功能
+    const printWindow = window.open('', '_blank');
+    const date = new Date().toLocaleDateString('zh-HK');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>學員名單 - ${date}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            h1 { color: #333; border-bottom: 2px solid #ff8c42; padding-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #ff8c42; color: white; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .info { color: #666; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>學員名單</h1>
+          <p class="info">匯出日期：${date} | 總人數：${filteredStudents.length} 人</p>
+          <table>
+            <thead>
+              <tr>
+                <th>姓名</th>
+                <th>電話</th>
+                <th>電郵</th>
+                <th>公司</th>
+                <th>分店</th>
+                <th>已報課程數</th>
+                <th>狀態</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredStudents.map(s => `
+                <tr>
+                  <td>${s.student_name || ''}</td>
+                  <td>${s.student_phone || ''}</td>
+                  <td>${s.student_email || ''}</td>
+                  <td>${s.company || ''}</td>
+                  <td>${s.branch || ''}</td>
+                  <td>${s.courses.length}</td>
+                  <td>${s.status}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
   };
 
   const getAttendanceBadge = (status) => {
@@ -116,10 +177,24 @@ export default function StudentsManagement() {
           title="學員管理"
           description="查看所有已報名學員及其資料"
           action={
-            <Button variant="outline" onClick={handleExportCSV}>
-              <Download className="w-4 h-4 mr-2" />
-              匯出 CSV
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  匯出
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={handleExportExcel}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  匯出 Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportPDF}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  匯出 PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           }
         />
 

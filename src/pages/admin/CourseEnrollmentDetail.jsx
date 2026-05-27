@@ -13,9 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ArrowLeft, Users, Calendar, MapPin, CheckCircle, XCircle, Clock, Download, AlertCircle, UserCheck, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Users, Calendar, MapPin, CheckCircle, XCircle, Clock, Download, AlertCircle, UserCheck, Phone, Mail, FileSpreadsheet, FileText } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function CourseEnrollmentDetail() {
   const { scheduleId } = useParams();
@@ -81,7 +87,7 @@ export default function CourseEnrollmentDetail() {
     );
   };
 
-  const handleExportCSV = () => {
+  const handleExportExcel = () => {
     const headers = ['姓名', '電話', '電郵', '公司', '分店', '支付狀態', '報名狀態', '出席狀態'];
     const rows = enrollments.map(e => [
       e.student_name || e.user_name,
@@ -99,9 +105,68 @@ export default function CourseEnrollmentDetail() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${schedule?.course_title || '學員名單'}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `${schedule?.course_title || '學員名單'}_${new Date().toISOString().split('T')[0]}.xlsx`;
     link.click();
-    toast.success('已匯出學員名單');
+    toast.success('已匯出 Excel');
+  };
+
+  const handleExportPDF = () => {
+    toast.info('正在生成 PDF...');
+    const printWindow = window.open('', '_blank');
+    const date = new Date().toLocaleDateString('zh-HK');
+    const courseName = schedule?.course_title || '課程';
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${courseName} 學員名單 - ${date}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; }
+            h1 { color: #333; border-bottom: 2px solid #ff8c42; padding-bottom: 10px; }
+            h2 { color: #666; margin-top: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #ff8c42; color: white; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .info { color: #666; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>${courseName} 學員名單</h1>
+          <h2>${new Date(schedule?.start_datetime).toLocaleDateString('zh-HK')} | ${schedule?.location || '地點待定'}</h2>
+          <p class="info">匯出日期：${date} | 學員人數：${enrollments.length} 人</p>
+          <table>
+            <thead>
+              <tr>
+                <th>姓名</th>
+                <th>電話</th>
+                <th>電郵</th>
+                <th>公司</th>
+                <th>分店</th>
+                <th>支付狀態</th>
+                <th>報名狀態</th>
+                <th>出席狀態</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${enrollments.map(e => `
+                <tr>
+                  <td>${e.student_name || e.user_name || ''}</td>
+                  <td>${e.student_phone || ''}</td>
+                  <td>${e.student_email || e.user_email || ''}</td>
+                  <td>${e.company || ''}</td>
+                  <td>${e.branch || ''}</td>
+                  <td>${e.payment_status || ''}</td>
+                  <td>${e.status || ''}</td>
+                  <td>${e.attendance_status || ''}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
   };
 
   if (isLoadingSchedule) {
@@ -240,10 +305,24 @@ export default function CourseEnrollmentDetail() {
                   <UserCheck className="w-4 h-4 mr-2" />
                   {attendanceMode ? '退出簽到' : '簽到模式'}
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleExportCSV}>
-                  <Download className="w-4 h-4 mr-2" />
-                  匯出 CSV
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      匯出
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleExportExcel}>
+                      <FileSpreadsheet className="w-4 h-4 mr-2" />
+                      匯出 Excel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportPDF}>
+                      <FileText className="w-4 h-4 mr-2" />
+                      匯出 PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </CardHeader>

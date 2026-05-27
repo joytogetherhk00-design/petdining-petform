@@ -184,7 +184,7 @@ export default function Sidebar({ isAdmin, userType }) {
           <div className="p-3 border-t border-sidebar-border space-y-2">
             <div className="text-xs text-sidebar-foreground/50 font-medium mb-2">預覽視角</div>
             <Link
-              to="/?view=business"
+              to="/products?preview=business"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
             >
@@ -192,7 +192,7 @@ export default function Sidebar({ isAdmin, userType }) {
               商業客戶端
             </Link>
             <Link
-              to="/?view=general"
+              to="/courses?preview=general"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
             >
@@ -206,7 +206,7 @@ export default function Sidebar({ isAdmin, userType }) {
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
               >
                 <Store className="h-4 w-4" />
-                返回客戶端
+                返回首頁
               </Link>
             </div>
           </div>

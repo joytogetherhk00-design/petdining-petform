@@ -7,6 +7,18 @@ import { useAuth } from '@/lib/AuthContext';
 export default function AppLayout({ isAdmin }) {
   const { user, isLoadingAuth } = useAuth();
   
+  // 從 URL 參數獲取視角（管理員預覽用）
+  const urlParams = new URLSearchParams(window.location.search);
+  const viewParam = urlParams.get('view');
+  
+  // 決定用戶類型：管理員預覽 > 實際用戶類型 > 默認商業客戶
+  let userType;
+  if (isAdmin) {
+    userType = viewParam === 'general' ? 'general' : 'business';
+  } else {
+    userType = user?.user_type || 'business'; // 默認商業客戶，確保看到產品目錄
+  }
+  
   if (isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -17,7 +29,7 @@ export default function AppLayout({ isAdmin }) {
   
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar isAdmin={isAdmin} userType={user?.user_type || 'general'} />
+      <Sidebar isAdmin={isAdmin} userType={userType} />
       <main className="lg:ml-64 min-h-screen">
         <div className="p-4 pt-16 lg:pt-6 lg:p-8 max-w-7xl mx-auto">
           <Outlet />

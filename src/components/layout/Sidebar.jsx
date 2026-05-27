@@ -88,8 +88,11 @@ export default function Sidebar({ isAdmin, userType }) {
     nav = adminNav;
   } else if (userType === 'business') {
     nav = businessClientNav;
-  } else {
+  } else if (userType === 'general') {
     nav = generalClientNav;
+  } else {
+    // 默認顯示商業客戶導航（防止未設置時丟失產品目錄）
+    nav = businessClientNav;
   }
 
   const { data: pendingApps = [] } = useQuery({

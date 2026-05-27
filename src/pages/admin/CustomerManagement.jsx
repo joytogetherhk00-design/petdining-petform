@@ -219,7 +219,7 @@ export default function CustomerManagement() {
               <TabsList>
                 <TabsTrigger value="info">公司資料</TabsTrigger>
                 <TabsTrigger value="branches">分店</TabsTrigger>
-                {detailOpen.br_document_url && <TabsTrigger value="br">商業登記</TabsTrigger>}
+                {detailOpen?.br_document_url && <TabsTrigger value="br">商業登記</TabsTrigger>}
               </TabsList>
               <TabsContent value="info" className="space-y-3 text-sm pt-3">
                 <div className="grid grid-cols-2 gap-3">

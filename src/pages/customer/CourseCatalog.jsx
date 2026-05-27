@@ -16,20 +16,29 @@ import {
   Edit, 
   Trash2,
   CheckCircle,
-  XCircle
+  XCircle,
+  CalendarDays
 } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { format } from 'date-fns';
 
 export default function CourseCatalog() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [viewScheduleCourse, setViewScheduleCourse] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ['courses'],
     queryFn: () => base44.entities.Courses.list(),
+  });
+
+  const { data: schedules = [] } = useQuery({
+    queryKey: ['courseSchedules'],
+    queryFn: () => base44.entities.CourseSchedule.list(),
   });
 
   const filteredCourses = courses.filter(course => {
@@ -171,10 +180,18 @@ export default function CourseCatalog() {
                   </span>
                 </div>
               </CardContent>
-              <CardFooter className="flex justify-between items-center">
-                <div className="text-lg font-bold text-primary">
-                  HK${course.price}
-                </div>
+              <CardFooter className="flex justify-between items-center gap-2">
+              <div className="text-lg font-bold text-primary">
+                HK${course.price}
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setViewScheduleCourse(course)}
+                >
+                  <CalendarDays className="w-4 h-4" />
+                </Button>
                 <Button 
                   onClick={() => handleEnroll(course)}
                   disabled={course.status === 'full' || course.status === 'inactive'}
@@ -182,6 +199,7 @@ export default function CourseCatalog() {
                   {course.status === 'full' ? '已滿' : 
                    course.status === 'inactive' ? '暫停' : '立即報名'}
                 </Button>
+              </div>
               </CardFooter>
             </Card>
           ))}
@@ -193,6 +211,67 @@ export default function CourseCatalog() {
             <p>暫無課程</p>
           </div>
         )}
+
+        {/* 課程時間表 Dialog */}
+        <Dialog open={!!viewScheduleCourse} onOpenChange={() => setViewScheduleCourse(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {viewScheduleCourse?.title} - 可報名日期及時間
+              </DialogTitle>
+            </DialogHeader>
+            {viewScheduleCourse && (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {schedules
+                  .filter(sched => sched.course_id === viewScheduleCourse.id)
+                  .length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p>暫未設定課程時間</p>
+                  </div>
+                ) : (
+                  schedules
+                    .filter(sched => sched.course_id === viewScheduleCourse.id)
+                    .map((sched) => (
+                      <Card key={sched.id} className="p-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <CalendarDays className="w-4 h-4 text-primary" />
+                              <span className="font-medium">
+                                {format(new Date(sched.start_datetime), 'yyyy/MM/dd')}
+                              </span>
+                            </div>
+                            <Badge variant={sched.status === 'upcoming' ? 'default' : 'secondary'}>
+                              {sched.status === 'upcoming' ? '可報名' : 
+                               sched.status === 'ongoing' ? '進行中' : 
+                               sched.status === 'completed' ? '已完結' : '已取消'}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>
+                                {format(new Date(sched.start_datetime), 'HH:mm')} - {format(new Date(sched.end_datetime), 'HH:mm')}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              <span>{sched.location || '待定'}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              <span>{sched.enrolled_count || 0} / {sched.max_students} 人</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -284,8 +284,8 @@ export default function ProductManagement() {
                   <InlineCell
                     value={p.meat_type}
                     type="select"
-                    options={[{ value: '', label: '—' }, ...MEAT_TYPES.map(m => ({ value: m.value, label: m.label }))]}
-                    onSave={v => handleInlineUpdate(p.id, 'meat_type', v)}
+                    options={[{ value: 'none', label: '—' }, ...MEAT_TYPES.map(m => ({ value: m.value, label: m.label }))]}
+                    onSave={v => handleInlineUpdate(p.id, 'meat_type', v === 'none' ? '' : v)}
                   />
                   {p.meat_type && <MeatBadge meatType={p.meat_type} />}
                 </TableCell>
@@ -293,8 +293,8 @@ export default function ProductManagement() {
                   <InlineCell
                     value={p.country_of_origin}
                     type="select"
-                    options={[{ value: '', label: '—' }, ...ORIGINS.map(o => ({ value: o, label: o }))]}
-                    onSave={v => handleInlineUpdate(p.id, 'country_of_origin', v)}
+                    options={[{ value: 'none', label: '—' }, ...ORIGINS.map(o => ({ value: o, label: o }))]}
+                    onSave={v => handleInlineUpdate(p.id, 'country_of_origin', v === 'none' ? '' : v)}
                   />
                   {p.country_of_origin && <OriginBadge origin={p.country_of_origin} size="sm" />}
                 </TableCell>

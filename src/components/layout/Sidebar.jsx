@@ -64,17 +64,30 @@ const adminNav = [
 const businessClientNav = [
   { label: '首頁', icon: Store, path: '/' },
   { label: '課程目錄', icon: GraduationCap, path: '/courses' },
+  { label: '產品目錄', icon: Package, path: '/products' },
   { label: '購物車', icon: ShoppingCart, path: '/cart' },
   { label: '訂單記錄', icon: ClipboardList, path: '/orders' },
   { label: '我的帳戶', icon: User, path: '/account' },
 ];
 
-export default function Sidebar({ isAdmin }) {
+const generalClientNav = [
+  { label: '首頁', icon: Store, path: '/' },
+  { label: '課程目錄', icon: GraduationCap, path: '/courses' },
+];
+
+export default function Sidebar({ isAdmin, userType }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   
-  // Admin 直接顯示所有管理功能，不需要檢查用戶類型
-  const nav = isAdmin ? adminNav : businessClientNav;
+  // 根據用戶類型顯示不同的導航菜單
+  let nav;
+  if (isAdmin) {
+    nav = adminNav;
+  } else if (userType === 'business') {
+    nav = businessClientNav;
+  } else {
+    nav = generalClientNav;
+  }
 
   const { data: pendingApps = [] } = useQuery({
     queryKey: ['pendingApplicationsCount'],

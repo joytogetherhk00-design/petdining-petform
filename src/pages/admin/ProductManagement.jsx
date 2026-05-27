@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import PageHeader from '@/components/shared/PageHeader';
 import StatusBadge from '@/components/shared/StatusBadge';
+import OriginBadge, { ORIGINS } from '@/components/shared/OriginBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,14 +11,22 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Plus, Pencil, Copy, Trash2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Search, Plus, Pencil, Copy, Trash2, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
-const emptyProduct = { sku: '', name: '', category: '', description: '', wholesale_price: '', min_order: 1, unit: '件', stock: 0, image1: '', image2: '', image3: '', country_of_origin: '', status: 'active' };
+const emptyProduct = {
+  sku: '', name: '', category: '', description: '',
+  wholesale_price: '', min_order: 1, unit: '件', stock: 0,
+  net_weight: '', nutrition_info: '',
+  image1: '', image2: '', image3: '',
+  country_of_origin: '', status: 'active', is_visible: true
+};
 
 export default function ProductManagement() {
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('all');
+  const [originFilter, setOriginFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [form, setForm] = useState(emptyProduct);
@@ -36,14 +45,21 @@ export default function ProductManagement() {
   const filtered = products.filter(p => {
     const matchSearch = !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase());
     const matchCat = catFilter === 'all' || p.category === catFilter;
-    return matchSearch && matchCat;
+    const matchOrigin = originFilter === 'all' || p.country_of_origin === originFilter;
+    return matchSearch && matchCat && matchOrigin;
   });
 
   const openAdd = () => { setEditProduct(null); setForm(emptyProduct); setDialogOpen(true); };
   const openEdit = (p) => { setEditProduct(p); setForm({ ...emptyProduct, ...p, wholesale_price: p.wholesale_price || '' }); setDialogOpen(true); };
 
   const handleSave = async () => {
-    const data = { ...form, wholesale_price: Number(form.wholesale_price), min_order: Number(form.min_order), stock: Number(form.stock) };
+    const data = {
+      ...form,
+      wholesale_price: Number(form.wholesale_price),
+      min_order: Number(form.min_order),
+      stock: Number(form.stock),
+      is_visible: form.is_visible !== false,
+    };
     if (editProduct) {
       await base44.entities.Products.update(editProduct.id, data);
       toast.success('產品已更新');
@@ -83,16 +99,23 @@ export default function ProductManagement() {
         action={<Button className="bg-primary" onClick={openAdd}><Plus className="h-4 w-4 mr-2" />新增產品</Button>}
       />
 
-      <div className="flex gap-3 mb-4">
-        <div className="relative flex-1">
+      <div className="flex flex-wrap gap-3 mb-4">
+        <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="搜尋產品..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
         <Select value={catFilter} onValueChange={setCatFilter}>
-          <SelectTrigger className="w-40"><SelectValue placeholder="分類" /></SelectTrigger>
+          <SelectTrigger className="w-36"><SelectValue placeholder="全部分類" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">全部分類</SelectItem>
             {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={originFilter} onValueChange={setOriginFilter}>
+          <SelectTrigger className="w-36"><SelectValue placeholder="全部產地" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部產地</SelectItem>
+            {ORIGINS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
@@ -104,21 +127,29 @@ export default function ProductManagement() {
               <TableHead>SKU</TableHead>
               <TableHead>名稱</TableHead>
               <TableHead>分類</TableHead>
+              <TableHead>產地</TableHead>
               <TableHead>批發價</TableHead>
               <TableHead>庫存</TableHead>
               <TableHead>狀態</TableHead>
+              <TableHead>顯示</TableHead>
               <TableHead>操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.map(p => (
-              <TableRow key={p.id}>
+              <TableRow key={p.id} className={p.is_visible === false ? 'opacity-50' : ''}>
                 <TableCell className="font-mono text-sm">{p.sku}</TableCell>
-                <TableCell>{p.name}</TableCell>
+                <TableCell className="max-w-[160px] truncate">{p.name}</TableCell>
                 <TableCell className="text-sm">{p.category}</TableCell>
+                <TableCell><OriginBadge origin={p.country_of_origin} /></TableCell>
                 <TableCell>HK${p.wholesale_price}</TableCell>
                 <TableCell>{p.stock}</TableCell>
                 <TableCell><StatusBadge status={p.status} /></TableCell>
+                <TableCell>
+                  {p.is_visible === false
+                    ? <span className="flex items-center gap-1 text-xs text-muted-foreground"><EyeOff className="h-3 w-3" />隱藏</span>
+                    : <span className="text-xs text-green-600">顯示</span>}
+                </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(p)}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -133,42 +164,81 @@ export default function ProductManagement() {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editProduct ? '編輯產品' : '新增產品'}</DialogTitle></DialogHeader>
           <div className="space-y-3">
+            {/* Basic */}
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>SKU</Label><Input value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} /></div>
-              <div><Label>名稱</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
+              <div><Label>SKU *</Label><Input value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} /></div>
+              <div><Label>產品名稱 *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></div>
             </div>
-            <div>
-              <Label>分類</Label>
-              <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
-                <SelectTrigger><SelectValue placeholder="選擇分類" /></SelectTrigger>
-                <SelectContent>
-                  {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+
+            {/* Category + Origin */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>分類 *</Label>
+                <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
+                  <SelectTrigger><SelectValue placeholder="選擇分類" /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>產地 *</Label>
+                <Select value={form.country_of_origin} onValueChange={v => setForm({ ...form, country_of_origin: v })}>
+                  <SelectTrigger><SelectValue placeholder="選擇產地" /></SelectTrigger>
+                  <SelectContent>
+                    {ORIGINS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div><Label>描述</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+
+            {/* Price + Min Order + Stock */}
             <div className="grid grid-cols-3 gap-3">
-              <div><Label>批發價</Label><Input type="number" value={form.wholesale_price} onChange={e => setForm({ ...form, wholesale_price: e.target.value })} /></div>
+              <div><Label>批發價 *</Label><Input type="number" value={form.wholesale_price} onChange={e => setForm({ ...form, wholesale_price: e.target.value })} /></div>
               <div><Label>最低訂購</Label><Input type="number" value={form.min_order} onChange={e => setForm({ ...form, min_order: e.target.value })} /></div>
               <div><Label>庫存</Label><Input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} /></div>
             </div>
+
+            {/* Unit + Net Weight */}
             <div className="grid grid-cols-2 gap-3">
               <div><Label>單位</Label><Input value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })} /></div>
-              <div><Label>原產地</Label><Input value={form.country_of_origin} onChange={e => setForm({ ...form, country_of_origin: e.target.value })} /></div>
+              <div><Label>淨重</Label><Input value={form.net_weight} placeholder="e.g. 100g" onChange={e => setForm({ ...form, net_weight: e.target.value })} /></div>
             </div>
-            <div>
-              <Label>狀態</Label>
-              <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">啟用</SelectItem>
-                  <SelectItem value="inactive">停用</SelectItem>
-                </SelectContent>
-              </Select>
+
+            {/* Description */}
+            <div><Label>產品描述</Label><Textarea rows={2} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+
+            {/* Nutrition */}
+            <div><Label>營養資料</Label><Textarea rows={2} value={form.nutrition_info} placeholder="蛋白質、脂肪、水分..." onChange={e => setForm({ ...form, nutrition_info: e.target.value })} /></div>
+
+            {/* Status + Visibility */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>狀態</Label>
+                <Select value={form.status} onValueChange={v => setForm({ ...form, status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">啟用</SelectItem>
+                    <SelectItem value="inactive">停用</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label>客戶端顯示</Label>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Switch
+                    checked={form.is_visible !== false}
+                    onCheckedChange={v => setForm({ ...form, is_visible: v })}
+                  />
+                  <span className="text-sm text-muted-foreground">{form.is_visible !== false ? '顯示' : '隱藏'}</span>
+                </div>
+              </div>
             </div>
+
+            {/* Images */}
             {['image1', 'image2', 'image3'].map((field, i) => (
               <div key={field}>
                 <Label>圖片 {i + 1}</Label>

@@ -30,6 +30,14 @@
       "type": "string",
       "description": "\u55ae\u4f4d"
     },
+    "net_weight": {
+      "type": "string",
+      "description": "\u6de8\u91cd"
+    },
+    "nutrition_info": {
+      "type": "string",
+      "description": "\u71df\u990a\u8cc7\u6599"
+    },
     "stock": {
       "type": "number",
       "description": "\u5eab\u5b58"
@@ -48,6 +56,18 @@
     },
     "country_of_origin": {
       "type": "string",
+      "enum": [
+        "\u4e2d\u570b",
+        "\u9999\u6e2f",
+        "\u53f0\u7063",
+        "\u65e5\u672c",
+        "\u97d3\u570b",
+        "\u7f8e\u570b",
+        "\u6b50\u6d32",
+        "\u6fb3\u6d32",
+        "\u6cf0\u570b",
+        "\u5176\u4ed6"
+      ],
       "description": "\u539f\u7522\u5730"
     },
     "status": {
@@ -58,6 +78,11 @@
       ],
       "default": "active",
       "description": "\u72c0\u614b"
+    },
+    "is_visible": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u662f\u5426\u986f\u793a\u65bc\u5ba2\u6236\u7aef"
     }
   },
   "required": [

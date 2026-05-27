@@ -10,10 +10,12 @@ import { addToCart } from '@/lib/cartStore';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ORIGINS } from '@/components/shared/OriginBadge';
 
 export default function ProductCatalog() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [activeOrigin, setActiveOrigin] = useState('all');
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
@@ -26,9 +28,11 @@ export default function ProductCatalog() {
   });
 
   const filtered = products.filter(p => {
+    if (p.is_visible === false) return false;
     const matchSearch = !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase());
     const matchCat = activeCategory === 'all' || p.category === activeCategory;
-    return matchSearch && matchCat;
+    const matchOrigin = activeOrigin === 'all' || p.country_of_origin === activeOrigin;
+    return matchSearch && matchCat && matchOrigin;
   });
 
   const handleAdd = (product) => {
@@ -52,24 +56,31 @@ export default function ProductCatalog() {
       </div>
 
       {/* Category filter */}
-      <div className="flex gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar">
-        <Button
-          variant={activeCategory === 'all' ? 'default' : 'outline'}
-          size="sm"
-          className={cn(activeCategory === 'all' && 'bg-primary')}
-          onClick={() => setActiveCategory('all')}
-        >
+      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+        <Button variant={activeCategory === 'all' ? 'default' : 'outline'} size="sm"
+          className={cn(activeCategory === 'all' && 'bg-primary')} onClick={() => setActiveCategory('all')}>
           全部
         </Button>
         {categories.map(cat => (
-          <Button
-            key={cat.id}
-            variant={activeCategory === cat.name ? 'default' : 'outline'}
-            size="sm"
+          <Button key={cat.id} variant={activeCategory === cat.name ? 'default' : 'outline'} size="sm"
             className={cn('whitespace-nowrap', activeCategory === cat.name && 'bg-primary')}
-            onClick={() => setActiveCategory(cat.name)}
-          >
+            onClick={() => setActiveCategory(cat.name)}>
             {cat.name}
+          </Button>
+        ))}
+      </div>
+
+      {/* Origin filter */}
+      <div className="flex gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar">
+        <Button variant={activeOrigin === 'all' ? 'default' : 'outline'} size="sm"
+          className={cn('text-xs', activeOrigin === 'all' ? 'bg-primary' : '')} onClick={() => setActiveOrigin('all')}>
+          全部產地
+        </Button>
+        {ORIGINS.map(o => (
+          <Button key={o} variant={activeOrigin === o ? 'default' : 'outline'} size="sm"
+            className={cn('whitespace-nowrap text-xs', activeOrigin === o && 'bg-primary')}
+            onClick={() => setActiveOrigin(o)}>
+            {o}
           </Button>
         ))}
       </div>

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, MapPin } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
+import OriginBadge from '@/components/shared/OriginBadge';
 
 export default function ProductCard({ product, onAddToCart }) {
   const images = [product.image1, product.image2, product.image3].filter(Boolean);
@@ -43,9 +44,10 @@ export default function ProductCard({ product, onAddToCart }) {
       <div className="p-4">
         <h3 className="font-semibold text-sm line-clamp-2 mb-2">{product.name}</h3>
         
-        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-          <MapPin className="h-3 w-3" />
-          {product.country_of_origin || '未標示'}
+        <div className="mb-2">
+          {product.country_of_origin
+            ? <OriginBadge origin={product.country_of_origin} />
+            : <span className="text-xs text-muted-foreground">未標示</span>}
         </div>
 
         <div className="flex items-end justify-between mt-3">

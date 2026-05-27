@@ -165,7 +165,15 @@ export default function ProductManagement() {
           <TableBody>
             {filtered.map(p => (
               <TableRow key={p.id} className={p.is_visible === false ? 'opacity-50' : ''}>
-                <TableCell className="font-mono text-sm">{p.sku}</TableCell>
+                <TableCell className="font-mono text-sm">
+                  <div className="flex items-center gap-2">
+                    {p.image1
+                      ? <img src={p.image1} alt="" className="w-8 h-8 rounded object-cover shrink-0" />
+                      : <div className="w-8 h-8 rounded bg-muted flex items-center justify-center shrink-0 text-muted-foreground text-xs">無</div>
+                    }
+                    {p.sku}
+                  </div>
+                </TableCell>
                 <TableCell className="max-w-[160px] truncate">{p.name}</TableCell>
                 <TableCell className="text-sm">{p.category}</TableCell>
                 <TableCell><OriginBadge origin={p.country_of_origin} /></TableCell>

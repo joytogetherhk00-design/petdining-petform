@@ -56,6 +56,7 @@ const adminNav = [
   { label: '導師管理', icon: UsersRound, path: '/admin/instructors' },
   { label: '報名管理', icon: UsersRound, path: '/admin/enrollments' },
   { label: '時間表', icon: Calendar, path: '/admin/schedule' },
+  { label: '一般用戶', icon: UsersRound, path: '/admin/users' },
   { label: '系統設定', icon: Settings, path: '/admin/settings' },
   { label: '管理員', icon: Shield, path: '/admin/admins' },
 ];

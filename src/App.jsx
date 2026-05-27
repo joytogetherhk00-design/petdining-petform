@@ -36,6 +36,7 @@ import CourseManagement from '@/pages/admin/CourseManagement';
 import InstructorManagement from '@/pages/admin/InstructorManagement';
 import EnrollmentManagement from '@/pages/admin/EnrollmentManagement';
 import CourseSchedule from '@/pages/admin/CourseSchedule';
+import UserManagement from '@/pages/admin/UserManagement';
 import CreditsTopup from '@/pages/customer/CreditsTopup';
 import CreditsSuccess from '@/pages/customer/CreditsSuccess';
 import CreditsCancel from '@/pages/customer/CreditsCancel';
@@ -121,6 +122,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/instructors" element={<InstructorManagement />} />
         <Route path="/admin/enrollments" element={<EnrollmentManagement />} />
         <Route path="/admin/schedule" element={<CourseSchedule />} />
+        <Route path="/admin/users" element={<UserManagement />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

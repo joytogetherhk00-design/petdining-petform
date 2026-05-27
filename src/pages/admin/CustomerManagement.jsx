@@ -23,6 +23,7 @@ export default function CustomerManagement() {
   const [addOpen, setAddOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(null);
   const [pendingOpen, setPendingOpen] = useState(null);
+  const [editOpen, setEditOpen] = useState(null);
   const [newCustomer, setNewCustomer] = useState({
     company_name: '', contact: '', phone: '', email: '',
     delivery_address: '', branch_address: '', br_address: '', plan: 'plan_a', region: 'PDK',
@@ -63,26 +64,25 @@ export default function CustomerManagement() {
       br_address: newCustomer.br_address,
       logo_url: newCustomer.logo_url,
       br_document_url: newCustomer.br_document_url,
-      status: 'active',
+      status: 'pending',
       plan: newCustomer.plan,
       monthly_credits: plan.credits,
-      credits_balance: plan.credits,
-      approved_date: new Date().toISOString().split('T')[0],
+      credits_balance: 0,
       user_email: newCustomer.email,
-    });
-    await base44.entities.CreditsLog.create({
-      customer_id: accountNum,
-      month: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`,
-      allocated: plan.credits,
-      used: 0,
-      remaining: plan.credits,
-      type: 'allocation',
-      status: 'active',
+      onboarding_completed: true,
     });
     queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
     setAddOpen(false);
     setNewCustomer({ company_name: '', contact: '', phone: '', email: '', delivery_address: '', branch_address: '', br_address: '', plan: 'plan_a', region: 'PDK', logo_url: '', br_document_url: '' });
-    toast.success('客戶已新增');
+    toast.success('客戶已新增（待審批）');
+  };
+
+  const handleEdit = async () => {
+    if (!editOpen) return;
+    await base44.entities.Customers.update(editOpen.id, editOpen);
+    queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
+    setEditOpen(null);
+    toast.success('客戶資料已更新');
   };
 
   const toggleStatus = async (customer) => {
@@ -183,6 +183,9 @@ export default function CustomerManagement() {
                     <Button variant="outline" size="sm" onClick={() => toggleStatus(c)}>
                       {c.status === 'active' ? '暫停' : '啟用'}
                     </Button>
+                    <Button variant="outline" size="sm" onClick={() => setEditOpen({ ...c })}>
+                      編輯
+                    </Button>
                     {c.pending_changes && (
                       <Button variant="outline" size="sm" className="text-amber-600" onClick={() => setPendingOpen(c)}>
                         審批
@@ -216,6 +219,9 @@ export default function CustomerManagement() {
                 <div className="grid grid-cols-2 gap-3">
                   <div><span className="text-muted-foreground">帳戶編號：</span><span className="font-mono font-semibold">{detailOpen.customer_id}</span></div>
                   <div><span className="text-muted-foreground">狀態：</span><StatusBadge status={detailOpen.status} /></div>
+                  <div><span className="text-muted-foreground">建立方式：</span>
+                    {detailOpen.created_by_admin ? '管理員新增' : detailOpen.created_by_onboarding ? 'Onboarding' : detailOpen.created_by_application ? '申請批准' : '未知'}
+                  </div>
                   <div><span className="text-muted-foreground">聯絡人：</span>{detailOpen.contact}</div>
                   <div><span className="text-muted-foreground">電話：</span>{detailOpen.phone}</div>
                   <div><span className="text-muted-foreground">電郵：</span>{detailOpen.email}</div>
@@ -286,6 +292,47 @@ export default function CustomerManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>取消</Button>
             <Button className="bg-primary" onClick={handleAdd}>新增</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Customer Dialog */}
+      <Dialog open={!!editOpen} onOpenChange={() => setEditOpen(null)}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>編輯客戶資料 — {editOpen?.customer_id}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="mb-1.5 block">公司 Logo</Label>
+              <DragDropUpload value={editOpen.logo_url || ''} onChange={url => setEditOpen({ ...editOpen, logo_url: url })} accept="image/*" label="上傳 Logo" hint="PNG / JPG" />
+            </div>
+            <div><Label>公司名稱</Label><Input value={editOpen.company_name || ''} onChange={e => setEditOpen({ ...editOpen, company_name: e.target.value })} /></div>
+            <div><Label>聯絡人</Label><Input value={editOpen.contact || ''} onChange={e => setEditOpen({ ...editOpen, contact: e.target.value })} /></div>
+            <div><Label>電話</Label><Input value={editOpen.phone || ''} onChange={e => setEditOpen({ ...editOpen, phone: e.target.value })} /></div>
+            <div><Label>電郵</Label><Input value={editOpen.email || ''} onChange={e => setEditOpen({ ...editOpen, email: e.target.value })} /></div>
+            <div><Label>送貨地址</Label><Input value={editOpen.delivery_address || ''} onChange={e => setEditOpen({ ...editOpen, delivery_address: e.target.value })} /></div>
+            <div><Label>分店地址</Label><Input value={editOpen.branch_address || ''} onChange={e => setEditOpen({ ...editOpen, branch_address: e.target.value })} /></div>
+            <div><Label>商業登記地址</Label><Input value={editOpen.br_address || ''} onChange={e => setEditOpen({ ...editOpen, br_address: e.target.value })} /></div>
+            <div>
+              <Label className="mb-1.5 block">商業登記文件</Label>
+              <DragDropUpload value={editOpen.br_document_url || ''} onChange={url => setEditOpen({ ...editOpen, br_document_url: url })} accept="image/*,.pdf" label="上傳商業登記 (BR)" hint="PNG / JPG / PDF，最大 10MB" />
+            </div>
+            <div>
+              <Label>計劃</Label>
+              <Select value={editOpen.plan || 'plan_a'} onValueChange={v => setEditOpen({ ...editOpen, plan: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(PLAN_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>每月 Credits</Label>
+              <Input type="number" value={editOpen.monthly_credits || 0} onChange={e => setEditOpen({ ...editOpen, monthly_credits: Number(e.target.value) })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(null)}>取消</Button>
+            <Button className="bg-primary" onClick={handleEdit}>儲存</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

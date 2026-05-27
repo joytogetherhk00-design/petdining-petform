@@ -12,12 +12,14 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ORIGINS } from '@/components/shared/OriginBadge';
 import { MEAT_TYPES } from '@/components/shared/MeatBadge';
+import ProductDetailDrawer from '@/components/customer/ProductDetailDrawer';
 
 export default function ProductCatalog() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeOrigin, setActiveOrigin] = useState('all');
   const [activeMeat, setActiveMeat] = useState('all');
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
@@ -124,10 +126,16 @@ export default function ProductCatalog() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map(product => (
-            <ProductCard key={product.id} product={product} onAddToCart={handleAdd} />
+            <ProductCard key={product.id} product={product} onAddToCart={handleAdd} onViewDetail={() => setSelectedProduct(product)} />
           ))}
         </div>
       )}
+      <ProductDetailDrawer
+        product={selectedProduct}
+        open={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onAddToCart={handleAdd}
+      />
     </div>
   );
 }

@@ -6,14 +6,14 @@ import { ShoppingCart } from 'lucide-react';
 import OriginBadge from '@/components/shared/OriginBadge';
 import MeatBadge from '@/components/shared/MeatBadge';
 
-export default function ProductCard({ product, onAddToCart }) {
+export default function ProductCard({ product, onAddToCart, onViewDetail }) {
   const images = [product.image1, product.image2, product.image3].filter(Boolean);
   const [activeImg, setActiveImg] = useState(0);
 
   return (
     <Card className="overflow-hidden group hover:shadow-lg transition-all duration-300">
       {/* Image */}
-      <div className="relative aspect-square bg-muted overflow-hidden">
+      <div className="relative aspect-square bg-muted overflow-hidden cursor-pointer" onClick={onViewDetail}>
         {images.length > 0 ? (
           <img
             src={images[activeImg]}
@@ -43,7 +43,7 @@ export default function ProductCard({ product, onAddToCart }) {
 
       {/* Info */}
       <div className="p-4">
-        <h3 className="font-semibold text-sm line-clamp-2 mb-2">{product.name}</h3>
+        <h3 className="font-semibold text-sm line-clamp-2 mb-2 cursor-pointer hover:text-primary transition-colors" onClick={onViewDetail}>{product.name}</h3>
         
         <div className="flex flex-wrap gap-1 mb-2">
           {product.meat_type && <MeatBadge meatType={product.meat_type} />}

@@ -14,13 +14,11 @@ import {
 } from '@/components/ui/dialog';
 import {
   ArrowLeft, Users, Calendar, MapPin, CheckCircle, XCircle, Clock,
-  Download, AlertCircle, UserCheck, Phone, FileSpreadsheet, FileText, Pencil,
+  Download, AlertCircle, UserCheck, Phone, FileSpreadsheet, Pencil,
 } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { toast } from 'sonner';
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 
 const STATUS_LABELS = {
   pending: '待確認',
@@ -280,21 +278,30 @@ export default function CourseEnrollmentDetail() {
     queryKey: ['enrollments', scheduleId],
     queryFn: async () => {
       if (!schedule) return [];
+      // 嘗試用 schedule_id (record id) 匹配，再 fallback 到 course_id
+      const byScheduleId = await base44.entities.Enrollments.filter({ schedule_id: schedule.id });
+      if (byScheduleId.length > 0) return byScheduleId;
+      // fallback: 如果 schedule_id 欄位存的是 schedule.schedule_id 自訂欄位
+      if (schedule.schedule_id) {
+        const byCustomId = await base44.entities.Enrollments.filter({ schedule_id: schedule.schedule_id });
+        if (byCustomId.length > 0) return byCustomId;
+      }
+      // final fallback: 用 course_id
       return base44.entities.Enrollments.filter({ course_id: schedule.course_id });
     },
     enabled: !!scheduleId && !!schedule,
   });
 
   // Recalculate and sync enrollment counts to schedule
-  const syncScheduleCapacity = async (scheduleId, newEnrollments, overrideMaxStudents) => {
+  const syncScheduleCapacity = async (sid, newEnrollments, overrideMaxStudents) => {
     const confirmedCount = newEnrollments.filter(
-      e => e.payment_status === 'paid' && e.status !== 'cancelled'
+      e => e.status !== 'cancelled'
     ).length;
     const max = overrideMaxStudents ?? schedule?.max_students ?? 0;
     const spotsRemaining = max - confirmedCount;
     const updates = { enrolled_count: confirmedCount };
-    if (spotsRemaining <= 0) updates.status = 'ongoing'; // full
-    await base44.entities.CourseSchedule.update(scheduleId, updates);
+    if (spotsRemaining <= 0 && schedule?.status === 'upcoming') updates.status = 'ongoing';
+    await base44.entities.CourseSchedule.update(sid, updates);
     queryClient.invalidateQueries({ queryKey: ['schedule', scheduleId] });
     queryClient.invalidateQueries({ queryKey: ['courseSchedules'] });
   };
@@ -365,24 +372,7 @@ export default function CourseEnrollmentDetail() {
     toast.success('已匯出 Excel');
   };
 
-  const handleExportPDF = () => {
-    toast.info('正在生成 PDF...');
-    const printWindow = window.open('', '_blank');
-    const date = new Date().toLocaleDateString('zh-HK');
-    const courseName = schedule?.course_title || '課程';
-    printWindow.document.write(`
-      <html><head><title>${courseName} 學員名單 - ${date}</title>
-      <style>body{font-family:Arial,sans-serif;padding:40px}h1{color:#333;border-bottom:2px solid #ff8c42;padding-bottom:10px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:12px;text-align:left}th{background-color:#ff8c42;color:white}tr:nth-child(even){background-color:#f9f9f9}</style>
-      </head><body>
-      <h1>${courseName}</h1>
-      <p>${date} | 學員人數：${enrollments.length} 人</p>
-      <table><thead><tr><th>姓名</th><th>電話</th><th>電郵</th><th>公司</th><th>支付狀態</th><th>報名狀態</th><th>出席狀態</th></tr></thead>
-      <tbody>${enrollments.map(e => `<tr><td>${e.student_name || e.user_name || ''}</td><td>${e.student_phone || ''}</td><td>${e.student_email || e.user_email || ''}</td><td>${e.company || ''}</td><td>${PAYMENT_LABELS[e.payment_status] || e.payment_status || ''}</td><td>${STATUS_LABELS[e.status] || e.status || ''}</td><td>${ATTENDANCE_LABELS[e.attendance_status] || ''}</td></tr>`).join('')}
-      </tbody></table></body></html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
-  };
+
 
   const getAttendanceBadge = (status) => {
     const config = {
@@ -511,21 +501,9 @@ export default function CourseEnrollmentDetail() {
                   <UserCheck className="w-4 h-4 mr-2" />
                   {attendanceMode ? '退出簽到' : '簽到模式'}
                 </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Download className="w-4 h-4 mr-2" />匯出
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={handleExportExcel}>
-                      <FileSpreadsheet className="w-4 h-4 mr-2" />匯出 Excel
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportPDF}>
-                      <FileText className="w-4 h-4 mr-2" />匯出 PDF
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Button variant="outline" size="sm" onClick={handleExportExcel}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />匯出 CSV
+                </Button>
               </div>
             </div>
           </CardHeader>

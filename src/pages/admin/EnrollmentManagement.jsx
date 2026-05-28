@@ -20,9 +20,11 @@ export default function EnrollmentManagement() {
     queryFn: () => base44.entities.Enrollments.list(),
   });
 
-  // 按課程分組統計
+  // 按課程分組統計 - 用 id 或 schedule_id 匹配
   const courseStats = schedules.map(schedule => {
-    const enrolled = enrollments.filter(e => e.schedule_id === schedule.schedule_id).length;
+    const enrolled = enrollments.filter(e =>
+      e.schedule_id === schedule.id || e.schedule_id === schedule.schedule_id
+    ).length;
     return {
       ...schedule,
       enrolled_count: enrolled,

@@ -200,7 +200,7 @@ export default function CourseManagement() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-muted-foreground" />
-                        <span>{course.enrolled_count || 0} / {course.max_students} 人</span>
+                        <span>最多 {course.max_students} 人</span>
                       </div>
                     </div>
                   </div>
@@ -341,8 +341,10 @@ export default function CourseManagement() {
                 <div>
                   <Label>課程圖片</Label>
                   <DragDropUpload
-                    onUploadComplete={(url) => setFormData({...formData, image_url: url})}
-                    acceptedTypes="image/*"
+                    value={formData.image_url}
+                    onChange={(url) => setFormData({...formData, image_url: url})}
+                    accept="image/*"
+                    label="上傳課程圖片"
                   />
                 </div>
               </div>

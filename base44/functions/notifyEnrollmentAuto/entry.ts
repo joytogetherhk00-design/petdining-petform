@@ -15,21 +15,17 @@ Deno.serve(async (req) => {
     
     // 如果是 Quota 支付，自動發送確認郵件
     if (enrollment.payment_method === 'quota' && enrollment.status === 'confirmed') {
-      // 獲取課程詳情
-      const courses = await base44.asServiceRole.entities.Courses.filter({ course_id: enrollment.course_id });
-      const course = courses[0];
-
       // 獲取時間表詳情
       let scheduleDetails = '';
       if (enrollment.schedule_id) {
         const schedules = await base44.asServiceRole.entities.CourseSchedule.filter({ schedule_id: enrollment.schedule_id });
         if (schedules.length > 0) {
           const schedule = schedules[0];
-          const startDate = new Date(schedule.start_datetime).toLocaleString('zh-HK', {
+          const startDate = new Date(schedule.start_datetime || '').toLocaleString('zh-HK', {
             dateStyle: 'full',
             timeStyle: 'short',
           });
-          const endDate = new Date(schedule.end_datetime).toLocaleString('zh-HK', {
+          const endDate = new Date(schedule.end_datetime || '').toLocaleString('zh-HK', {
             timeStyle: 'short',
           });
           scheduleDetails = `
@@ -43,20 +39,20 @@ ${schedule.location || enrollment.location || '待定'}
 
       // 發送確認郵件
       await base44.asServiceRole.integrations.Core.SendEmail({
-        to: enrollment.user_email,
-        subject: `✅ 課程報名已確認 - ${enrollment.course_title}`,
+        to: enrollment.user_email || '',
+        subject: `✅ 課程報名已確認 - ${enrollment.course_title || ''}`,
         body: `
 <div style="font-family:sans-serif;max-width:600px;margin:auto;color:#1f2937;">
   <div style="background:#10b981;padding:24px;border-radius:12px 12px 0 0;text-align:center;">
     <h1 style="color:#fff;margin:0;font-size:24px;">✅ 報名已確認</h1>
   </div>
   <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
-    <p>親愛的 <strong>${enrollment.student_name || enrollment.user_name}</strong>，</p>
+    <p>親愛的 <strong>${enrollment.student_name || enrollment.user_name || ''}</strong>，</p>
     <p>感謝您報名參加我們的課程！您的報名已獲確認。</p>
     
     <div style="background:#f9fafb;padding:16px;border-radius:8px;margin:16px 0;">
-      <p style="margin:4px 0;"><strong>課程名稱：</strong>${enrollment.course_title}</p>
-      <p style="margin:4px 0;"><strong>報名編號：</strong>#${enrollment.enrollment_id || enrollment.id}</p>
+      <p style="margin:4px 0;"><strong>課程名稱：</strong>${enrollment.course_title || ''}</p>
+      <p style="margin:4px 0;"><strong>報名編號：</strong>#${enrollment.enrollment_id || enrollment.id || ''}</p>
       <p style="margin:4px 0;"><strong>支付狀態：</strong>✅ 已支付（Quota）</p>
       <p style="margin:4px 0;"><strong>支付方式：</strong>Quota（商業客戶名額）</p>
     </div>

@@ -7,19 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Search, 
-  Calendar, 
-  Users, 
-  Clock, 
-  MapPin, 
-  Plus, 
-  Edit, 
-  Trash2,
-  CheckCircle,
-  XCircle,
-  CalendarDays
-} from 'lucide-react';
+import { Search, Calendar, Users, Clock, MapPin, CalendarDays } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -35,13 +23,22 @@ export default function CourseCatalog() {
 
   const { data: courses = [], isLoading } = useQuery({
     queryKey: ['courses'],
-    queryFn: () => base44.entities.Courses.list(),
+    queryFn: () => base44.entities.Courses.filter({ status: 'active' }),
   });
 
   const { data: schedules = [] } = useQuery({
     queryKey: ['courseSchedules'],
     queryFn: () => base44.entities.CourseSchedule.list(),
   });
+
+  const { data: enrollments = [] } = useQuery({
+    queryKey: ['allEnrollments'],
+    queryFn: () => base44.entities.Enrollments.list(),
+  });
+
+  // Calculate enrolled count dynamically per schedule
+  const getEnrolledCount = (schedId) =>
+    enrollments.filter(e => (e.schedule_id === schedId) && e.status !== 'cancelled').length;
 
   const filteredCourses = courses.filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,12 +80,7 @@ export default function CourseCatalog() {
         <PageHeader
           title="課程目錄"
           description="探索我們的專業寵物友善餐飲課程"
-          action={
-            <Button onClick={() => window.location.href = '/admin/courses'}>
-              <Plus className="w-4 h-4 mr-2" />
-              管理課程
-            </Button>
-          }
+          action={null}
         />
 
         {/* 搜索和篩選 */}
@@ -148,7 +140,7 @@ export default function CourseCatalog() {
                      course.status === 'full' ? '已滿' : '暫停'}
                   </Badge>
                   <span className="text-sm text-muted-foreground">
-                    {course.enrolled_count || 0} / {course.max_students} 人
+                    {schedules.filter(s => s.course_id === course.id).reduce((sum, s) => sum + getEnrolledCount(s.id), 0)} / {course.max_students} 人
                   </span>
                 </div>
               </CardContent>
@@ -236,7 +228,7 @@ export default function CourseCatalog() {
                             </div>
                             <div className="flex items-center gap-1">
                               <Users className="w-3 h-3" />
-                              <span>{sched.enrolled_count || 0} / {sched.max_students} 人</span>
+                              <span>{getEnrolledCount(sched.id)} / {sched.max_students} 人</span>
                             </div>
                           </div>
                           <div className="flex justify-end mt-2">

@@ -109,10 +109,12 @@ export default function Welcome() {
         navigate('/courses');
       } else if (userType === 'business') {
         if (customer) {
-          if (customer.status === 'approved') {
-            navigate('/admin');
+          if (customer.status === 'active') {
+            navigate('/products');
           } else if (customer.status === 'pending') {
             navigate('/pending');
+          } else {
+            navigate('/apply');
           }
         } else {
           navigate('/apply');

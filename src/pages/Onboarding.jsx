@@ -55,6 +55,7 @@ export default function Onboarding() {
   const handleSubmit = async () => {
     if (!validate()) return;
     setSubmitting(true);
+    try {
 
     // Find existing pending customer record by user email
     const existing = await base44.entities.Customers.filter({ user_email: user.email });
@@ -83,9 +84,14 @@ export default function Onboarding() {
       customer_id: customerRecord.customer_id,
     });
 
-    queryClient.invalidateQueries({ queryKey: ['customer'] });
-    toast.success('資料已提交，等待審批！');
-    navigate('/pending');
+      queryClient.invalidateQueries({ queryKey: ['customer'] });
+      toast.success('資料已提交，等待審批！');
+      navigate('/pending');
+    } catch (error) {
+      toast.error('提交失敗：' + error.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

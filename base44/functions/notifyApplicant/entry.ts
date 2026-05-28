@@ -25,10 +25,10 @@ Deno.serve(async (req) => {
 
       // Fetch plan config
       const planMap = {
-        plan_a: { credits: 3000, name: '計劃 A' },
-        plan_b: { credits: 5000, name: '計劃 B' },
-        plan_c: { credits: 8000, name: '計劃 C' },
-        plan_d: { credits: 12000, name: '計劃 D' },
+        plan_a: { credits: 1000, name: '計劃 A' },
+        plan_b: { credits: 1000, name: '計劃 B' },
+        plan_c: { credits: 1500, name: '計劃 C' },
+        plan_d: { credits: 1500, name: '計劃 D' },
       };
       const selectedPlan = planMap[plan] || planMap['plan_a'];
 
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
         credits_balance: selectedPlan.credits,
         approved_date: new Date().toISOString().split('T')[0],
         user_email: app.email,
-        onboarding_completed: true,
+        onboarding_completed: false,
       });
 
       // Create initial credits log

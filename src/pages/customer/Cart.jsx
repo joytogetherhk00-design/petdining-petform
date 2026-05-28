@@ -7,16 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, Minus, AlertCircle, ShoppingCart } from 'lucide-react';
+import { Trash2, Plus, Minus, AlertCircle, ShoppingCart, Ticket, CreditCard } from 'lucide-react';
 import { getCart, saveCart, removeFromCart, clearCart, getCartTotal, getCartItemCount } from '@/lib/cartStore';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 export default function Cart() {
   const [items, setItems] = useState(getCart());
   const [notes, setNotes] = useState('');
   const [selectedAddress, setSelectedAddress] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [quotaDialog, setQuotaDialog] = useState(null); // { item, quotaRemaining }
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -74,58 +76,25 @@ export default function Cart() {
       const courseItems = items.filter(item => item.type === 'course');
       const productItems = items.filter(item => item.type === 'product' || !item.type);
       
-      // 如果有課程項目，直接跳轉到 Stripe 支付（不處理產品）
+      // 如果有課程項目，處理課程報名
       if (courseItems.length > 0) {
         const item = courseItems[0]; // 只處理第一個課程
         const me = await base44.auth.me();
-        
-        // 創建報名記錄
-        const enrollment = await base44.entities.Enrollments.create({
-          enrollment_id: `ENR-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
-          course_id: item.course_id,
-          course_title: item.course_title,
-          schedule_id: item.schedule_id,
-          schedule_date: item.schedule_date,
-          schedule_end: item.schedule_end,
-          location: item.location,
-          user_email: me.email,
-          user_name: me.full_name,
-          student_name: item.student_name,
-          student_gender: item.student_gender,
-          student_phone: item.student_phone,
-          student_email: item.student_email,
-          company: item.company,
-          branch: item.branch,
-          payment_method: 'stripe',
-          payment_status: 'pending',
-          amount_paid: item.price,
-          quota_used: false,
-          status: 'pending',
-          enrollment_date: new Date().toISOString(),
-        });
-        
-        // 創建 Stripe 結算
-        const checkoutResponse = await base44.functions.invoke('createCourseCheckoutSession', {
-          enrollmentId: enrollment.id,
-          courseId: item.course_id,
-          courseTitle: item.course_title,
-          amount: item.price,
-          studentName: item.student_name,
-          scheduleDate: item.schedule_date,
-          scheduleEnd: item.schedule_end,
-          location: item.location,
-        });
-        
-        if (checkoutResponse.url) {
-          // 清除購物車中的課程項目
-          const newCart = items.filter(i => i.type !== 'course');
-          localStorage.setItem('cart', JSON.stringify(newCart));
-          window.dispatchEvent(new Event('cart-updated'));
-          
-          // 跳轉到 Stripe 支付
-          window.location.href = checkoutResponse.url;
-          return;
+
+        // 如果是商業客戶，先檢查 quota
+        if (customer && me.user_type === 'business') {
+          const quotaRemaining = customer.quota_remaining || 0;
+          if (quotaRemaining > 0) {
+            // 有 quota，彈出選擇框
+            setSubmitting(false);
+            setQuotaDialog({ item, quotaRemaining });
+            return;
+          }
         }
+
+        // 無 quota 或非商業客戶 → 直接 Stripe
+        await proceedWithStripe(item);
+        return;
       }
       
       // 處理產品訂單（原有的邏輯）
@@ -191,10 +160,136 @@ export default function Cart() {
     }
   };
 
+  const proceedWithStripe = async (item) => {
+    setSubmitting(true);
+    const me = await base44.auth.me();
+    const enrollment = await base44.entities.Enrollments.create({
+      enrollment_id: `ENR-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
+      course_id: item.course_id,
+      course_title: item.course_title,
+      schedule_id: item.schedule_id,
+      schedule_date: item.schedule_date,
+      schedule_end: item.schedule_end,
+      location: item.location,
+      user_email: me.email,
+      user_name: me.full_name,
+      student_name: item.student_name,
+      student_gender: item.student_gender,
+      student_phone: item.student_phone,
+      student_email: item.student_email,
+      company: item.company,
+      branch: item.branch,
+      payment_method: 'stripe',
+      payment_status: 'pending',
+      amount_paid: item.price,
+      quota_used: false,
+      status: 'pending',
+      enrollment_date: new Date().toISOString(),
+    });
+
+    const checkoutResponse = await base44.functions.invoke('createCourseCheckoutSession', {
+      enrollmentId: enrollment.id,
+      courseId: item.course_id,
+      courseTitle: item.course_title,
+      amount: item.price,
+      studentName: item.student_name,
+      scheduleDate: item.schedule_date,
+      scheduleEnd: item.schedule_end,
+      location: item.location,
+    });
+
+    if (checkoutResponse.data?.url) {
+      const newCart = items.filter(i => i.type !== 'course');
+      localStorage.setItem('cart', JSON.stringify(newCart));
+      window.dispatchEvent(new Event('cart-updated'));
+      window.location.href = checkoutResponse.data.url;
+    } else {
+      toast.error(checkoutResponse.data?.error || '建立付款失敗');
+      setSubmitting(false);
+    }
+  };
+
+  const proceedWithQuota = async (item) => {
+    setQuotaDialog(null);
+    setSubmitting(true);
+    const me = await base44.auth.me();
+    await base44.entities.Enrollments.create({
+      enrollment_id: `ENR-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
+      course_id: item.course_id,
+      course_title: item.course_title,
+      schedule_id: item.schedule_id,
+      schedule_date: item.schedule_date,
+      schedule_end: item.schedule_end,
+      location: item.location,
+      user_email: me.email,
+      user_name: me.full_name,
+      student_name: item.student_name,
+      student_gender: item.student_gender,
+      student_phone: item.student_phone,
+      student_email: item.student_email,
+      company: item.company,
+      branch: item.branch,
+      payment_method: 'quota',
+      payment_status: 'paid',
+      amount_paid: 0,
+      quota_used: true,
+      status: 'confirmed',
+      enrollment_date: new Date().toISOString(),
+    });
+
+    // Deduct quota
+    await base44.entities.Customers.update(customer.id, {
+      quota_remaining: (customer.quota_remaining || 0) - 1,
+    });
+
+    const newCart = items.filter(i => i.type !== 'course');
+    localStorage.setItem('cart', JSON.stringify(newCart));
+    window.dispatchEvent(new Event('cart-updated'));
+    setItems(newCart);
+    queryClient.invalidateQueries({ queryKey: ['myCustomer'] });
+    toast.success('已使用 Quota 完成報名！');
+    setSubmitting(false);
+    navigate('/my-courses');
+  };
+
   const addresses = [
     customer?.delivery_address,
     ...(customer?.multiple_addresses || [])
   ].filter(Boolean);
+
+  // Quota / Stripe selection dialog
+  const QuotaChoiceDialog = () => (
+    <Dialog open={!!quotaDialog} onOpenChange={() => setQuotaDialog(null)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>選擇付款方式</DialogTitle>
+          <DialogDescription>請選擇報名課程的付款方式</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 pt-2">
+          <button
+            className="w-full flex items-start gap-3 p-4 rounded-xl border-2 border-primary bg-primary/5 hover:bg-primary/10 transition-all text-left"
+            onClick={() => proceedWithQuota(quotaDialog.item)}
+          >
+            <Ticket className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold text-primary">使用 Quota 報名（免費）</p>
+              <p className="text-sm text-muted-foreground">剩餘 Quota：{quotaDialog?.quotaRemaining} 次</p>
+            </div>
+          </button>
+          <button
+            className="w-full flex items-start gap-3 p-4 rounded-xl border-2 border-border hover:border-primary/40 transition-all text-left"
+            onClick={() => { setQuotaDialog(null); proceedWithStripe(quotaDialog.item); }}
+          >
+            <CreditCard className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold">Stripe 信用卡付款</p>
+              <p className="text-sm text-muted-foreground">HK${quotaDialog?.item?.price?.toLocaleString()} 全額支付</p>
+            </div>
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   if (items.length === 0) {
     return (
@@ -211,6 +306,7 @@ export default function Cart() {
 
   return (
     <div>
+      <QuotaChoiceDialog />
       <PageHeader title="購物車" description={`共 ${items.length} 項產品`} />
 
       <div className="grid lg:grid-cols-3 gap-6">

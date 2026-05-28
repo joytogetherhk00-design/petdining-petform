@@ -293,15 +293,17 @@ export default function CourseEnrollmentDetail() {
   });
 
   // Recalculate and sync enrollment counts to schedule
+  // enrolled_count is calculated dynamically from Enrollments — only update status if needed
   const syncScheduleCapacity = async (sid, newEnrollments, overrideMaxStudents) => {
-    const confirmedCount = newEnrollments.filter(
-      e => e.status !== 'cancelled'
-    ).length;
+    const confirmedCount = newEnrollments.filter(e => e.status !== 'cancelled').length;
     const max = overrideMaxStudents ?? schedule?.max_students ?? 0;
     const spotsRemaining = max - confirmedCount;
-    const updates = { enrolled_count: confirmedCount };
+    const updates = {};
+    if (overrideMaxStudents !== undefined) updates.max_students = overrideMaxStudents;
     if (spotsRemaining <= 0 && schedule?.status === 'upcoming') updates.status = 'ongoing';
-    await base44.entities.CourseSchedule.update(sid, updates);
+    if (Object.keys(updates).length > 0) {
+      await base44.entities.CourseSchedule.update(sid, updates);
+    }
     queryClient.invalidateQueries({ queryKey: ['schedule', scheduleId] });
     queryClient.invalidateQueries({ queryKey: ['courseSchedules'] });
   };

@@ -16,11 +16,12 @@
     },
     "instructor_id": {
       "type": "string",
-      "description": "\u5c0e\u5e2b ID"
+      "description": "\u5c0e\u5e2b ID",
+      "$ref": "Instructors"
     },
     "instructor_name": {
       "type": "string",
-      "description": "\u5c0e\u5e2b\u540d\u7a31"
+      "description": "\u5c0e\u5e2b\u540d\u7a31\uff08\u5197\u9918\u5feb\u53d6\uff09"
     },
     "price": {
       "type": "number",
@@ -38,11 +39,6 @@
     "max_students": {
       "type": "number",
       "description": "\u6700\u5927\u5b78\u751f\u6578"
-    },
-    "enrolled_count": {
-      "type": "number",
-      "default": 0,
-      "description": "\u5df2\u5831\u540d\u4eba\u6578"
     },
     "status": {
       "type": "string",

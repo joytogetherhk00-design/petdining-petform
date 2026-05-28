@@ -112,16 +112,14 @@ export default function Cart() {
         const orderNum = `${customer.customer_id}${String(orders.length + 1).padStart(2, '0')}${month}${year}`;
 
         const order = await base44.entities.Orders.create({
-          customer_id: customer.customer_id,
+          customer_id: customer.customer_id || '',
           order_date: now.toISOString(),
           status: 'pending',
-          subtotal: total,
           credits_used: total,
-          total: total,
-          notes: notes,
+          notes: notes || '',
           order_number: orderNum,
-          delivery_address: selectedAddress || customer.delivery_address,
-          user_email: customer.user_email,
+          delivery_address: selectedAddress || customer.delivery_address || '',
+          user_email: customer.user_email || '',
         });
 
         for (const item of productItems) {

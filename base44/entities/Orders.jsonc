@@ -22,17 +22,9 @@
       "default": "pending",
       "description": "\u72c0\u614b"
     },
-    "subtotal": {
-      "type": "number",
-      "description": "\u5c0f\u8a08"
-    },
     "credits_used": {
       "type": "number",
       "description": "\u4f7f\u7528\u7a4d\u5206"
-    },
-    "total": {
-      "type": "number",
-      "description": "\u7e3d\u8a08"
     },
     "notes": {
       "type": "string",

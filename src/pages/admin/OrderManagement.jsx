@@ -134,7 +134,7 @@ export default function OrderManagement() {
                 <TableCell className="font-mono text-sm">{order.order_number}</TableCell>
                 <TableCell>{order.customer_id}</TableCell>
                 <TableCell className="text-sm">{order.order_date ? format(new Date(order.order_date), 'yyyy/MM/dd') : '-'}</TableCell>
-                <TableCell className="font-semibold">HK${order.total?.toLocaleString()}</TableCell>
+                <TableCell className="font-semibold">HK${(order.credits_used || 0).toLocaleString()}</TableCell>
                 <TableCell><StatusBadge status={order.status} /></TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
                   <Select value={order.status} onValueChange={v => updateStatus(order, v)}>
@@ -162,7 +162,7 @@ export default function OrderManagement() {
                 <div><span className="text-muted-foreground">客戶：</span>{selected.customer_id}</div>
                 <div><span className="text-muted-foreground">狀態：</span><StatusBadge status={selected.status} /></div>
                 <div><span className="text-muted-foreground">日期：</span>{selected.order_date ? format(new Date(selected.order_date), 'yyyy/MM/dd HH:mm') : '-'}</div>
-                <div><span className="text-muted-foreground">總計：</span>HK${selected.total?.toLocaleString()}</div>
+                <div><span className="text-muted-foreground">Credits 使用：</span>HK${(selected.credits_used || 0).toLocaleString()}</div>
                 <div><span className="text-muted-foreground">積分：</span>{selected.credits_used}</div>
               </div>
               {selected.delivery_address && <div className="text-sm"><span className="text-muted-foreground">送貨地址：</span>{selected.delivery_address}</div>}

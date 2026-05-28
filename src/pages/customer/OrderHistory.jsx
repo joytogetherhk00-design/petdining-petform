@@ -70,7 +70,7 @@ export default function OrderHistory() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-primary">HK${order.total?.toLocaleString()}</p>
+                    <p className="font-bold text-primary">HK${(order.credits_used || 0).toLocaleString()}</p>
                     <StatusBadge status={order.status} />
                   </div>
                 </div>
@@ -129,7 +129,7 @@ export default function OrderHistory() {
                 <div><span className="text-muted-foreground">狀態：</span><StatusBadge status={selectedOrder.status} /></div>
                 <div><span className="text-muted-foreground">日期：</span>{selectedOrder.order_date ? format(new Date(selectedOrder.order_date), 'yyyy/MM/dd') : '-'}</div>
                 <div><span className="text-muted-foreground">積分使用：</span>{selectedOrder.credits_used}</div>
-                <div><span className="text-muted-foreground">總計：</span>HK${selectedOrder.total?.toLocaleString()}</div>
+                <div><span className="text-muted-foreground">Credits 使用：</span>HK${(selectedOrder.credits_used || 0).toLocaleString()}</div>
               </div>
               {selectedOrder.delivery_address && (
                 <div className="text-sm"><span className="text-muted-foreground">送貨地址：</span>{selectedOrder.delivery_address}</div>

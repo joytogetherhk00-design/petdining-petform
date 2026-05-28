@@ -32,11 +32,6 @@
       "type": "number",
       "description": "\u6700\u5927\u5b78\u751f\u6578"
     },
-    "enrolled_count": {
-      "type": "number",
-      "default": 0,
-      "description": "\u5df2\u5831\u540d\u4eba\u6578"
-    },
     "status": {
       "type": "string",
       "enum": [

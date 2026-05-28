@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: '最低充值金額為 HK$1,000' }, { status: 400 });
     }
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '');
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -26,30 +26,29 @@ Deno.serve(async (req) => {
             currency: 'hkd',
             product_data: {
               name: 'PetDining Credits 充值',
-              description: `充值 ${amount.toLocaleString()} Credits (HK$${amount.toLocaleString()})`,
+              description: `充值 ${(amount || 0).toLocaleString()} Credits (HK$${(amount || 0).toLocaleString()})`,
             },
-            unit_amount: amount * 100, // cents
+            unit_amount: (amount || 0) * 100,
           },
           quantity: 1,
         },
       ],
-      success_url: success_url,
-      cancel_url: cancel_url,
+      success_url: success_url || '',
+      cancel_url: cancel_url || '',
       metadata: {
-        customer_id: customer_id,
-        customer_email: user.email,
-        credits_amount: String(amount),
+        customer_id: customer_id || '',
+        customer_email: user.email || '',
+        credits_amount: String(amount || 0),
       },
     });
 
-    // Create a pending transaction record
     await base44.asServiceRole.entities.CreditTransaction.create({
-      customer_id: customer_id,
-      customer_email: user.email,
-      amount: amount,
+      customer_id: customer_id || '',
+      customer_email: user.email || '',
+      amount: amount || 0,
       type: 'topup',
-      payment_amount: amount,
-      stripe_session_id: session.id,
+      payment_amount: amount || 0,
+      stripe_session_id: session.id || '',
       status: 'pending',
     });
 

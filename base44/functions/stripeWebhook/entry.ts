@@ -3,8 +3,8 @@ import Stripe from 'npm:stripe@14.21.0';
 
 Deno.serve(async (req) => {
   try {
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'));
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '');
+    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET') || '';
 
     const body = await req.text();
     const signature = req.headers.get('stripe-signature');
@@ -32,129 +32,95 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const metadata = session.metadata || {};
 
-    // 檢查是否是課程報名支付
+    // 課程報名支付
     if (metadata.type === 'course_enrollment') {
-      const enrollmentId = metadata.enrollmentId;
-      
+      const enrollmentId = metadata.enrollmentId || '';
+
       if (!enrollmentId) {
         return Response.json({ error: 'Missing enrollmentId' }, { status: 400 });
       }
 
-      // Idempotency check
       const existingEnrollment = await base44.asServiceRole.entities.Enrollments.get(enrollmentId);
       if (!existingEnrollment) {
         return Response.json({ error: 'Enrollment not found' }, { status: 404 });
       }
 
+      // Idempotency
       if (existingEnrollment.payment_status === 'paid') {
         return Response.json({ received: true, already_processed: true });
       }
 
-      // 獲取報名記錄
-      const enrollment = await base44.asServiceRole.entities.Enrollments.get(enrollmentId);
-      
-      // 更新報名記錄為已支付
       await base44.asServiceRole.entities.Enrollments.update(enrollmentId, {
         payment_status: 'paid',
         status: 'confirmed',
-        stripe_session_id: session.id,
+        stripe_session_id: session.id || '',
       });
 
-      // 更新課程已報名人數
-      if (enrollment?.course_id) {
-        const course = await base44.asServiceRole.entities.Courses.get(enrollment.course_id);
-        await base44.asServiceRole.entities.Courses.update(enrollment.course_id, {
-          enrolled_count: (course.enrolled_count || 0) + 1
-        });
-      }
+      // enrolled_count is now calculated dynamically — no update needed
 
-      // 獲取課程及時間表詳情
+      // 課程時間表詳情
       let scheduleDetails = '';
-      if (enrollment.schedule_id) {
-        const schedules = await base44.asServiceRole.entities.CourseSchedule.filter({ schedule_id: enrollment.schedule_id });
+      if (existingEnrollment.schedule_id) {
+        const schedules = await base44.asServiceRole.entities.CourseSchedule.filter({ schedule_id: existingEnrollment.schedule_id });
         if (schedules.length > 0) {
           const schedule = schedules[0];
-          const startDate = new Date(schedule.start_datetime).toLocaleString('zh-HK', {
-            dateStyle: 'full',
-            timeStyle: 'short',
-          });
-          const endDate = new Date(schedule.end_datetime).toLocaleString('zh-HK', {
-            timeStyle: 'short',
-          });
+          const startDate = new Date(schedule.start_datetime || '').toLocaleString('zh-HK', { dateStyle: 'full', timeStyle: 'short' });
+          const endDate = new Date(schedule.end_datetime || '').toLocaleString('zh-HK', { timeStyle: 'short' });
           scheduleDetails = `
             <div style="background:#eff6ff;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #3b82f6;">
               <p style="margin:4px 0;color:#1e40af;font-weight:600;">📅 課程時間及地點</p>
               <p style="margin:8px 0;"><strong>日期：</strong>${startDate}</p>
-              <p style="margin:4px 0;"><strong>時間：</strong>${startDate.split(' ')[1]} - ${endDate.split(' ')[1]}</p>
-              <p style="margin:4px 0;"><strong>地點：</strong>${schedule.location || enrollment.location || '待定'}</p>
+              <p style="margin:4px 0;"><strong>地點：</strong>${schedule.location || existingEnrollment.location || '待定'}</p>
             </div>
           `;
         }
       }
 
-      // 發送確認郵件給用戶
+      // 確認郵件
       try {
         await base44.asServiceRole.integrations.Core.SendEmail({
-          to: enrollment.user_email,
-          subject: `✅ 課程報名已確認 - ${enrollment.course_title}`,
+          to: existingEnrollment.user_email || '',
+          subject: `✅ 課程報名已確認 - ${existingEnrollment.course_title || ''}`,
           body: `
 <div style="font-family:sans-serif;max-width:600px;margin:auto;color:#1f2937;">
   <div style="background:#10b981;padding:24px;border-radius:12px 12px 0 0;text-align:center;">
     <h1 style="color:#fff;margin:0;font-size:24px;">✅ 報名已確認</h1>
   </div>
   <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 12px 12px;">
-    <p>親愛的 <strong>${enrollment.student_name || enrollment.user_name}</strong>，</p>
+    <p>親愛的 <strong>${existingEnrollment.student_name || existingEnrollment.user_name || ''}</strong>，</p>
     <p>感謝您報名參加我們的課程！您的報名已獲確認。</p>
-    
     <div style="background:#f9fafb;padding:16px;border-radius:8px;margin:16px 0;">
-      <p style="margin:4px 0;"><strong>📚 課程名稱：</strong>${enrollment.course_title}</p>
-      <p style="margin:4px 0;"><strong>🔖 報名編號：</strong>#${enrollment.enrollment_id || enrollment.id}</p>
+      <p style="margin:4px 0;"><strong>📚 課程名稱：</strong>${existingEnrollment.course_title || ''}</p>
+      <p style="margin:4px 0;"><strong>🔖 報名編號：</strong>#${existingEnrollment.enrollment_id || existingEnrollment.id || ''}</p>
       <p style="margin:4px 0;"><strong>💰 支付狀態：</strong>✅ 已支付</p>
-      ${enrollment.payment_method === 'quota' ? '<p style="margin:4px 0;"><strong>支付方式：</strong>Quota（商業客戶名額）</p>' : ''}
-      ${enrollment.amount_paid ? `<p style="margin:4px 0;"><strong>支付金額：</strong>HK$${enrollment.amount_paid.toLocaleString()}</p>` : ''}
-      ${enrollment.student_name ? `<p style="margin:4px 0;"><strong>學員姓名：</strong>${enrollment.student_name}</p>` : ''}
-      ${enrollment.student_email ? `<p style="margin:4px 0;"><strong>學員電郵：</strong>${enrollment.student_email}</p>` : ''}
-      ${enrollment.student_phone ? `<p style="margin:4px 0;"><strong>學員電話：</strong>${enrollment.student_phone}</p>` : ''}
+      ${existingEnrollment.amount_paid ? `<p style="margin:4px 0;"><strong>支付金額：</strong>HK$${(existingEnrollment.amount_paid || 0).toLocaleString()}</p>` : ''}
     </div>
-
     ${scheduleDetails}
-
     <div style="background:#fef3c7;padding:16px;border-radius:8px;margin:16px 0;border-left:4px solid #f59e0b;">
-      <p style="margin:0;color:#92400e;font-size:14px;">
-        <strong>📌 溫馨提示：</strong><br>
-        我們的團隊會在課程開始前 1-2 天透過 WhatsApp 或電郵與您聯絡，提供課堂詳情及注意事項。
-      </p>
+      <p style="margin:0;color:#92400e;font-size:14px;"><strong>📌 溫馨提示：</strong><br>我們的團隊會在課程開始前 1-2 天透過 WhatsApp 或電郵與您聯絡。</p>
     </div>
-    
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
-    <p style="font-size:13px;color:#6b7280;">如有查詢，請聯絡我們：<br>
-    WhatsApp：<a href="https://wa.me/85298673497">9867 3497</a><br>
-    Email：info@petdininghk.com</p>
+    <p style="font-size:13px;color:#6b7280;">如有查詢：WhatsApp <a href="https://wa.me/85298673497">9867 3497</a> | Email：info@petdininghk.com</p>
   </div>
-</div>
-          `,
+</div>`,
           from_name: 'PetDining PetForm',
         });
       } catch (emailError) {
         console.error('Failed to send confirmation email:', emailError);
       }
 
-      return Response.json({ 
-        received: true, 
-        enrollment_updated: enrollmentId,
-        type: 'course_enrollment'
-      });
+      return Response.json({ received: true, enrollment_updated: enrollmentId, type: 'course_enrollment' });
     }
 
-    // 原有的 Credits 處理邏輯
-    const customerId = metadata.customer_id;
-    const creditsAmount = Number(metadata.credits_amount);
+    // Credits 充值邏輯
+    const customerId = metadata.customer_id || '';
+    const creditsAmount = Number(metadata.credits_amount || 0);
 
     if (!customerId || !creditsAmount) {
       return Response.json({ error: 'Missing metadata' }, { status: 400 });
     }
 
-    // Idempotency check
+    // Idempotency
     const existing = await base44.asServiceRole.entities.CreditTransaction.filter({
       stripe_session_id: session.id,
       status: 'completed',
@@ -163,7 +129,6 @@ Deno.serve(async (req) => {
       return Response.json({ received: true, already_processed: true });
     }
 
-    // Find customer and add credits
     const customers = await base44.asServiceRole.entities.Customers.filter({ customer_id: customerId });
     if (!customers.length) {
       return Response.json({ error: 'Customer not found' }, { status: 404 });
@@ -171,18 +136,11 @@ Deno.serve(async (req) => {
     const customer = customers[0];
     const newBalance = (customer.credits_balance || 0) + creditsAmount;
 
-    await base44.asServiceRole.entities.Customers.update(customer.id, {
-      credits_balance: newBalance,
-    });
+    await base44.asServiceRole.entities.Customers.update(customer.id, { credits_balance: newBalance });
 
-    // Update transaction to completed
-    const transactions = await base44.asServiceRole.entities.CreditTransaction.filter({
-      stripe_session_id: session.id,
-    });
+    const transactions = await base44.asServiceRole.entities.CreditTransaction.filter({ stripe_session_id: session.id });
     if (transactions.length > 0) {
-      await base44.asServiceRole.entities.CreditTransaction.update(transactions[0].id, {
-        status: 'completed',
-      });
+      await base44.asServiceRole.entities.CreditTransaction.update(transactions[0].id, { status: 'completed' });
     }
 
     return Response.json({ received: true, credits_added: creditsAmount, new_balance: newBalance });

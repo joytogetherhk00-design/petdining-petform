@@ -36,6 +36,14 @@ export default function EnrollmentForm() {
     queryFn: () => base44.entities.CourseSchedule.get(scheduleId),
   });
 
+  const { data: scheduleEnrollments = [] } = useQuery({
+    queryKey: ['scheduleEnrollments', scheduleId],
+    queryFn: () => base44.entities.Enrollments.filter({ schedule_id: scheduleId }),
+    enabled: !!scheduleId,
+  });
+
+  const confirmedCount = scheduleEnrollments.filter(e => e.status !== 'cancelled').length;
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -288,7 +296,7 @@ export default function EnrollmentForm() {
                   <div>
                     <p className="text-sm text-muted-foreground">剩餘名額</p>
                     <p>
-                      {schedule.max_students - (schedule.enrolled_count || 0)} / {schedule.max_students}
+                      {schedule.max_students - confirmedCount} / {schedule.max_students}
                     </p>
                   </div>
                 </div>

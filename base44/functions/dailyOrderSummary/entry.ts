@@ -33,7 +33,11 @@ Deno.serve(async (req) => {
     const managerEmails = ['info@petdininghk.com'];
 
     // Build email HTML
-    const totalAmount = yesterdayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
+    // Calculate total from OrderItems (Orders entity has no 'total' field)
+    const allOrderTotals = orderDetails.map(({ items }) =>
+      items.reduce((sum, item) => sum + (item.subtotal || item.price * item.qty || 0), 0)
+    );
+    const totalAmount = allOrderTotals.reduce((sum, t) => sum + t, 0);
     const statusLabels = { pending: '待處理', confirmed: '已確認', shipped: '已出貨', completed: '已完成' };
 
     let ordersHtml = orderDetails.map(({ order, items }) => {
@@ -66,7 +70,7 @@ Deno.serve(async (req) => {
               <tbody>${itemRows}</tbody>
             </table>
             <p style="text-align:right;font-weight:700;margin:8px 0 0;font-size:14px;">
-              總計：HK$${order.total?.toLocaleString()}
+              總計：HK$${items.reduce((sum, item) => sum + (item.subtotal || item.price * item.qty || 0), 0).toLocaleString()}
               ${order.credits_used ? ` &nbsp;(Credits: ${order.credits_used})` : ''}
             </p>
           </div>

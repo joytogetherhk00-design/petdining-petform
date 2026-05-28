@@ -93,8 +93,8 @@ export default function CreditsManagement() {
               <Card key={log.id} className="p-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{typeLabels[log.type] || log.type}</span>
-                  <span className={log.type === 'usage' ? 'text-destructive' : 'text-green-600'}>
-                    {log.type === 'usage' ? '-' : '+'}{log.type === 'usage' ? log.used : log.allocated || 0}
+                  <span className={log.type === 'usage' || log.type === 'expiry' ? 'text-destructive' : 'text-green-600'}>
+                    {log.type === 'usage' || log.type === 'expiry' ? '-' : '+'}{log.allocated || log.remaining || 0}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{log.month}</p>

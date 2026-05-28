@@ -270,8 +270,8 @@ export default function Cart() {
           >
             <Ticket className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <div>
-              <p className="font-semibold text-primary">使用 Quota 報名（免費）</p>
-              <p className="text-sm text-muted-foreground">剩餘 Quota：{quotaDialog?.quotaRemaining} 次</p>
+              <p className="font-semibold text-primary">💰 使用 Quota（商業客戶名額）</p>
+              <p className="text-sm text-muted-foreground">剩餘 Quota：{quotaDialog?.quotaRemaining} 次（免費）</p>
             </div>
           </button>
           <button
@@ -280,8 +280,8 @@ export default function Cart() {
           >
             <CreditCard className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
             <div>
-              <p className="font-semibold">Stripe 信用卡付款</p>
-              <p className="text-sm text-muted-foreground">HK${quotaDialog?.item?.price?.toLocaleString()} 全額支付</p>
+              <p className="font-semibold">💳 Stripe 信用卡支付</p>
+              <p className="text-sm text-muted-foreground">課程費用：HK${quotaDialog?.item?.price?.toLocaleString()}</p>
             </div>
           </button>
         </div>

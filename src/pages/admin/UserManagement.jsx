@@ -13,6 +13,7 @@ import { Search, User, Mail, Calendar, Shield, Trash2, Ban, CheckCircle, Pencil 
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import StatusBadge from '@/components/shared/StatusBadge';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function UserManagement() {
   const [search, setSearch] = useState('');
@@ -25,6 +26,8 @@ export default function UserManagement() {
   const [newRole, setNewRole] = useState('');
   const [savingRole, setSavingRole] = useState(false);
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.admin_role === 'super_admin' || (currentUser?.role === 'admin' && !currentUser?.admin_role);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['allUsers'],
@@ -76,6 +79,7 @@ export default function UserManagement() {
       toast.success('用戶已刪除');
       setDeleteDialogOpen(false);
       setUserToDelete(null);
+      queryClient.invalidateQueries({ queryKey: ['allUsers'] });
     } catch (error) {
       toast.error('刪除失敗');
     }
@@ -268,14 +272,17 @@ export default function UserManagement() {
                         >
                           {user.disabled ? '啟用' : '停用'}
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openDeleteDialog(user)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          刪除
-                        </Button>
+                        {isSuperAdmin && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openDeleteDialog(user)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            刪除
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Shield, CheckCircle, AlertCircle } from 'lucide-react';
+import { Shield, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function PrivacyConsent() {
   const navigate = useNavigate();
   const [accepted, setAccepted] = useState(false);
-  const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -42,16 +41,7 @@ export default function PrivacyConsent() {
     }
   };
 
-  const scrollRef = useRef(null);
 
-  const handleScroll = () => {
-    const el = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
-    if (!el) return;
-    const { scrollTop, scrollHeight, clientHeight } = el;
-    if (scrollHeight - scrollTop - clientHeight < 50) {
-      setScrolledToBottom(true);
-    }
-  };
 
   const handleAccept = async () => {
     if (!accepted) {
@@ -101,16 +91,7 @@ export default function PrivacyConsent() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <AlertCircle className="h-4 w-4" />
-              <span>請仔細閱讀以下內容，並滾動到底部</span>
-            </div>
-
-            <ScrollArea 
-              ref={scrollRef}
-              className="h-[500px] w-full rounded-md border p-6 bg-muted/30"
-              onScrollCapture={handleScroll}
-            >
+            <ScrollArea className="h-[500px] w-full rounded-md border p-6 bg-muted/30">
               <div className="space-y-6 text-sm leading-relaxed">
                 <section>
                   <h3 className="font-semibold text-lg mb-3 text-primary">📋 資料收集</h3>
@@ -181,30 +162,17 @@ export default function PrivacyConsent() {
                 id="accept" 
                 checked={accepted}
                 onCheckedChange={setAccepted}
-                disabled={!scrolledToBottom}
               />
-              <label
-                htmlFor="accept"
-                className={`text-sm font-medium leading-none ${
-                  !scrolledToBottom ? 'text-muted-foreground cursor-not-allowed' : 'cursor-pointer'
-                }`}
-              >
+              <label htmlFor="accept" className="text-sm font-medium leading-none cursor-pointer">
                 我已閱讀並同意私隱政策及資料收集聲明
               </label>
             </div>
-
-            {!scrolledToBottom && (
-              <p className="text-xs text-muted-foreground flex items-center gap-2">
-                <AlertCircle className="h-3 w-3" />
-                請滾動到聲明底部以啟用確認選項
-              </p>
-            )}
 
             <Button 
               className="w-full" 
               size="lg"
               onClick={handleAccept}
-              disabled={!accepted || !scrolledToBottom || isUpdating}
+              disabled={!accepted || isUpdating}
             >
               {isUpdating ? (
                 '處理中...'

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -42,9 +42,12 @@ export default function PrivacyConsent() {
     }
   };
 
-  const handleScroll = (e) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.target;
-    // 當滾動到距離底部 50px 以內時
+  const scrollRef = useRef(null);
+
+  const handleScroll = () => {
+    const el = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
     if (scrollHeight - scrollTop - clientHeight < 50) {
       setScrolledToBottom(true);
     }
@@ -104,8 +107,9 @@ export default function PrivacyConsent() {
             </div>
 
             <ScrollArea 
+              ref={scrollRef}
               className="h-[500px] w-full rounded-md border p-6 bg-muted/30"
-              onScroll={handleScroll}
+              onScrollCapture={handleScroll}
             >
               <div className="space-y-6 text-sm leading-relaxed">
                 <section>

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, ShoppingCart, Package, FolderOpen, 
   CreditCard, ArrowUpCircle, Settings, Shield, Menu, X,
   Store, ClipboardList, User, PawPrint, GitBranch, GraduationCap, 
-  UsersRound, Calendar, ChevronDown, ChevronRight, Receipt
+  UsersRound, Calendar, ChevronDown, ChevronRight, Receipt, LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -236,9 +236,7 @@ function AdminNav({ pendingApps, lowStockCount, onClose, groups }) {
   );
 }
 
-// Groups visible to course_admin only
-const COURSE_ADMIN_GROUP_IDS = ['courses'];
-// course_admin also sees a limited 'accounts' group (dashboard only)
+// Paths course_admin is allowed to see in the sidebar
 const COURSE_ADMIN_PATHS = new Set(['/admin', '/admin/courses', '/admin/instructors', '/admin/enrollments', '/admin/students', '/admin/schedule']);
 
 export default function Sidebar({ isAdmin, userType }) {
@@ -246,6 +244,10 @@ export default function Sidebar({ isAdmin, userType }) {
   const location = useLocation();
   const { user } = useAuth();
   const adminRole = isAdmin ? (user?.admin_role || 'super_admin') : null;
+
+  const handleLogout = () => {
+    base44.auth.logout('/');
+  };
 
   let nav;
   if (!isAdmin) {
@@ -345,40 +347,51 @@ export default function Sidebar({ isAdmin, userType }) {
           </nav>
         )}
 
-        {/* Footer */}
+        {/* Admin Footer */}
         {isAdmin && (
-          <div className="p-3 border-t border-sidebar-border space-y-2">
-            <div className="text-xs text-sidebar-foreground/50 font-medium mb-2">預覽視角</div>
-            <Link
-              to="/products?preview=business"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+          <div className="p-3 border-t border-sidebar-border space-y-1">
+            {adminRole !== 'course_admin' && (
+              <>
+                <div className="text-xs text-sidebar-foreground/50 font-medium mb-2">預覽視角</div>
+                <Link
+                  to="/products?preview=business"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+                >
+                  <Users className="h-4 w-4" />
+                  商業客戶端
+                </Link>
+                <Link
+                  to="/courses?preview=general"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  一般客戶端
+                </Link>
+                <Link
+                  to="/"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+                >
+                  <Store className="h-4 w-4" />
+                  返回首頁
+                </Link>
+              </>
+            )}
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-destructive/20 hover:text-destructive transition-all mt-1"
             >
-              <Users className="h-4 w-4" />
-              商業客戶端
-            </Link>
-            <Link
-              to="/courses?preview=general"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
-            >
-              <GraduationCap className="h-4 w-4" />
-              一般客戶端
-            </Link>
-            <div className="pt-2 border-t border-sidebar-border mt-2">
-              <Link
-                to="/"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
-              >
-                <Store className="h-4 w-4" />
-                返回首頁
-              </Link>
-            </div>
+              <LogOut className="h-4 w-4" />
+              登出
+            </button>
           </div>
         )}
+
+        {/* Customer Footer */}
         {!isAdmin && (
-          <div className="p-3 border-t border-sidebar-border">
+          <div className="p-3 border-t border-sidebar-border space-y-1">
             <Link
               to="/admin"
               onClick={() => setOpen(false)}
@@ -397,6 +410,13 @@ export default function Sidebar({ isAdmin, userType }) {
                 產品目錄
               </Link>
             )}
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-destructive/20 hover:text-destructive transition-all"
+            >
+              <LogOut className="h-4 w-4" />
+              登出
+            </button>
           </div>
         )}
       </aside>

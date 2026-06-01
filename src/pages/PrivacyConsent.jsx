@@ -160,7 +160,7 @@ export default function PrivacyConsent() {
               <Checkbox 
                 id="accept" 
                 checked={accepted}
-                onCheckedChange={setAccepted}
+                onCheckedChange={(val) => setAccepted(val === true)}
               />
               <label htmlFor="accept" className="text-sm font-medium leading-none cursor-pointer">
                 我已閱讀並同意私隱政策及資料收集聲明

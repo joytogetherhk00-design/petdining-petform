@@ -392,14 +392,14 @@ export default function Sidebar({ isAdmin, userType, isPreview }) {
         {/* Customer Footer */}
         {!isAdmin && (
           <div className="p-3 border-t border-sidebar-border space-y-1">
-            {isPreview && (
+            {user?.role === 'admin' && (
               <Link
                 to="/admin"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-primary bg-sidebar-primary/10 hover:bg-sidebar-primary/20 transition-all"
               >
                 <Shield className="h-4 w-4" />
-                返回管理後台
+                管理後台
               </Link>
             )}
             {userType === 'business' && (

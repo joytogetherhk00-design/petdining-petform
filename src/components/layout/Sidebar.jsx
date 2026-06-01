@@ -392,14 +392,6 @@ export default function Sidebar({ isAdmin, userType }) {
         {/* Customer Footer */}
         {!isAdmin && (
           <div className="p-3 border-t border-sidebar-border space-y-1">
-            <Link
-              to="/admin"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
-            >
-              <Shield className="h-4 w-4" />
-              管理後台
-            </Link>
             {userType === 'business' && (
               <Link
                 to="/products"

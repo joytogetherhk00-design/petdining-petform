@@ -7,8 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, User, Mail, Calendar, Shield, Trash2, Ban, CheckCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Search, User, Mail, Calendar, Shield, Trash2, Ban, CheckCircle, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import StatusBadge from '@/components/shared/StatusBadge';
 
 export default function UserManagement() {
@@ -17,6 +20,11 @@ export default function UserManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [filterType, setFilterType] = useState('all'); // 'all', 'business', 'general'
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [roleUser, setRoleUser] = useState(null);
+  const [newRole, setNewRole] = useState('');
+  const [savingRole, setSavingRole] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['allUsers'],
@@ -76,6 +84,27 @@ export default function UserManagement() {
   const openDeleteDialog = (user) => {
     setUserToDelete(user);
     setDeleteDialogOpen(true);
+  };
+
+  const openRoleDialog = (user) => {
+    setRoleUser(user);
+    setNewRole(user.role || 'user');
+    setRoleDialogOpen(true);
+  };
+
+  const handleChangeRole = async () => {
+    if (!roleUser) return;
+    setSavingRole(true);
+    try {
+      await base44.entities.User.update(roleUser.id, { role: newRole });
+      await queryClient.invalidateQueries({ queryKey: ['allUsers'] });
+      toast.success(`已將 ${roleUser.full_name || roleUser.email} 的角色更新為「${newRole === 'admin' ? '管理員' : '用戶'}」`);
+      setRoleDialogOpen(false);
+    } catch (error) {
+      toast.error('更改角色失敗');
+    } finally {
+      setSavingRole(false);
+    }
   };
 
   return (
@@ -207,6 +236,15 @@ export default function UserManagement() {
                     </TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
                       <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openRoleDialog(user)}
+                          className="text-purple-600 hover:text-purple-700"
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          角色
+                        </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
@@ -333,6 +371,43 @@ export default function UserManagement() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Role Dialog */}
+      <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>更改用戶角色</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="text-sm text-muted-foreground">
+              用戶：<strong>{roleUser?.full_name || roleUser?.email}</strong>
+            </div>
+            <div className="space-y-2">
+              <Label>選擇角色</Label>
+              <Select value={newRole} onValueChange={setNewRole}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">用戶（一般 / 商業）</SelectItem>
+                  <SelectItem value="admin">管理員 (admin)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {newRole === 'admin' && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-800">
+                ⚠️ 管理員擁有所有後台權限，請確認後再操作。
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRoleDialogOpen(false)}>取消</Button>
+            <Button onClick={handleChangeRole} disabled={savingRole}>
+              {savingRole ? '儲存中...' : '確認更改'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

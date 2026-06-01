@@ -166,7 +166,7 @@ export default function PrivacyConsent() {
                 style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}
               />
               <label htmlFor="accept" className="text-sm font-medium leading-none cursor-pointer">
-                我已閱讀並同意私隱政策及資料收集聲明
+                我已閱讀並同意私隱政策及資料收集聲明。按「確認同意」即表示您同意上述條款。
               </label>
             </div>
 

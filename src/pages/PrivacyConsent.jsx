@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Shield, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -91,7 +90,7 @@ export default function PrivacyConsent() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
-            <ScrollArea className="h-[500px] w-full rounded-md border p-6 bg-muted/30">
+            <div className="h-[500px] w-full overflow-y-auto rounded-md border p-6 bg-muted/30">
               <div className="space-y-6 text-sm leading-relaxed">
                 <section>
                   <h3 className="font-semibold text-lg mb-3 text-primary">📋 資料收集</h3>
@@ -155,7 +154,7 @@ export default function PrivacyConsent() {
                   </p>
                 </section>
               </div>
-            </ScrollArea>
+            </div>
 
             <div className="flex items-center space-x-3 py-4 border-t">
               <Checkbox 

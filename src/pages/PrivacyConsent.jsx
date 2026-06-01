@@ -156,16 +156,18 @@ export default function PrivacyConsent() {
               </div>
             </div>
 
-            <div 
-              className="flex items-center space-x-3 py-4 border-t cursor-pointer select-none"
-              onClick={() => setAccepted(prev => !prev)}
-            >
-              <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${accepted ? 'bg-primary border-primary' : 'border-gray-400 bg-white'}`}>
-                {accepted && <CheckCircle className="w-3.5 h-3.5 text-white" />}
-              </div>
-              <span className="text-sm font-medium leading-none">
+            <div className="flex items-center space-x-3 py-4 border-t">
+              <input
+                type="checkbox"
+                id="accept"
+                checked={accepted}
+                onChange={(e) => setAccepted(e.target.checked)}
+                className="w-5 h-5 cursor-pointer accent-orange-500"
+                style={{ pointerEvents: 'auto', position: 'relative', zIndex: 10 }}
+              />
+              <label htmlFor="accept" className="text-sm font-medium leading-none cursor-pointer">
                 我已閱讀並同意私隱政策及資料收集聲明
-              </span>
+              </label>
             </div>
 
             <Button 

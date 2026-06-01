@@ -80,13 +80,13 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Extra security: block non-admin users from /admin/* routes entirely
-  if (!isLoadingAuth && user && user.role !== 'admin' && window.location.pathname.startsWith('/admin')) {
+  // Extra security: block non-admin users from /admin/* routes entirely (but not /admin-login)
+  if (!isLoadingAuth && user && user.role !== 'admin' && window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin-login') {
     window.location.href = '/admin-login';
     return null;
   }
 
-  // Block unauthenticated users from /admin/* routes
+  // Block unauthenticated users from /admin/* routes (but not /admin-login)
   if (!isLoadingAuth && !user && window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin-login') {
     window.location.href = '/admin-login';
     return null;

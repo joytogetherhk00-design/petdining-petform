@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useAuth } from '@/lib/AuthContext';
 
 function SidebarLogo() {
   const { data: settings } = useQuery({
@@ -117,13 +118,11 @@ const generalClientNav = [
 
 const STORAGE_KEY = 'admin_sidebar_expanded';
 
-function getInitialExpanded(location) {
-  // Auto-expand the group that contains the current path
+function getInitialExpanded(location, groups = adminGroups) {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    // Always auto-expand group containing current page
     const autoExpand = {};
-    adminGroups.forEach(g => {
+    groups.forEach(g => {
       const hasActive = g.items.some(item =>
         location.pathname === item.path ||
         (item.path !== '/admin' && location.pathname.startsWith(item.path))
@@ -136,13 +135,13 @@ function getInitialExpanded(location) {
   }
 }
 
-function AdminNav({ pendingApps, lowStockCount, onClose }) {
+function AdminNav({ pendingApps, lowStockCount, onClose, groups }) {
   const location = useLocation();
   const [expanded, setExpanded] = useState(() => getInitialExpanded(location));
 
   // Auto-expand group for current page when route changes
   useEffect(() => {
-    adminGroups.forEach(g => {
+    groups.forEach(g => {
       const hasActive = g.items.some(item =>
         location.pathname === item.path ||
         (item.path !== '/admin' && location.pathname.startsWith(item.path))
@@ -151,7 +150,7 @@ function AdminNav({ pendingApps, lowStockCount, onClose }) {
         setExpanded(prev => ({ ...prev, [g.id]: true }));
       }
     });
-  }, [location.pathname]);
+  }, [location.pathname, groups]);
 
   const toggle = (id) => {
     setExpanded(prev => {
@@ -163,7 +162,7 @@ function AdminNav({ pendingApps, lowStockCount, onClose }) {
 
   return (
     <nav className="flex-1 p-3 overflow-y-auto space-y-1">
-      {adminGroups.map(group => {
+      {groups.map(group => {
         const isOpen = !!expanded[group.id];
         const hasActive = group.items.some(item =>
           location.pathname === item.path ||
@@ -237,14 +236,29 @@ function AdminNav({ pendingApps, lowStockCount, onClose }) {
   );
 }
 
+// Groups visible to course_admin only
+const COURSE_ADMIN_GROUP_IDS = ['courses'];
+// course_admin also sees a limited 'accounts' group (dashboard only)
+const COURSE_ADMIN_PATHS = new Set(['/admin', '/admin/courses', '/admin/instructors', '/admin/enrollments', '/admin/students', '/admin/schedule']);
+
 export default function Sidebar({ isAdmin, userType }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { user } = useAuth();
+  const adminRole = isAdmin ? (user?.admin_role || 'super_admin') : null;
 
   let nav;
   if (!isAdmin) {
     nav = userType === 'business' ? businessClientNav : generalClientNav;
   }
+
+  // Filter groups for course_admin
+  const visibleGroups = isAdmin && adminRole === 'course_admin'
+    ? adminGroups.map(g => ({
+        ...g,
+        items: g.items.filter(item => COURSE_ADMIN_PATHS.has(item.path))
+      })).filter(g => g.items.length > 0)
+    : adminGroups;
 
   const { data: pendingApps = [] } = useQuery({
     queryKey: ['pendingApplicationsCount'],
@@ -301,6 +315,7 @@ export default function Sidebar({ isAdmin, userType }) {
             pendingApps={pendingApps.length}
             lowStockCount={lowStockCount}
             onClose={() => setOpen(false)}
+            groups={visibleGroups}
           />
         )}
 

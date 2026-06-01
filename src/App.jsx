@@ -154,27 +154,30 @@ const AuthenticatedApp = () => {
         } />
       </Route>
 
-      {/* Admin side - protected by AdminGuard */}
+      {/* Admin side - protected by AdminGuard with role-based access */}
       <Route element={<AdminGuard><AppLayout isAdmin={true} /></AdminGuard>}>
+        {/* Both super_admin and course_admin */}
         <Route path="/admin" element={<Dashboard />} />
-        <Route path="/admin/customers" element={<CustomerManagement />} />
-        <Route path="/admin/orders" element={<OrderManagement />} />
-        <Route path="/admin/products" element={<ProductManagement />} />
-        <Route path="/admin/categories" element={<CategoryManagement />} />
-        <Route path="/admin/credits" element={<CreditsManagement />} />
-        <Route path="/admin/topups" element={<TopupManagement />} />
-        <Route path="/admin/settings" element={<SystemSettings />} />
-        <Route path="/admin/admins" element={<AdminManagement />} />
-        <Route path="/admin/branches" element={<AllBranches />} />
-        <Route path="/admin/applications" element={<ApplicationManagement />} />
-        <Route path="/admin/transactions" element={<TransactionManagement />} />
         <Route path="/admin/courses" element={<CourseManagement />} />
         <Route path="/admin/instructors" element={<InstructorManagement />} />
         <Route path="/admin/enrollments" element={<EnrollmentManagement />} />
         <Route path="/admin/enrollments/:scheduleId" element={<CourseEnrollmentDetail />} />
         <Route path="/admin/students" element={<StudentsManagement />} />
         <Route path="/admin/schedule" element={<CourseSchedule />} />
-        <Route path="/admin/users" element={<UserManagement />} />
+
+        {/* super_admin only */}
+        <Route path="/admin/customers" element={<AdminGuard allowedRoles={['super_admin']}><CustomerManagement /></AdminGuard>} />
+        <Route path="/admin/orders" element={<AdminGuard allowedRoles={['super_admin']}><OrderManagement /></AdminGuard>} />
+        <Route path="/admin/products" element={<AdminGuard allowedRoles={['super_admin']}><ProductManagement /></AdminGuard>} />
+        <Route path="/admin/categories" element={<AdminGuard allowedRoles={['super_admin']}><CategoryManagement /></AdminGuard>} />
+        <Route path="/admin/credits" element={<AdminGuard allowedRoles={['super_admin']}><CreditsManagement /></AdminGuard>} />
+        <Route path="/admin/topups" element={<AdminGuard allowedRoles={['super_admin']}><TopupManagement /></AdminGuard>} />
+        <Route path="/admin/settings" element={<AdminGuard allowedRoles={['super_admin']}><SystemSettings /></AdminGuard>} />
+        <Route path="/admin/admins" element={<AdminGuard allowedRoles={['super_admin']}><AdminManagement /></AdminGuard>} />
+        <Route path="/admin/branches" element={<AdminGuard allowedRoles={['super_admin']}><AllBranches /></AdminGuard>} />
+        <Route path="/admin/applications" element={<AdminGuard allowedRoles={['super_admin']}><ApplicationManagement /></AdminGuard>} />
+        <Route path="/admin/transactions" element={<AdminGuard allowedRoles={['super_admin']}><TransactionManagement /></AdminGuard>} />
+        <Route path="/admin/users" element={<AdminGuard allowedRoles={['super_admin']}><UserManagement /></AdminGuard>} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

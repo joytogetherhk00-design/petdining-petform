@@ -14,31 +14,8 @@ export default function AdminLogin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    try {
-      // 先檢查用戶是否存在
-      const users = await base44.entities.User.list();
-      const user = users.find(u => u.email === email);
-
-      if (!user) {
-        toast.error('用戶不存在');
-        setLoading(false);
-        return;
-      }
-
-      if (user.role !== 'admin') {
-        toast.error('此賬戶沒有管理員權限');
-        setLoading(false);
-        return;
-      }
-
-      // 引導用戶到 Base44 登入流程
-      await base44.auth.redirectToLogin('/admin');
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('登入失敗，請稍後再試');
-      setLoading(false);
-    }
+    // Directly redirect to login — role check is handled by AdminGuard after login
+    await base44.auth.redirectToLogin('/admin');
   };
 
   return (

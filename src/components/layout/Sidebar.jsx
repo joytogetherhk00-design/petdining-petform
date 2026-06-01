@@ -161,7 +161,7 @@ function AdminNav({ pendingApps, lowStockCount, onClose, groups }) {
   };
 
   return (
-    <nav className="flex-1 p-3 overflow-y-auto space-y-1">
+    <nav className="flex-1 p-3 overflow-y-auto space-y-1 min-h-0">
       {groups.map(group => {
         const isOpen = !!expanded[group.id];
         const hasActive = group.items.some(item =>
@@ -305,7 +305,7 @@ export default function Sidebar({ isAdmin, userType }) {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed top-0 left-0 h-full w-64 bg-sidebar z-40 flex flex-col transition-transform duration-300",
+        "fixed top-0 left-0 h-full w-64 bg-sidebar z-40 flex flex-col transition-transform duration-300 overflow-hidden",
         "lg:translate-x-0",
         open ? "translate-x-0" : "-translate-x-full"
       )}>
@@ -323,7 +323,7 @@ export default function Sidebar({ isAdmin, userType }) {
 
         {/* Client flat nav */}
         {!isAdmin && (
-          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto min-h-0">
             {nav.map((item) => {
               const active = location.pathname === item.path ||
                 (item.path !== '/' && location.pathname.startsWith(item.path));

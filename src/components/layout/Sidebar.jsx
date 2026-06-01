@@ -239,7 +239,7 @@ function AdminNav({ pendingApps, lowStockCount, onClose, groups }) {
 // Paths course_admin is allowed to see in the sidebar
 const COURSE_ADMIN_PATHS = new Set(['/admin', '/admin/courses', '/admin/instructors', '/admin/enrollments', '/admin/students', '/admin/schedule']);
 
-export default function Sidebar({ isAdmin, userType }) {
+export default function Sidebar({ isAdmin, userType, isPreview }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
@@ -392,6 +392,16 @@ export default function Sidebar({ isAdmin, userType }) {
         {/* Customer Footer */}
         {!isAdmin && (
           <div className="p-3 border-t border-sidebar-border space-y-1">
+            {isPreview && (
+              <Link
+                to="/admin"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-primary bg-sidebar-primary/10 hover:bg-sidebar-primary/20 transition-all"
+              >
+                <Shield className="h-4 w-4" />
+                返回管理後台
+              </Link>
+            )}
             {userType === 'business' && (
               <Link
                 to="/products"

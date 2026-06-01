@@ -44,7 +44,7 @@ export default function AppLayout({ isAdmin }) {
   
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar isAdmin={isAdmin} userType={userType} />
+      <Sidebar isAdmin={isAdmin} userType={userType} isPreview={!!(previewParam || viewParam)} />
       <main className="lg:ml-64 min-h-screen">
         <div className="p-4 pt-16 lg:pt-6 lg:p-8 max-w-7xl mx-auto">
           <Outlet />

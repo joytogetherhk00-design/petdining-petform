@@ -60,13 +60,14 @@ export default function UserManagement() {
     return matchesSearch && matchesType;
   });
 
-  const handleDisableUser = async (user) => {
+  const handleDisableUser = async (targetUser) => {
     try {
-      await base44.entities.User.update(user.id, { 
-        disabled: !user.disabled,
-        disabled_reason: user.disabled ? null : '管理員停用'
+      await base44.entities.User.update(targetUser.id, { 
+        disabled: !targetUser.disabled,
+        disabled_reason: targetUser.disabled ? null : '管理員停用'
       });
-      toast.success(`用戶已${user.disabled ? '啟用' : '停用'}`);
+      toast.success(`用戶已${targetUser.disabled ? '啟用' : '停用'}`);
+      queryClient.invalidateQueries({ queryKey: ['allUsers'] });
     } catch (error) {
       toast.error('操作失敗');
     }

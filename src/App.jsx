@@ -80,6 +80,18 @@ const AuthenticatedApp = () => {
     }
   }
 
+  // Extra security: block non-admin users from /admin/* routes entirely
+  if (!isLoadingAuth && user && user.role !== 'admin' && window.location.pathname.startsWith('/admin')) {
+    window.location.href = '/admin-login';
+    return null;
+  }
+
+  // Block unauthenticated users from /admin/* routes
+  if (!isLoadingAuth && !user && window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin-login') {
+    window.location.href = '/admin-login';
+    return null;
+  }
+
   return (
     <Routes>
     {/* Public pages - no layout wrapper */}

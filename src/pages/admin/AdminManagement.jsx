@@ -89,7 +89,9 @@ export default function AdminManagement() {
   const admins = users.filter(u => u.role === 'admin');
   const filteredAdmins = admins.filter(admin => {
     if (filter === 'all') return true;
-    return admin.admin_role === filter;
+    // 沒有 admin_role 的預設視為 super_admin
+    const role = admin.admin_role || 'super_admin';
+    return role === filter;
   });
 
   const inviteMutation = useMutation({
@@ -184,7 +186,7 @@ export default function AdminManagement() {
   };
 
   const getRoleBadge = (role) => {
-    if (role === 'super_admin') {
+    if (!role || role === 'super_admin') {
       return <Badge className="bg-purple-100 text-purple-700 border-purple-200">超級管理員</Badge>;
     }
     return <Badge className="bg-blue-100 text-blue-700 border-blue-200">課程管理員</Badge>;

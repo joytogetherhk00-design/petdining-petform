@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Logo URL"
     },
+    "app_url": {
+      "type": "string",
+      "description": "\u6b63\u5f0f\u7db2\u7ad9 URL\uff08\u7528\u65bc\u9080\u8acb\u9023\u7d50\uff09"
+    },
     "min_order_amount": {
       "type": "number",
       "description": "\u6700\u4f4e\u8a02\u55ae\u91d1\u984d"

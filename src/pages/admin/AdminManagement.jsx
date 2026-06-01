@@ -113,11 +113,14 @@ export default function AdminManagement() {
       }
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
       setInviteOpen(false);
       setInviteForm({ email: '', full_name: '', admin_role: 'super_admin' });
-      const loginLink = `${window.location.origin}/admin-login`;
+      // Use configured app_url from settings, fallback to current origin
+      const settingsList = await base44.entities.AppSettings.list();
+      const appUrl = settingsList[0]?.app_url?.replace(/\/$/, '') || window.location.origin;
+      const loginLink = `${appUrl}/admin-login`;
       setInviteSuccess({ email: data.email, loginLink });
     },
     onError: (error) => {

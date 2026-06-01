@@ -86,9 +86,15 @@ export default function UserManagement() {
     setDeleteDialogOpen(true);
   };
 
+  // Derive composite role value from user fields
+  const getCompositeRole = (user) => {
+    if (user.role === 'admin') return user.admin_role || 'super_admin';
+    return 'user';
+  };
+
   const openRoleDialog = (user) => {
     setRoleUser(user);
-    setNewRole(user.role || 'user');
+    setNewRole(getCompositeRole(user));
     setRoleDialogOpen(true);
   };
 
@@ -96,9 +102,18 @@ export default function UserManagement() {
     if (!roleUser) return;
     setSavingRole(true);
     try {
-      await base44.entities.User.update(roleUser.id, { role: newRole });
+      let updateData = {};
+      if (newRole === 'super_admin') {
+        updateData = { role: 'admin', admin_role: 'super_admin' };
+      } else if (newRole === 'course_admin') {
+        updateData = { role: 'admin', admin_role: 'course_admin' };
+      } else {
+        updateData = { role: 'user', admin_role: null };
+      }
+      await base44.entities.User.update(roleUser.id, updateData);
       await queryClient.invalidateQueries({ queryKey: ['allUsers'] });
-      toast.success(`已將 ${roleUser.full_name || roleUser.email} 的角色更新為「${newRole === 'admin' ? '管理員' : '用戶'}」`);
+      const label = { super_admin: '超級管理員', course_admin: '課程管理員', user: '一般用戶' }[newRole];
+      toast.success(`已將 ${roleUser.full_name || roleUser.email} 的角色更新為「${label}」`);
       setRoleDialogOpen(false);
     } catch (error) {
       toast.error('更改角色失敗');
@@ -391,14 +406,20 @@ export default function UserManagement() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user">用戶（一般 / 商業）</SelectItem>
-                  <SelectItem value="admin">管理員 (admin)</SelectItem>
+                  <SelectItem value="super_admin">🛡️ 超級管理員 — 所有後台權限</SelectItem>
+                  <SelectItem value="course_admin">🎓 課程管理員 — 僅課程相關功能</SelectItem>
+                  <SelectItem value="user">👤 一般用戶 — 移除管理員權限</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            {newRole === 'admin' && (
+            {(newRole === 'super_admin' || newRole === 'course_admin') && (
               <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-800">
-                ⚠️ 管理員擁有所有後台權限，請確認後再操作。
+                ⚠️ 此用戶將獲得管理後台訪問權限，請確認後再操作。
+              </div>
+            )}
+            {newRole === 'user' && roleUser?.role === 'admin' && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800">
+                ⚠️ 此操作將移除該用戶的所有管理員權限。
               </div>
             )}
           </div>

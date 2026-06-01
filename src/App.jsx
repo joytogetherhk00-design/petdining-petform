@@ -46,6 +46,7 @@ import CourseEnrollmentDetail from '@/pages/admin/CourseEnrollmentDetail';
 import CreditsTopup from '@/pages/customer/CreditsTopup';
 import CreditsSuccess from '@/pages/customer/CreditsSuccess';
 import CreditsCancel from '@/pages/customer/CreditsCancel';
+import AdminGuard from '@/components/AdminGuard';
 import Apply from '@/pages/Apply';
 import Privacy from '@/pages/Privacy';
 import PrivacyConsent from '@/pages/PrivacyConsent';
@@ -63,15 +64,6 @@ const AuthenticatedApp = () => {
         <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
       </div>
     );
-  }
-
-  // 如果已登入但不是 admin，嘗試訪問後台時跳轉到登入頁
-  if (user && user.role !== 'admin') {
-    const pathname = window.location.pathname;
-    if (pathname.startsWith('/admin')) {
-      window.location.href = '/admin-login';
-      return null;
-    }
   }
 
   if (authError) {
@@ -162,8 +154,8 @@ const AuthenticatedApp = () => {
         } />
       </Route>
 
-      {/* Admin side */}
-      <Route element={<AppLayout isAdmin={true} />}>
+      {/* Admin side - protected by AdminGuard */}
+      <Route element={<AdminGuard><AppLayout isAdmin={true} /></AdminGuard>}>
         <Route path="/admin" element={<Dashboard />} />
         <Route path="/admin/customers" element={<CustomerManagement />} />
         <Route path="/admin/orders" element={<OrderManagement />} />

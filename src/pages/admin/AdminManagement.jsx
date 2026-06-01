@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { UserPlus, Trash2, Shield, Edit, KeyRound, Info, GraduationCap } from 'lucide-react';
+import { UserPlus, Trash2, Shield, Edit, KeyRound, Info, GraduationCap, Copy, CheckCircle2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 
 // 權限矩陣
@@ -57,6 +57,7 @@ const PERMISSION_LABELS = {
 
 export default function AdminManagement() {
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteSuccess, setInviteSuccess] = useState(null); // { email, loginLink }
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -97,20 +98,27 @@ export default function AdminManagement() {
   const inviteMutation = useMutation({
     mutationFn: async (data) => {
       await base44.users.inviteUser(data.email, 'admin');
-      const user = admins.find(u => u.email === data.email);
-      if (user) {
-        await base44.entities.User.update(user.id, {
+      // Wait briefly then update the newly created user record
+      await new Promise(r => setTimeout(r, 1500));
+      const updatedUsers = await base44.entities.User.list();
+      const newUser = updatedUsers.find(u => u.email === data.email);
+      if (newUser) {
+        await base44.entities.User.update(newUser.id, {
           admin_role: data.admin_role,
-          full_name: data.full_name,
+          full_name: data.full_name || newUser.full_name,
           status: 'active',
+          is_first_login: true,
+          invited_at: new Date().toISOString(),
         });
       }
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['allUsers'] });
       setInviteOpen(false);
       setInviteForm({ email: '', full_name: '', admin_role: 'super_admin' });
-      toast.success('管理員已邀請');
+      const loginLink = `${window.location.origin}/admin-login`;
+      setInviteSuccess({ email: data.email, loginLink });
     },
     onError: (error) => {
       toast.error('邀請失敗：' + error.message);
@@ -152,6 +160,11 @@ export default function AdminManagement() {
       return;
     }
     inviteMutation.mutate(inviteForm);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    toast.success('已複製到剪貼板');
   };
 
   const handleEdit = () => {
@@ -358,6 +371,61 @@ export default function AdminManagement() {
             <Button onClick={handleInvite} disabled={inviteMutation.isPending}>
               {inviteMutation.isPending ? '邀請中...' : '確認邀請'}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 邀請成功 Dialog */}
+      <Dialog open={!!inviteSuccess} onOpenChange={() => setInviteSuccess(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              管理員已成功邀請
+            </DialogTitle>
+            <DialogDescription>
+              請將以下登入資訊通過 WhatsApp / WeChat / Telegram 發送給新管理員
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="rounded-lg border bg-muted/40 p-4 space-y-3">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">電郵地址</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-sm font-mono bg-background border rounded px-2 py-1">{inviteSuccess?.email}</code>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copyToClipboard(inviteSuccess?.email)}>
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">登入連結</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 text-sm font-mono bg-background border rounded px-2 py-1 truncate">{inviteSuccess?.loginLink}</code>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copyToClipboard(inviteSuccess?.loginLink)}>
+                    <Copy className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="text-sm bg-blue-50 border border-blue-200 rounded-lg p-3 text-blue-800">
+              <p className="font-medium mb-1">📋 給新管理員的說明：</p>
+              <ol className="list-decimal list-inside space-y-1 text-xs">
+                <li>點擊登入連結進入管理後台登入頁</li>
+                <li>輸入電郵地址，系統會發送登入連結到郵箱</li>
+                <li>點擊郵件內的連結即可登入</li>
+              </ol>
+            </div>
+            <Button 
+              className="w-full" 
+              onClick={() => copyToClipboard(`管理後台登入資訊\n電郵：${inviteSuccess?.email}\n登入連結：${inviteSuccess?.loginLink}`)}
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              一鍵複製全部資訊
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteSuccess(null)}>關閉</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

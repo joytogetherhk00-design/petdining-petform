@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, ShoppingCart, Package, FolderOpen, 
   CreditCard, ArrowUpCircle, Settings, Shield, Menu, X,
-  Store, ClipboardList, User, PawPrint, GitBranch, GraduationCap, UsersRound, Calendar
+  Store, ClipboardList, User, PawPrint, GitBranch, GraduationCap, 
+  UsersRound, Calendar, ChevronDown, ChevronRight, Receipt
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -41,25 +42,60 @@ function SidebarLogo() {
   );
 }
 
-const adminNav = [
-  { label: '控制台總覽', icon: LayoutDashboard, path: '/admin' },
-  { label: '帳戶申請', icon: ClipboardList, path: '/admin/applications', badge: true },
-  { label: '帳戶管理', icon: Users, path: '/admin/customers' },
-  { label: '用戶管理', icon: UsersRound, path: '/admin/users' },
-  { label: '分店管理', icon: GitBranch, path: '/admin/branches' },
-  { label: '訂單管理', icon: ClipboardList, path: '/admin/orders' },
-  { label: '產品管理', icon: Package, path: '/admin/products', stockBadge: true },
-  { label: '分類管理', icon: FolderOpen, path: '/admin/categories' },
-  { label: 'Credits 管理', icon: CreditCard, path: '/admin/credits' },
-  { label: 'Top-up 管理', icon: ArrowUpCircle, path: '/admin/topups' },
-  { label: '交易記錄', icon: CreditCard, path: '/admin/transactions' },
-  { label: '課程管理', icon: GraduationCap, path: '/admin/courses' },
-  { label: '導師管理', icon: UsersRound, path: '/admin/instructors' },
-  { label: '報名管理', icon: UsersRound, path: '/admin/enrollments' },
-  { label: '學員管理', icon: UsersRound, path: '/admin/students' },
-  { label: '時間表', icon: Calendar, path: '/admin/schedule' },
-  { label: '系統設定', icon: Settings, path: '/admin/settings' },
-  { label: '管理員', icon: Shield, path: '/admin/admins' },
+const adminGroups = [
+  {
+    id: 'accounts',
+    label: '帳戶與審批',
+    emoji: '📋',
+    items: [
+      { label: '控制台總覽', icon: LayoutDashboard, path: '/admin' },
+      { label: '帳戶申請', icon: ClipboardList, path: '/admin/applications', badge: true },
+      { label: '帳戶管理', icon: Users, path: '/admin/customers' },
+      { label: '用戶管理', icon: UsersRound, path: '/admin/users' },
+      { label: '管理員', icon: Shield, path: '/admin/admins' },
+    ],
+  },
+  {
+    id: 'store',
+    label: '分店與產品',
+    emoji: '🏪',
+    items: [
+      { label: '分店管理', icon: GitBranch, path: '/admin/branches' },
+      { label: '產品管理', icon: Package, path: '/admin/products', stockBadge: true },
+      { label: '分類管理', icon: FolderOpen, path: '/admin/categories' },
+    ],
+  },
+  {
+    id: 'finance',
+    label: '訂單與財務',
+    emoji: '📦',
+    items: [
+      { label: '訂單管理', icon: ClipboardList, path: '/admin/orders' },
+      { label: 'Credits 管理', icon: CreditCard, path: '/admin/credits' },
+      { label: 'Top-up 管理', icon: ArrowUpCircle, path: '/admin/topups' },
+      { label: '交易記錄', icon: Receipt, path: '/admin/transactions' },
+    ],
+  },
+  {
+    id: 'courses',
+    label: '課程與導師',
+    emoji: '📚',
+    items: [
+      { label: '課程管理', icon: GraduationCap, path: '/admin/courses' },
+      { label: '導師管理', icon: User, path: '/admin/instructors' },
+      { label: '報名管理', icon: UsersRound, path: '/admin/enrollments' },
+      { label: '學員管理', icon: UsersRound, path: '/admin/students' },
+      { label: '時間表', icon: Calendar, path: '/admin/schedule' },
+    ],
+  },
+  {
+    id: 'system',
+    label: '系統設定',
+    emoji: '⚙️',
+    items: [
+      { label: '系統設定', icon: Settings, path: '/admin/settings' },
+    ],
+  },
 ];
 
 const businessClientNav = [
@@ -79,21 +115,135 @@ const generalClientNav = [
   { label: '我的帳戶', icon: User, path: '/account' },
 ];
 
+const STORAGE_KEY = 'admin_sidebar_expanded';
+
+function getInitialExpanded(location) {
+  // Auto-expand the group that contains the current path
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    // Always auto-expand group containing current page
+    const autoExpand = {};
+    adminGroups.forEach(g => {
+      const hasActive = g.items.some(item =>
+        location.pathname === item.path ||
+        (item.path !== '/admin' && location.pathname.startsWith(item.path))
+      );
+      autoExpand[g.id] = hasActive ? true : (saved[g.id] ?? false);
+    });
+    return autoExpand;
+  } catch {
+    return {};
+  }
+}
+
+function AdminNav({ pendingApps, lowStockCount, onClose }) {
+  const location = useLocation();
+  const [expanded, setExpanded] = useState(() => getInitialExpanded(location));
+
+  // Auto-expand group for current page when route changes
+  useEffect(() => {
+    adminGroups.forEach(g => {
+      const hasActive = g.items.some(item =>
+        location.pathname === item.path ||
+        (item.path !== '/admin' && location.pathname.startsWith(item.path))
+      );
+      if (hasActive) {
+        setExpanded(prev => ({ ...prev, [g.id]: true }));
+      }
+    });
+  }, [location.pathname]);
+
+  const toggle = (id) => {
+    setExpanded(prev => {
+      const next = { ...prev, [id]: !prev[id] };
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
+
+  return (
+    <nav className="flex-1 p-3 overflow-y-auto space-y-1">
+      {adminGroups.map(group => {
+        const isOpen = !!expanded[group.id];
+        const hasActive = group.items.some(item =>
+          location.pathname === item.path ||
+          (item.path !== '/admin' && location.pathname.startsWith(item.path))
+        );
+
+        return (
+          <div key={group.id}>
+            {/* Group Header */}
+            <button
+              onClick={() => toggle(group.id)}
+              className={cn(
+                "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all",
+                hasActive
+                  ? "text-sidebar-primary bg-sidebar-accent"
+                  : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
+              )}
+            >
+              <span>{group.emoji}</span>
+              <span className="flex-1 text-left">{group.label}</span>
+              {isOpen
+                ? <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                : <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+              }
+            </button>
+
+            {/* Group Items */}
+            <div
+              className={cn(
+                "overflow-hidden transition-all duration-200",
+                isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+              )}
+            >
+              <div className="pl-2 pt-1 pb-1 space-y-0.5">
+                {group.items.map(item => {
+                  const active = location.pathname === item.path ||
+                    (item.path !== '/admin' && location.pathname.startsWith(item.path));
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                        active
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-primary/20"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {item.label}
+                      {item.badge && pendingApps > 0 && (
+                        <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
+                          {pendingApps}
+                        </span>
+                      )}
+                      {item.stockBadge && lowStockCount > 0 && (
+                        <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
+                          {lowStockCount}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
 export default function Sidebar({ isAdmin, userType }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  
-  // 根據用戶類型顯示不同的導航菜單
+
   let nav;
-  if (isAdmin) {
-    nav = adminNav;
-  } else if (userType === 'business') {
-    nav = businessClientNav;
-  } else if (userType === 'general') {
-    nav = generalClientNav;
-  } else {
-    // 默認顯示商業客戶導航（防止未設置時丟失產品目錄）
-    nav = businessClientNav;
+  if (!isAdmin) {
+    nav = userType === 'business' ? businessClientNav : generalClientNav;
   }
 
   const { data: pendingApps = [] } = useQuery({
@@ -143,44 +293,44 @@ export default function Sidebar({ isAdmin, userType }) {
         "lg:translate-x-0",
         open ? "translate-x-0" : "-translate-x-full"
       )}>
-        {/* Logo */}
         <SidebarLogo />
 
-        {/* Nav */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {nav.map((item) => {
-            const active = location.pathname === item.path || 
-              (item.path !== '/' && item.path !== '/admin' && location.pathname.startsWith(item.path));
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-                  active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-primary/20"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                )}
-              >
-                <item.icon className="h-4.5 w-4.5 shrink-0" />
-                {item.label}
-                {item.badge && pendingApps.length > 0 && (
-                  <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
-                    {pendingApps.length}
-                  </span>
-                )}
-                {item.stockBadge && lowStockCount > 0 && (
-                  <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
-                    {lowStockCount}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Admin grouped nav */}
+        {isAdmin && (
+          <AdminNav
+            pendingApps={pendingApps.length}
+            lowStockCount={lowStockCount}
+            onClose={() => setOpen(false)}
+          />
+        )}
 
-        {/* Switch mode */}
+        {/* Client flat nav */}
+        {!isAdmin && (
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+            {nav.map((item) => {
+              const active = location.pathname === item.path ||
+                (item.path !== '/' && location.pathname.startsWith(item.path));
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                    active
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-primary/20"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  )}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+
+        {/* Footer */}
         {isAdmin && (
           <div className="p-3 border-t border-sidebar-border space-y-2">
             <div className="text-xs text-sidebar-foreground/50 font-medium mb-2">預覽視角</div>
@@ -222,7 +372,6 @@ export default function Sidebar({ isAdmin, userType }) {
               <Shield className="h-4 w-4" />
               管理後台
             </Link>
-            {/* 商業客戶專屬：返回產品目錄 */}
             {userType === 'business' && (
               <Link
                 to="/products"

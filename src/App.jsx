@@ -156,17 +156,17 @@ const AuthenticatedApp = () => {
           </UserTypeGuard>
         } />
         <Route path="/credits/topup" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <CreditsTopup />
           </UserTypeGuard>
         } />
         <Route path="/credits/success" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <CreditsSuccess />
           </UserTypeGuard>
         } />
         <Route path="/credits/cancel" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <CreditsCancel />
           </UserTypeGuard>
         } />

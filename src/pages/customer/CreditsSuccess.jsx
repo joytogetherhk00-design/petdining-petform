@@ -68,11 +68,11 @@ export default function CreditsSuccess() {
         )}
 
         <div className="flex flex-col gap-3 mt-4">
-          <Link to="/account">
-            <Button className="w-full bg-primary">查看餘額</Button>
+          <Link to="/credits">
+            <Button className="w-full bg-primary">查看 Credits</Button>
           </Link>
           <Link to="/">
-            <Button variant="outline" className="w-full">繼續購物</Button>
+            <Button variant="outline" className="w-full">返回首頁</Button>
           </Link>
         </div>
       </div>

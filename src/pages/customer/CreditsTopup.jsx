@@ -32,16 +32,11 @@ export default function CreditsTopup() {
       toast.error('最低充值金額為 HK$1,000');
       return;
     }
-    if (!customer) {
-      toast.error('找不到客戶資料');
-      return;
-    }
-
     setLoading(true);
     const origin = window.location.origin;
     const res = await base44.functions.invoke('createCheckoutSession', {
       amount: finalAmount,
-      customer_id: customer.customer_id,
+      customer_id: customer?.customer_id || '',
       success_url: `${origin}/credits/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/credits/cancel`,
     });
@@ -132,7 +127,7 @@ export default function CreditsTopup() {
 
             <Button
               className="w-full bg-primary h-12 text-base font-semibold"
-              disabled={!finalAmount || finalAmount < 1000 || loading || !customer}
+              disabled={!finalAmount || finalAmount < 1000 || loading}
               onClick={handleCheckout}
             >
               {loading ? (

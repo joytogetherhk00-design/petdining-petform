@@ -44,6 +44,7 @@ import UserManagement from '@/pages/admin/UserManagement';
 import StudentsManagement from '@/pages/admin/StudentsManagement';
 import CourseEnrollmentDetail from '@/pages/admin/CourseEnrollmentDetail';
 import CreditsTopup from '@/pages/customer/CreditsTopup';
+import MyCredits from '@/pages/customer/MyCredits';
 import CreditsSuccess from '@/pages/customer/CreditsSuccess';
 import CreditsCancel from '@/pages/customer/CreditsCancel';
 import AdminGuard from '@/components/AdminGuard';
@@ -147,6 +148,11 @@ const AuthenticatedApp = () => {
         <Route path="/products" element={
           <UserTypeGuard allowedTypes={['business']}>
             <ProductCatalog />
+          </UserTypeGuard>
+        } />
+        <Route path="/credits" element={
+          <UserTypeGuard allowedTypes={['business']}>
+            <MyCredits />
           </UserTypeGuard>
         } />
         <Route path="/credits/topup" element={

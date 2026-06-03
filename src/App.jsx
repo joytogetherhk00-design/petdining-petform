@@ -151,7 +151,7 @@ const AuthenticatedApp = () => {
           </UserTypeGuard>
         } />
         <Route path="/credits" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <MyCredits />
           </UserTypeGuard>
         } />

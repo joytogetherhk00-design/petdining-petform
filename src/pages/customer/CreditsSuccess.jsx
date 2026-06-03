@@ -42,7 +42,7 @@ export default function CreditsSuccess() {
         <div className="text-center max-w-sm">
           <p className="text-lg font-semibold text-destructive mb-2">確認失敗</p>
           <p className="text-muted-foreground text-sm mb-6">如已付款，請聯絡客服確認 Credits。</p>
-          <Link to="/account"><Button variant="outline">返回帳戶</Button></Link>
+          <Link to="/credits"><Button variant="outline">返回 Credits</Button></Link>
         </div>
       </div>
     );

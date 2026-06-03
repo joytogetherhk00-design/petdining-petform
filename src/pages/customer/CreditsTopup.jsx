@@ -42,7 +42,7 @@ export default function CreditsTopup() {
     });
 
     if (res.data?.url) {
-      window.location.href = res.data.url;
+      window.open(res.data.url, '_blank');
     } else {
       toast.error(res.data?.error || '建立付款失敗，請稍後重試');
       setLoading(false);

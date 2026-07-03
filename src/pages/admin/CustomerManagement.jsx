@@ -43,7 +43,7 @@ export default function CustomerManagement() {
 
   const filtered = (tab === 'pending' ? pendingCustomers : activeCustomers).filter(c => {
     const q = search.toLowerCase();
-    return !search || c.customer_id?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q) || c.account_number?.toLowerCase().includes(q);
+    return !search || c.customer_id?.toLowerCase().includes(q) || c.company_name?.toLowerCase().includes(q) || c.account_number?.toLowerCase().includes(q) || c.restaurant_name?.toLowerCase().includes(q);
   });
 
   const generateAccountNumber = (region) => {
@@ -162,6 +162,7 @@ export default function CustomerManagement() {
               <TableHead>Logo</TableHead>
               <TableHead>帳戶編號</TableHead>
               <TableHead>公司名稱</TableHead>
+              <TableHead>餐廳名稱</TableHead>
               <TableHead>聯絡人</TableHead>
               <TableHead>Credits</TableHead>
               <TableHead>狀態</TableHead>
@@ -182,6 +183,7 @@ export default function CustomerManagement() {
                 </TableCell>
                 <TableCell className="font-mono text-sm">{c.customer_id}</TableCell>
                 <TableCell className="font-medium">{c.company_name}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{c.restaurant_name || '-'}</TableCell>
                 <TableCell className="text-sm">{c.contact}</TableCell>
                 <TableCell className="font-semibold">{(c.credits_balance || 0).toLocaleString()}</TableCell>
                 <TableCell><StatusBadge status={c.status} /></TableCell>

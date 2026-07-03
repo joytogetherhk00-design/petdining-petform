@@ -92,7 +92,6 @@ const businessClientNav = [
   { label: '我的Credits', icon: CreditCard, path: '/credits' },
   { label: '購物車', icon: ShoppingCart, path: '/cart' },
   { label: '訂單記錄', icon: ClipboardList, path: '/orders' },
-  { label: '我的積分', icon: CreditCard, path: '/account' },
   { label: '我的帳戶', icon: User, path: '/account' },
 ];
 

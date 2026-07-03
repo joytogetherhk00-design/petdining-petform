@@ -20,7 +20,7 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
-  const [filterType, setFilterType] = useState('all'); // 'all', 'business', 'general'
+  const [filterType, setFilterType] = useState('all');
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [roleUser, setRoleUser] = useState(null);
   const [newRole, setNewRole] = useState('');
@@ -137,25 +137,10 @@ export default function UserManagement() {
       <Card className="p-4 mb-4">
         <div className="flex gap-4 mb-4">
           <Button
-            variant={filterType === 'all' ? 'default' : 'outline'}
-            className={filterType === 'all' ? 'bg-primary' : ''}
-            onClick={() => setFilterType('all')}
+            variant="default"
+            className="bg-primary"
           >
-            所有用戶
-          </Button>
-          <Button
-            variant={filterType === 'business' ? 'default' : 'outline'}
-            className={filterType === 'business' ? 'bg-primary' : ''}
-            onClick={() => setFilterType('business')}
-          >
-            商業客戶
-          </Button>
-          <Button
-            variant={filterType === 'general' ? 'default' : 'outline'}
-            className={filterType === 'general' ? 'bg-primary' : ''}
-            onClick={() => setFilterType('general')}
-          >
-            一般客戶
+            批發客戶
           </Button>
         </div>
         <div className="relative">
@@ -225,13 +210,13 @@ export default function UserManagement() {
                           if (customer) {
                             return (
                               <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">
-                                商業客戶 - {customer.customer_id}
+                                批發客戶 - {customer.customer_id}
                               </span>
                             );
                           }
                           return (
                             <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground w-fit">
-                              一般客戶
+                              批發客戶
                             </span>
                           );
                         })()}

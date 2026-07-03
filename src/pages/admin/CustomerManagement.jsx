@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Search, Plus, Check, X, UserPlus, Building2 } from 'lucide-react';
-import { PLANS, PLAN_LABELS, REGIONS } from '@/lib/planConfig';
+import { REGIONS } from '@/lib/planConfig';
 import { toast } from 'sonner';
 
 export default function CustomerManagement() {
@@ -26,7 +26,7 @@ export default function CustomerManagement() {
   const [editOpen, setEditOpen] = useState(null);
   const [newCustomer, setNewCustomer] = useState({
     company_name: '', contact: '', phone: '', email: '',
-    delivery_address: '', branch_address: '', br_address: '', plan: 'plan_a', region: 'PDK',
+    delivery_address: '', branch_address: '', br_address: '', region: 'PDK',
     logo_url: '', br_document_url: '',
   });
   const queryClient = useQueryClient();
@@ -51,7 +51,6 @@ export default function CustomerManagement() {
 
   const handleAdd = async () => {
     const accountNum = generateAccountNumber(newCustomer.region);
-    const plan = PLANS[newCustomer.plan];
     await base44.entities.Customers.create({
       customer_id: accountNum,
       account_number: accountNum,
@@ -65,15 +64,13 @@ export default function CustomerManagement() {
       logo_url: newCustomer.logo_url,
       br_document_url: newCustomer.br_document_url,
       status: 'pending',
-      plan: newCustomer.plan,
-      monthly_credits: plan.credits,
       credits_balance: 0,
       user_email: newCustomer.email,
       onboarding_completed: true,
     });
     queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
     setAddOpen(false);
-    setNewCustomer({ company_name: '', contact: '', phone: '', email: '', delivery_address: '', branch_address: '', br_address: '', plan: 'plan_a', region: 'PDK', logo_url: '', br_document_url: '' });
+    setNewCustomer({ company_name: '', contact: '', phone: '', email: '', delivery_address: '', branch_address: '', br_address: '', region: 'PDK', logo_url: '', br_document_url: '' });
     toast.success('客戶已新增（待審批）');
   };
 
@@ -154,7 +151,6 @@ export default function CustomerManagement() {
               <TableHead>帳戶編號</TableHead>
               <TableHead>公司名稱</TableHead>
               <TableHead>聯絡人</TableHead>
-              <TableHead>計劃</TableHead>
               <TableHead>Credits</TableHead>
               <TableHead>狀態</TableHead>
               <TableHead>操作</TableHead>
@@ -175,7 +171,6 @@ export default function CustomerManagement() {
                 <TableCell className="font-mono text-sm">{c.customer_id}</TableCell>
                 <TableCell className="font-medium">{c.company_name}</TableCell>
                 <TableCell className="text-sm">{c.contact}</TableCell>
-                <TableCell className="text-sm">{PLANS[c.plan]?.name || '-'}</TableCell>
                 <TableCell className="font-semibold">{(c.credits_balance || 0).toLocaleString()}</TableCell>
                 <TableCell><StatusBadge status={c.status} /></TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
@@ -231,7 +226,6 @@ export default function CustomerManagement() {
                   <div><span className="text-muted-foreground">聯絡人：</span>{detailOpen.contact}</div>
                   <div><span className="text-muted-foreground">電話：</span>{detailOpen.phone}</div>
                   <div><span className="text-muted-foreground">電郵：</span>{detailOpen.email}</div>
-                  <div><span className="text-muted-foreground">計劃：</span>{PLANS[detailOpen.plan]?.name || '-'}</div>
                   <div><span className="text-muted-foreground">Credits 餘額：</span><span className="font-bold text-primary">{(detailOpen.credits_balance || 0).toLocaleString()}</span></div>
                   <div><span className="text-muted-foreground">每月 Credits：</span>{detailOpen.monthly_credits || '-'}</div>
                 </div>
@@ -285,15 +279,6 @@ export default function CustomerManagement() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label>計劃</Label>
-              <Select value={newCustomer.plan} onValueChange={v => setNewCustomer({ ...newCustomer, plan: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PLAN_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddOpen(false)}>取消</Button>
@@ -321,15 +306,6 @@ export default function CustomerManagement() {
             <div>
               <Label className="mb-1.5 block">商業登記文件</Label>
               <DragDropUpload value={editOpen?.br_document_url || ''} onChange={url => setEditOpen({ ...editOpen, br_document_url: url })} accept="image/*,.pdf" label="上傳商業登記 (BR)" hint="PNG / JPG / PDF，最大 10MB" />
-            </div>
-            <div>
-              <Label>計劃</Label>
-              <Select value={editOpen?.plan || 'plan_a'} onValueChange={v => setEditOpen({ ...editOpen, plan: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PLAN_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-                </SelectContent>
-              </Select>
             </div>
             <div>
               <Label>每月 Credits</Label>

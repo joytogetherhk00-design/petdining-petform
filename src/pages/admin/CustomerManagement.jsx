@@ -13,7 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Search, Plus, Check, X, UserPlus, Building2 } from 'lucide-react';
+import { Search, Plus, Check, X, UserPlus, Building2, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { REGIONS } from '@/lib/planConfig';
 import { toast } from 'sonner';
 
@@ -24,6 +25,7 @@ export default function CustomerManagement() {
   const [detailOpen, setDetailOpen] = useState(null);
   const [pendingOpen, setPendingOpen] = useState(null);
   const [editOpen, setEditOpen] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [newCustomer, setNewCustomer] = useState({
     company_name: '', contact: '', phone: '', email: '',
     delivery_address: '', branch_address: '', br_address: '', region: 'PDK',
@@ -94,6 +96,13 @@ export default function CustomerManagement() {
     queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
     setPendingOpen(null);
     toast.success('變更已批准');
+  };
+
+  const handleDelete = async (customer) => {
+    await base44.entities.Customers.delete(customer.id);
+    queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
+    setDeleteConfirm(null);
+    toast.success('客戶已刪除');
   };
 
   const rejectPending = async (customer) => {
@@ -186,6 +195,9 @@ export default function CustomerManagement() {
                         審批
                       </Button>
                     )}
+                    <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive/10" onClick={() => setDeleteConfirm(c)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -318,6 +330,22 @@ export default function CustomerManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirm Dialog */}
+      <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>確認刪除客戶</AlertDialogTitle>
+            <AlertDialogDescription>
+              即將刪除 <strong>{deleteConfirm?.company_name}</strong>（{deleteConfirm?.customer_id}）。此操作不可撤銷，所有相關資料將被永久移除。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => handleDelete(deleteConfirm)}>確認刪除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Pending Changes Dialog */}
       <Dialog open={!!pendingOpen} onOpenChange={() => setPendingOpen(null)}>

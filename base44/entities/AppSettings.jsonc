@@ -47,7 +47,6 @@
       "type": "string",
       "description": "FPS \u5e33\u6236\u540d\u7a31"
     },
-    },
     "stripe_publishable_key": {
       "type": "string",
       "description": "Stripe Publishable Key"

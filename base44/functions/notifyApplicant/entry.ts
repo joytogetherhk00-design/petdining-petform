@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { application_id, action, rejection_reason, plan, region } = await req.json();
+    const { application_id, action, rejection_reason, plan, region, temp_password } = await req.json();
 
     const apps = await base44.asServiceRole.entities.Application.filter({ id: application_id });
     if (!apps.length) {
@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
         onboarding_completed: false,
         quota_remaining: 0,
         monthly_quota: 0,
+        ...(temp_password ? { temp_password, must_change_password: true } : {}),
       });
 
       const now = new Date();
@@ -94,6 +95,7 @@ Deno.serve(async (req) => {
                 <p style="margin:4px 0;"><strong>帳戶編號：</strong>${customerId}</p>
                 <p style="margin:4px 0;"><strong>計劃：</strong>${selectedPlan.name}</p>
                 <p style="margin:4px 0;"><strong>每月 Credits：</strong>${(selectedPlan.credits || 0).toLocaleString()}</p>
+                ${temp_password ? `<p style="margin:8px 0 4px;border-top:1px solid #e5e7eb;padding-top:8px;"><strong>臨時登入密碼：</strong><span style="font-family:monospace;background:#fff3cd;padding:2px 6px;border-radius:4px;">${temp_password}</span></p><p style="margin:4px 0;font-size:12px;color:#dc2626;">⚠️ 首次登入後請立即更改密碼</p>` : ''}
               </div>
               <a href="https://www.petdining.biz" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:8px 0;">立即登入</a>
               <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">

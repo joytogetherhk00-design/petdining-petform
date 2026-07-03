@@ -25,6 +25,7 @@ export default function ApplicationManagement() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [approvePlan, setApprovePlan] = useState('plan_a');
   const [approveRegion, setApproveRegion] = useState('PDK');
+  const [tempPassword, setTempPassword] = useState('');
   const [processing, setProcessing] = useState(false);
   const queryClient = useQueryClient();
 
@@ -42,12 +43,17 @@ export default function ApplicationManagement() {
   });
 
   const handleApprove = async () => {
+    if (!tempPassword || tempPassword.length < 6) {
+      toast.error('請設定至少 6 個字元的臨時密碼');
+      return;
+    }
     setProcessing(true);
     const res = await base44.functions.invoke('notifyApplicant', {
       application_id: approveOpen.id,
       action: 'approve',
       plan: approvePlan,
       region: approveRegion,
+      temp_password: tempPassword,
     });
     if (res.data?.success) {
       toast.success(`申請已批准！客戶編號：${res.data.customer_id}`);
@@ -55,6 +61,7 @@ export default function ApplicationManagement() {
       queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
       setApproveOpen(null);
       setDetailOpen(null);
+      setTempPassword('');
     } else {
       toast.error('批准失敗，請重試');
     }
@@ -232,31 +239,42 @@ export default function ApplicationManagement() {
       </Dialog>
 
       {/* Approve Dialog */}
-      <Dialog open={!!approveOpen} onOpenChange={() => setApproveOpen(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>批准申請 — 設定計劃</DialogTitle></DialogHeader>
-          <div className="space-y-3 py-2">
-            <p className="text-sm text-muted-foreground">{approveOpen?.company_name}</p>
-            <div>
-              <Label>區域</Label>
-              <Select value={approveRegion} onValueChange={setApproveRegion}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(REGIONS).map(([k, v]) => <SelectItem key={k} value={k}>{k} - {v}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>計劃</Label>
-              <Select value={approvePlan} onValueChange={setApprovePlan}>
-                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {Object.entries(PLAN_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <p className="text-xs text-muted-foreground bg-muted p-2 rounded">批准後將自動建立客戶帳戶並發送電郵通知。</p>
-          </div>
+      <Dialog open={!!approveOpen} onOpenChange={() => { setApproveOpen(null); setTempPassword(''); }}>
+      <DialogContent className="max-w-sm">
+      <DialogHeader><DialogTitle>批准申請 — 設定帳戶</DialogTitle></DialogHeader>
+      <div className="space-y-3 py-2">
+        <p className="text-sm text-muted-foreground">{approveOpen?.company_name}</p>
+        <div>
+          <Label>區域</Label>
+          <Select value={approveRegion} onValueChange={setApproveRegion}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(REGIONS).map(([k, v]) => <SelectItem key={k} value={k}>{k} - {v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>計劃</Label>
+          <Select value={approvePlan} onValueChange={setApprovePlan}>
+            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {Object.entries(PLAN_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>臨時密碼 <span className="text-destructive">*</span></Label>
+          <Input
+            className="mt-1"
+            type="text"
+            value={tempPassword}
+            onChange={e => setTempPassword(e.target.value)}
+            placeholder="設定用戶首次登入密碼（最少 6 位）"
+          />
+          <p className="text-xs text-muted-foreground mt-1">此密碼將發送給申請人，用戶首次登入後必須更改。</p>
+        </div>
+        <p className="text-xs text-muted-foreground bg-muted p-2 rounded">批准後將自動建立客戶帳戶並發送電郵通知。</p>
+      </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setApproveOpen(null)}>取消</Button>
             <Button className="bg-green-600 hover:bg-green-700" onClick={handleApprove} disabled={processing}>

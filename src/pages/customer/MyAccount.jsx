@@ -12,7 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
-import { CreditCard, MessageCircle, ArrowUpCircle, Pencil, Plus, MapPin, Building2 } from 'lucide-react';
+import { CreditCard, MessageCircle, ArrowUpCircle, Pencil, Plus, MapPin, Building2, Lock } from 'lucide-react';
+import ChangePassword from '@/pages/customer/ChangePassword';
 import { PLANS } from '@/lib/planConfig';
 import { toast } from 'sonner';
 import { addDays, format } from 'date-fns';
@@ -20,6 +21,7 @@ import { addDays, format } from 'date-fns';
 export default function MyAccount() {
   const [editOpen, setEditOpen] = useState(false);
   const [topupOpen, setTopupOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [topupMode, setTopupMode] = useState('stripe'); // 'stripe' | 'bank'
   const [topupAmount, setTopupAmount] = useState('');
   const [editData, setEditData] = useState({});
@@ -60,10 +62,20 @@ export default function MyAccount() {
   });
 
   const hasPendingTopup = topupHistory.some(t => t.status === 'pending');
+  const mustChangePassword = customer?.must_change_password === true;
   const plan = customer?.plan ? PLANS[customer.plan] : null;
   const nextReset = customer?.approved_date
     ? format(addDays(new Date(customer.approved_date), 30), 'yyyy/MM/dd')
     : '-';
+
+  const handlePasswordChanged = async () => {
+    // Clear must_change_password flag after successful change
+    if (customer) {
+      await base44.entities.Customers.update(customer.id, { must_change_password: false, temp_password: null });
+      queryClient.invalidateQueries({ queryKey: ['myCustomer'] });
+    }
+    setShowChangePassword(false);
+  };
 
   const submitEdit = async () => {
     await base44.entities.Customers.update(customer.id, { pending_changes: editData });
@@ -110,6 +122,20 @@ export default function MyAccount() {
     <div>
       <PageHeader title="我的帳戶" />
 
+      {/* Mandatory password change banner */}
+      {mustChangePassword && (
+        <div className="mb-6 p-4 bg-orange-50 border border-orange-300 rounded-xl flex items-start gap-3">
+          <span className="text-2xl">⚠️</span>
+          <div className="flex-1">
+            <p className="font-semibold text-orange-800">請立即更改臨時密碼</p>
+            <p className="text-sm text-orange-700 mt-0.5">您目前使用的是管理員設定的臨時密碼，請立即更改以保障帳戶安全。</p>
+          </div>
+          <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white shrink-0" onClick={() => setShowChangePassword(true)}>
+            立即更改
+          </Button>
+        </div>
+      )}
+
       {isGeneralUser ? (
         // 一般用戶個人資料
         <div className="grid md:grid-cols-2 gap-6">
@@ -123,6 +149,16 @@ export default function MyAccount() {
               <div><span className="text-muted-foreground">用戶類型：</span>一般客戶</div>
             </CardContent>
           </Card>
+          {showChangePassword ? (
+            <ChangePassword userId={user?.id} onSuccess={() => setShowChangePassword(false)} />
+          ) : (
+            <Card>
+              <CardHeader><CardTitle className="text-base flex items-center gap-2"><Lock className="h-4 w-4" />密碼設定</CardTitle></CardHeader>
+              <CardContent>
+                <Button variant="outline" className="w-full" onClick={() => setShowChangePassword(true)}>更改密碼</Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       ) : (
         // 商業用戶公司資料
@@ -195,6 +231,22 @@ export default function MyAccount() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Change Password */}
+        {(showChangePassword || mustChangePassword) ? (
+          <ChangePassword
+            userId={user?.id}
+            isMandatory={mustChangePassword}
+            onSuccess={handlePasswordChanged}
+          />
+        ) : (
+          <Card>
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Lock className="h-4 w-4" />密碼設定</CardTitle></CardHeader>
+            <CardContent>
+              <Button variant="outline" className="w-full" onClick={() => setShowChangePassword(true)}>更改密碼</Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Top-up */}
         <Card>

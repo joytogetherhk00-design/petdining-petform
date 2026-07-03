@@ -98,6 +98,15 @@
       "type": "boolean",
       "default": false,
       "description": "\u662f\u5426\u5df2\u5b8c\u6210\u9996\u6b21\u8cc7\u6599\u586b\u5beb"
+    },
+    "temp_password": {
+      "type": "string",
+      "description": "Admin \u8a2d\u5b9a\u7684\u81e8\u6642\u5bc6\u78bc\uff08\u9996\u6b21\u767b\u5165\u5f8c\u6e05\u9664\uff09"
+    },
+    "must_change_password": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u662f\u5426\u5fc5\u9808\u66f4\u6539\u5bc6\u78bc\uff08\u9996\u6b21\u767b\u5165\uff09"
     }
   },
   "required": [

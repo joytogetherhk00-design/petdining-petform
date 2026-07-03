@@ -481,8 +481,23 @@ export default function AdminManagement() {
               </div>
             </div>
             <div className="pt-2 border-t">
-              <Button variant="outline" className="w-full" disabled>
-                <KeyRound className="h-4 w-4 mr-2" />重置密碼（即將推出）
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={async () => {
+                  try {
+                    await base44.auth.redirectToLogin('/admin', { email: selectedUser?.email, noRedirect: true });
+                  } catch {}
+                  // Send magic link by navigating to login with email pre-filled is not directly possible,
+                  // so we copy the login link for the admin to share
+                  const settingsList = await base44.entities.AppSettings.list();
+                  const appUrl = settingsList[0]?.app_url?.replace(/\/$/, '') || window.location.origin;
+                  const loginLink = `${appUrl}/admin-login`;
+                  await navigator.clipboard.writeText(`管理後台登入連結：${loginLink}\n請使用電郵 ${selectedUser?.email} 登入，系統將發送登入連結到您的郵箱。`);
+                  toast.success('登入連結資訊已複製到剪貼板，請發送給管理員');
+                }}
+              >
+                <KeyRound className="h-4 w-4 mr-2" />複製登入連結（發送給管理員）
               </Button>
             </div>
           </div>

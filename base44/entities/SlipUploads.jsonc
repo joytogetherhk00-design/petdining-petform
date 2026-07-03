@@ -1,0 +1,80 @@
+{
+  "name": "SlipUploads",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "\u5ba2\u6236\u7de8\u865f"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "\u7528\u6236\u96fb\u90f5"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "\u516c\u53f8\u540d\u7a31"
+    },
+    "amount": {
+      "type": "number",
+      "description": "\u8f49\u5e33\u91d1\u984d (HKD)"
+    },
+    "slip_url": {
+      "type": "string",
+      "description": "\u5165\u6578\u7d19\u5716\u7247 URL"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "\u72c0\u614b"
+    },
+    "notes": {
+      "type": "string",
+      "description": "\u5099\u8a3b"
+    }
+  },
+  "required": [
+    "customer_id",
+    "slip_url"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

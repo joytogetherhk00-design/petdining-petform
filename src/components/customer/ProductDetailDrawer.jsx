@@ -6,7 +6,7 @@ import { ShoppingCart } from 'lucide-react';
 import OriginBadge from '@/components/shared/OriginBadge';
 import MeatBadge from '@/components/shared/MeatBadge';
 
-export default function ProductDetailDrawer({ product, open, onClose, onAddToCart }) {
+export default function ProductDetailDrawer({ product, open, onClose, onAddToCart, showPrice = true }) {
   const [activeImg, setActiveImg] = useState(0);
 
   if (!product) return null;
@@ -56,7 +56,11 @@ export default function ProductDetailDrawer({ product, open, onClose, onAddToCar
         {/* Price */}
         <div className="flex items-center justify-between mb-4 p-3 bg-muted rounded-xl">
           <div>
-            <p className="text-2xl font-bold text-primary">HK${product.wholesale_price}</p>
+            {showPrice ? (
+              <p className="text-2xl font-bold text-primary">HK${product.wholesale_price}</p>
+            ) : (
+              <p className="text-base text-muted-foreground italic">登入查看價格</p>
+            )}
             <p className="text-xs text-muted-foreground">最低 {product.min_order || 1} {product.unit || '件'}</p>
           </div>
           <div className="text-right text-sm text-muted-foreground">
@@ -89,15 +93,17 @@ export default function ProductDetailDrawer({ product, open, onClose, onAddToCar
         )}
 
         {/* Add to cart */}
-        <Button
-          className="w-full bg-primary hover:bg-primary/90 mt-2"
-          size="lg"
-          disabled={product.stock === 0}
-          onClick={() => { onAddToCart(product); onClose(); }}
-        >
-          <ShoppingCart className="h-4 w-4 mr-2" />
-          加入購物車
-        </Button>
+        {showPrice && (
+          <Button
+            className="w-full bg-primary hover:bg-primary/90 mt-2"
+            size="lg"
+            disabled={product.stock === 0}
+            onClick={() => { onAddToCart(product); onClose(); }}
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            加入購物車
+          </Button>
+        )}
       </SheetContent>
     </Sheet>
   );

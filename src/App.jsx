@@ -113,12 +113,8 @@ const AuthenticatedApp = () => {
           </UserTypeGuard>
         } />
         
-        {/* Business client routes - products only */}
-        <Route path="/products" element={
-          <UserTypeGuard allowedTypes={['business']}>
-            <ProductCatalog />
-          </UserTypeGuard>
-        } />
+        {/* Products - public, price hidden for guests */}
+        <Route path="/products" element={<ProductCatalog />} />
         <Route path="/credits" element={
           <UserTypeGuard allowedTypes={['general', 'business']}>
             <MyCredits />

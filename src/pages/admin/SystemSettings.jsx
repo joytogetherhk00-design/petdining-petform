@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 export default function SystemSettings() {
   const [form, setForm] = useState({
     company_name: '', min_order_amount: 500, credits_reset_day: 1,
-    currency: 'HKD', bank_name: '', bank_account: '', account_holder: '', fps_id: '',
+    currency: 'HKD', bank_name: '', bank_account: '', account_holder: '', fps_id: '', fps_account_name: '',
     logo_url: '', stripe_publishable_key: '', low_stock_threshold: 10, app_url: '',
   });
   const queryClient = useQueryClient();
@@ -81,6 +81,7 @@ export default function SystemSettings() {
             <div><Label>銀行帳號</Label><Input value={form.bank_account} onChange={e => setForm({ ...form, bank_account: e.target.value })} /></div>
             <div><Label>帳戶持有人</Label><Input value={form.account_holder} onChange={e => setForm({ ...form, account_holder: e.target.value })} /></div>
             <div><Label>FPS ID</Label><Input value={form.fps_id} onChange={e => setForm({ ...form, fps_id: e.target.value })} /></div>
+            <div><Label>FPS 帳戶名稱</Label><Input value={form.fps_account_name} onChange={e => setForm({ ...form, fps_account_name: e.target.value })} /></div>
           </CardContent>
         </Card>
 

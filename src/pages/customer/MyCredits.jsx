@@ -151,14 +151,17 @@ export default function MyCredits() {
             <p className="text-sm text-muted-foreground">請轉帳至以下帳戶，並上傳入數紙：</p>
 
             <div className="bg-muted rounded-xl p-4 space-y-2 text-sm">
+              {settings?.company_name && (
+                <div className="flex gap-2"><span className="text-muted-foreground w-28 shrink-0">🏢 公司名：</span><span className="font-medium">{settings.company_name}</span></div>
+              )}
+              {settings?.account_holder && (
+                <div className="flex gap-2"><span className="text-muted-foreground w-28 shrink-0">👤 帳戶持有人：</span><span className="font-medium">{settings.account_holder}</span></div>
+              )}
               {settings?.bank_name && (
                 <div className="flex gap-2"><span className="text-muted-foreground w-28 shrink-0">🏦 銀行：</span><span className="font-medium">{settings.bank_name}</span></div>
               )}
               {settings?.fps_id && (
                 <div className="flex gap-2"><span className="text-muted-foreground w-28 shrink-0">📱 FPS ID：</span><span className="font-medium">{settings.fps_id}</span></div>
-              )}
-              {settings?.fps_account_name && (
-                <div className="flex gap-2"><span className="text-muted-foreground w-28 shrink-0">👤 帳戶名：</span><span className="font-medium">{settings.fps_account_name}</span></div>
               )}
               {settings?.bank_account && (
                 <div className="flex gap-2"><span className="text-muted-foreground w-28 shrink-0">🔢 帳戶號碼：</span><span className="font-medium">{settings.bank_account}</span></div>

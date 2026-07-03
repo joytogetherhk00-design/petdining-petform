@@ -63,10 +63,9 @@ const AuthenticatedApp = () => {
       const pathname = window.location.pathname;
       if (pathname.startsWith('/admin')) {
         window.location.href = '/admin-login';
-      } else {
-        navigateToLogin();
+        return null;
       }
-      return null;
+      // For non-admin routes, allow the page to render (public pages like ProductCatalog)
     }
   }
 

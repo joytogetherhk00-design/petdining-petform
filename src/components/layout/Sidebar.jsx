@@ -229,6 +229,7 @@ export default function Sidebar({ isAdmin, userType, isPreview }) {
   const location = useLocation();
   const { user } = useAuth();
 
+  const isLoggedIn = !!user;
 
   const handleLogout = () => {
     base44.auth.logout('/');
@@ -303,26 +304,29 @@ export default function Sidebar({ isAdmin, userType, isPreview }) {
         {/* Client flat nav */}
         {!isAdmin && (
           <nav className="flex-1 p-3 space-y-1 overflow-y-auto min-h-0">
-            {nav.map((item) => {
-              const active = location.pathname === item.path ||
-                (item.path !== '/' && location.pathname.startsWith(item.path));
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-                    active
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-primary/20"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                  )}
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  {item.label}
-                </Link>
-              );
-            })}
+            {/* Products always visible */}
+            {[{ label: '產品目錄', icon: Package, path: '/products' }]
+              .concat(isLoggedIn ? (userType === 'business' ? businessClientNav.filter(i => i.path !== '/products') : generalClientNav) : [])
+              .map((item) => {
+                const active = location.pathname === item.path ||
+                  (item.path !== '/' && location.pathname.startsWith(item.path));
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                      active
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-primary/20"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    {item.label}
+                  </Link>
+                );
+              })}
           </nav>
         )}
 
@@ -369,23 +373,23 @@ export default function Sidebar({ isAdmin, userType, isPreview }) {
                 管理後台
               </Link>
             )}
-            {userType === 'business' && (
-              <Link
-                to="/products"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+            {isLoggedIn ? (
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-destructive/20 hover:text-destructive transition-all"
               >
-                <Package className="h-4 w-4" />
-                產品目錄
-              </Link>
+                <LogOut className="h-4 w-4" />
+                登出
+              </button>
+            ) : (
+              <button
+                onClick={() => base44.auth.redirectToLogin(window.location.href)}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-primary bg-sidebar-primary/10 hover:bg-sidebar-primary/20 transition-all"
+              >
+                <Shield className="h-4 w-4" />
+                登入
+              </button>
             )}
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-destructive/20 hover:text-destructive transition-all"
-            >
-              <LogOut className="h-4 w-4" />
-              登出
-            </button>
           </div>
         )}
       </aside>

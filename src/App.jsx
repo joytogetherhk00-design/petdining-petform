@@ -43,7 +43,6 @@ import Apply from '@/pages/Apply';
 import Privacy from '@/pages/Privacy';
 import PrivacyConsent from '@/pages/PrivacyConsent';
 import AdminLogin from '@/pages/AdminLogin';
-import Welcome from '@/pages/Welcome';
 import Pending from '@/pages/Pending';
 
 const AuthenticatedApp = () => {
@@ -86,7 +85,6 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
     {/* Public pages - no layout wrapper */}
-    <Route path="/" element={<Welcome />} />
     <Route path="/onboarding" element={<Onboarding />} />
     <Route path="/apply" element={<Apply />} />
     <Route path="/privacy" element={<Privacy />} />
@@ -113,7 +111,8 @@ const AuthenticatedApp = () => {
           </UserTypeGuard>
         } />
         
-        {/* Products - public, price hidden for guests */}
+        {/* Products - public, price hidden for guests; also serves as home */}
+        <Route path="/" element={<ProductCatalog />} />
         <Route path="/products" element={<ProductCatalog />} />
         <Route path="/credits" element={
           <UserTypeGuard allowedTypes={['general', 'business']}>

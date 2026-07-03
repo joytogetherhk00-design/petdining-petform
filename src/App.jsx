@@ -18,10 +18,7 @@ import ProductCatalog from '@/pages/customer/ProductCatalog';
 import Cart from '@/pages/customer/Cart';
 import OrderHistory from '@/pages/customer/OrderHistory';
 import MyAccount from '@/pages/customer/MyAccount';
-import CourseCatalog from '@/pages/customer/CourseCatalog';
-import EnrollmentForm from '@/pages/customer/EnrollmentForm';
-import EnrollmentSuccess from '@/pages/customer/EnrollmentSuccess';
-import MyCourses from '@/pages/customer/MyCourses';
+
 
 // Admin pages
 import Dashboard from '@/pages/admin/Dashboard';
@@ -36,13 +33,7 @@ import AdminManagement from '@/pages/admin/AdminManagement';
 import AllBranches from '@/pages/admin/AllBranches';
 import ApplicationManagement from '@/pages/admin/ApplicationManagement';
 import TransactionManagement from '@/pages/admin/TransactionManagement';
-import CourseManagement from '@/pages/admin/CourseManagement';
-import InstructorManagement from '@/pages/admin/InstructorManagement';
-import EnrollmentManagement from '@/pages/admin/EnrollmentManagement';
-import CourseSchedule from '@/pages/admin/CourseSchedule';
 import UserManagement from '@/pages/admin/UserManagement';
-import StudentsManagement from '@/pages/admin/StudentsManagement';
-import CourseEnrollmentDetail from '@/pages/admin/CourseEnrollmentDetail';
 import CreditsTopup from '@/pages/customer/CreditsTopup';
 import MyCredits from '@/pages/customer/MyCredits';
 import CreditsSuccess from '@/pages/customer/CreditsSuccess';
@@ -52,7 +43,6 @@ import Apply from '@/pages/Apply';
 import Privacy from '@/pages/Privacy';
 import PrivacyConsent from '@/pages/PrivacyConsent';
 import AdminLogin from '@/pages/AdminLogin';
-import TestEnrollmentFlow from '@/pages/TestEnrollmentFlow';
 import Welcome from '@/pages/Welcome';
 import Pending from '@/pages/Pending';
 
@@ -102,32 +92,11 @@ const AuthenticatedApp = () => {
     <Route path="/privacy" element={<Privacy />} />
     <Route path="/privacy-consent" element={<PrivacyConsent />} />
     <Route path="/admin-login" element={<AdminLogin />} />
-    <Route path="/test-enrollment" element={<TestEnrollmentFlow />} />
     <Route path="/pending" element={<Pending />} />
 
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>
-        {/* General client routes - courses, cart, orders */}
-        <Route path="/courses" element={
-          <UserTypeGuard allowedTypes={['general', 'business']}>
-            <CourseCatalog />
-          </UserTypeGuard>
-        } />
-        <Route path="/courses/:courseId/enroll" element={
-          <UserTypeGuard allowedTypes={['general', 'business']}>
-            <EnrollmentForm />
-          </UserTypeGuard>
-        } />
-        <Route path="/enrollment/success" element={
-          <UserTypeGuard allowedTypes={['general', 'business']}>
-            <EnrollmentSuccess />
-          </UserTypeGuard>
-        } />
-        <Route path="/my-courses" element={
-          <UserTypeGuard allowedTypes={['general', 'business']}>
-            <MyCourses />
-          </UserTypeGuard>
-        } />
+        {/* General client routes - cart, orders */}
         <Route path="/cart" element={
           <UserTypeGuard allowedTypes={['general', 'business']}>
             <Cart />
@@ -174,28 +143,21 @@ const AuthenticatedApp = () => {
 
       {/* Admin side - protected by AdminGuard with role-based access */}
       <Route element={<AdminGuard><AppLayout isAdmin={true} /></AdminGuard>}>
-        {/* Both super_admin and course_admin */}
         <Route path="/admin" element={<Dashboard />} />
-        <Route path="/admin/courses" element={<CourseManagement />} />
-        <Route path="/admin/instructors" element={<InstructorManagement />} />
-        <Route path="/admin/enrollments" element={<EnrollmentManagement />} />
-        <Route path="/admin/enrollments/:scheduleId" element={<CourseEnrollmentDetail />} />
-        <Route path="/admin/students" element={<StudentsManagement />} />
-        <Route path="/admin/schedule" element={<CourseSchedule />} />
 
         {/* super_admin only */}
-        <Route path="/admin/customers" element={<AdminGuard allowedRoles={['super_admin']}><CustomerManagement /></AdminGuard>} />
-        <Route path="/admin/orders" element={<AdminGuard allowedRoles={['super_admin']}><OrderManagement /></AdminGuard>} />
-        <Route path="/admin/products" element={<AdminGuard allowedRoles={['super_admin']}><ProductManagement /></AdminGuard>} />
-        <Route path="/admin/categories" element={<AdminGuard allowedRoles={['super_admin']}><CategoryManagement /></AdminGuard>} />
-        <Route path="/admin/credits" element={<AdminGuard allowedRoles={['super_admin']}><CreditsManagement /></AdminGuard>} />
-        <Route path="/admin/topups" element={<AdminGuard allowedRoles={['super_admin']}><TopupManagement /></AdminGuard>} />
-        <Route path="/admin/settings" element={<AdminGuard allowedRoles={['super_admin']}><SystemSettings /></AdminGuard>} />
-        <Route path="/admin/admins" element={<AdminGuard allowedRoles={['super_admin']}><AdminManagement /></AdminGuard>} />
-        <Route path="/admin/branches" element={<AdminGuard allowedRoles={['super_admin']}><AllBranches /></AdminGuard>} />
-        <Route path="/admin/applications" element={<AdminGuard allowedRoles={['super_admin']}><ApplicationManagement /></AdminGuard>} />
-        <Route path="/admin/transactions" element={<AdminGuard allowedRoles={['super_admin']}><TransactionManagement /></AdminGuard>} />
-        <Route path="/admin/users" element={<AdminGuard allowedRoles={['super_admin']}><UserManagement /></AdminGuard>} />
+        <Route path="/admin/customers" element={<CustomerManagement />} />
+        <Route path="/admin/orders" element={<OrderManagement />} />
+        <Route path="/admin/products" element={<ProductManagement />} />
+        <Route path="/admin/categories" element={<CategoryManagement />} />
+        <Route path="/admin/credits" element={<CreditsManagement />} />
+        <Route path="/admin/topups" element={<TopupManagement />} />
+        <Route path="/admin/settings" element={<SystemSettings />} />
+        <Route path="/admin/admins" element={<AdminManagement />} />
+        <Route path="/admin/branches" element={<AllBranches />} />
+        <Route path="/admin/applications" element={<ApplicationManagement />} />
+        <Route path="/admin/transactions" element={<TransactionManagement />} />
+        <Route path="/admin/users" element={<UserManagement />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

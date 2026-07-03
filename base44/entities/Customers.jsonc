@@ -72,16 +72,6 @@
       "type": "number",
       "description": "\u6298\u6263\u767e\u5206\u6bd4"
     },
-    "plan": {
-      "type": "string",
-      "enum": [
-        "plan_a",
-        "plan_b",
-        "plan_c",
-        "plan_d"
-      ],
-      "description": "\u8a08\u5283"
-    },
     "account_number": {
       "type": "string",
       "description": "\u5e33\u6236\u865f\u78bc"
@@ -108,16 +98,6 @@
       "type": "boolean",
       "default": false,
       "description": "\u662f\u5426\u5df2\u5b8c\u6210\u9996\u6b21\u8cc7\u6599\u586b\u5beb"
-    },
-    "quota_remaining": {
-      "type": "number",
-      "default": 0,
-      "description": "\u8ab2\u7a0b Quota \u5269\u9918\u6b21\u6578\uff08\u5546\u696d\u5ba2\u6236\uff09"
-    },
-    "monthly_quota": {
-      "type": "number",
-      "default": 0,
-      "description": "\u6bcf\u6708\u8ab2\u7a0b Quota \u914d\u984d"
     }
   },
   "required": [

@@ -3,8 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, ShoppingCart, Package, FolderOpen, 
   CreditCard, ArrowUpCircle, Settings, Shield, Menu, X,
-  Store, ClipboardList, User, PawPrint, GitBranch, GraduationCap, 
-  UsersRound, Calendar, ChevronDown, ChevronRight, Receipt, LogOut
+  Store, ClipboardList, User, PawPrint, GitBranch,
+  UsersRound, ChevronDown, ChevronRight, Receipt, LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -78,18 +78,6 @@ const adminGroups = [
     ],
   },
   {
-    id: 'courses',
-    label: '課程與導師',
-    emoji: '📚',
-    items: [
-      { label: '課程管理', icon: GraduationCap, path: '/admin/courses' },
-      { label: '導師管理', icon: User, path: '/admin/instructors' },
-      { label: '報名管理', icon: UsersRound, path: '/admin/enrollments' },
-      { label: '學員管理', icon: UsersRound, path: '/admin/students' },
-      { label: '時間表', icon: Calendar, path: '/admin/schedule' },
-    ],
-  },
-  {
     id: 'system',
     label: '系統設定',
     emoji: '⚙️',
@@ -100,8 +88,6 @@ const adminGroups = [
 ];
 
 const businessClientNav = [
-  { label: '課程目錄', icon: GraduationCap, path: '/courses' },
-  { label: '我的課程', icon: GraduationCap, path: '/my-courses' },
   { label: '產品目錄', icon: Package, path: '/products' },
   { label: '我的Credits', icon: CreditCard, path: '/credits' },
   { label: '購物車', icon: ShoppingCart, path: '/cart' },
@@ -110,8 +96,6 @@ const businessClientNav = [
 ];
 
 const generalClientNav = [
-  { label: '課程目錄', icon: GraduationCap, path: '/courses' },
-  { label: '我的課程', icon: GraduationCap, path: '/my-courses' },
   { label: '我的Credits', icon: CreditCard, path: '/credits' },
   { label: '購物車', icon: ShoppingCart, path: '/cart' },
   { label: '訂單記錄', icon: ClipboardList, path: '/orders' },
@@ -238,14 +222,13 @@ function AdminNav({ pendingApps, lowStockCount, onClose, groups }) {
   );
 }
 
-// Paths course_admin is allowed to see in the sidebar
-const COURSE_ADMIN_PATHS = new Set(['/admin', '/admin/courses', '/admin/instructors', '/admin/enrollments', '/admin/students', '/admin/schedule']);
+
 
 export default function Sidebar({ isAdmin, userType, isPreview }) {
   const [open, setOpen] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
-  const adminRole = isAdmin ? (user?.admin_role || 'super_admin') : null;
+
 
   const handleLogout = () => {
     base44.auth.logout('/');
@@ -256,13 +239,7 @@ export default function Sidebar({ isAdmin, userType, isPreview }) {
     nav = userType === 'business' ? businessClientNav : generalClientNav;
   }
 
-  // Filter groups for course_admin
-  const visibleGroups = isAdmin && adminRole === 'course_admin'
-    ? adminGroups.map(g => ({
-        ...g,
-        items: g.items.filter(item => COURSE_ADMIN_PATHS.has(item.path))
-      })).filter(g => g.items.length > 0)
-    : adminGroups;
+  const visibleGroups = adminGroups;
 
   const { data: pendingApps = [] } = useQuery({
     queryKey: ['pendingApplicationsCount'],
@@ -352,35 +329,23 @@ export default function Sidebar({ isAdmin, userType, isPreview }) {
         {/* Admin Footer */}
         {isAdmin && (
           <div className="p-3 border-t border-sidebar-border space-y-1">
-            {adminRole !== 'course_admin' && (
-              <>
-                <div className="text-xs text-sidebar-foreground/50 font-medium mb-2">預覽視角</div>
-                <Link
-                  to="/products?preview=business"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
-                >
-                  <Users className="h-4 w-4" />
-                  商業客戶端
-                </Link>
-                <Link
-                  to="/courses?preview=general"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
-                >
-                  <GraduationCap className="h-4 w-4" />
-                  一般客戶端
-                </Link>
-                <Link
-                  to="/"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
-                >
-                  <Store className="h-4 w-4" />
-                  返回首頁
-                </Link>
-              </>
-            )}
+            <div className="text-xs text-sidebar-foreground/50 font-medium mb-2">預覽視角</div>
+            <Link
+              to="/products?preview=business"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+            >
+              <Users className="h-4 w-4" />
+              商業客戶端
+            </Link>
+            <Link
+              to="/"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-all"
+            >
+              <Store className="h-4 w-4" />
+              返回首頁
+            </Link>
             <button
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-sidebar-foreground/60 hover:bg-destructive/20 hover:text-destructive transition-all mt-1"

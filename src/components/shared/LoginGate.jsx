@@ -14,15 +14,20 @@ export default function LoginGate() {
         </div>
 
         <div>
-          <h2 className="text-xl font-bold mb-2">⚠️ 此頁面需要帳戶才能訪問</h2>
-          <p className="text-muted-foreground text-sm">請聯絡銷售人員開通帳戶</p>
+          <h2 className="text-xl font-bold mb-2">此頁面需要登入才能訪問</h2>
+          <p className="text-muted-foreground text-sm">請使用您的帳戶 Email 及密碼登入</p>
+        </div>
+
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left">
+          <p className="text-sm font-medium text-amber-800 mb-1">⚠️ 未有帳戶？</p>
+          <p className="text-xs text-amber-700">本平台不開放自助註冊，新客戶請聯絡我們申請開戶。</p>
         </div>
 
         <div className="bg-muted rounded-xl p-5 space-y-3 text-left">
           <div className="flex items-center gap-3">
             <Mail className="h-5 w-5 text-primary shrink-0" />
             <div>
-              <p className="text-xs text-muted-foreground">Email</p>
+              <p className="text-xs text-muted-foreground">申請開戶 Email</p>
               <a href="mailto:info@petdininghk.com" className="font-medium text-primary hover:underline">
                 info@petdininghk.com
               </a>
@@ -40,7 +45,7 @@ export default function LoginGate() {
         </div>
 
         <Button className="w-full" onClick={() => base44.auth.redirectToLogin(window.location.href)}>
-          登入 / 註冊
+          以 Email 登入
         </Button>
       </div>
     </div>

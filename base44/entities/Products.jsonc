@@ -103,5 +103,11 @@
     "name",
     "category",
     "wholesale_price"
-  ]
+  ],
+  "rls": {
+    "read": {},
+    "write": {
+      "admin": true
+    }
+  }
 }

@@ -17,5 +17,11 @@
   },
   "required": [
     "name"
-  ]
+  ],
+  "rls": {
+    "read": {},
+    "write": {
+      "admin": true
+    }
+  }
 }

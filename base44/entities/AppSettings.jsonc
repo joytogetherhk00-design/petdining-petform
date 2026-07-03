@@ -39,6 +39,10 @@
       "type": "string",
       "description": "FPS ID"
     },
+    "fps_account_name": {
+      "type": "string",
+      "description": "FPS 帳戶名"
+    },
     "stripe_publishable_key": {
       "type": "string",
       "description": "Stripe Publishable Key"

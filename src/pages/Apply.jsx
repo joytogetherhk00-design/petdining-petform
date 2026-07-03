@@ -58,6 +58,18 @@ export default function Apply() {
       ...form,
       status: 'pending',
     });
+    // 通知 Admin 有新申請
+    try {
+      await base44.functions.invoke('notifyNewApplication', {
+        company_name: form.company_name,
+        contact: form.contact,
+        email: form.email,
+        phone: form.phone,
+      });
+    } catch (e) {
+      // email 通知失敗不影響申請提交
+      console.error('Email notification failed:', e);
+    }
     setSubmitted(true);
     setSubmitting(false);
   };

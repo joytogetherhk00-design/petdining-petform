@@ -29,7 +29,7 @@ export default function CustomerManagement() {
   const [newCustomer, setNewCustomer] = useState({
     company_name: '', restaurant_name: '', contact: '', phone: '', email: '',
     delivery_address: '', branch_address: '', br_address: '', region: 'PDK',
-    logo_url: '', br_document_url: '',
+    logo_url: '', br_document_url: '', temp_password: '',
   });
   const queryClient = useQueryClient();
 
@@ -70,10 +70,12 @@ export default function CustomerManagement() {
       credits_balance: 0,
       user_email: newCustomer.email,
       onboarding_completed: true,
+      temp_password: newCustomer.temp_password || undefined,
+      must_change_password: !!newCustomer.temp_password,
     });
     queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
     setAddOpen(false);
-    setNewCustomer({ company_name: '', restaurant_name: '', contact: '', phone: '', email: '', delivery_address: '', branch_address: '', br_address: '', region: 'PDK', logo_url: '', br_document_url: '' });
+    setNewCustomer({ company_name: '', restaurant_name: '', contact: '', phone: '', email: '', delivery_address: '', branch_address: '', br_address: '', region: 'PDK', logo_url: '', br_document_url: '', temp_password: '' });
     toast.success('客戶已新增（待審批）');
   };
 
@@ -284,6 +286,7 @@ export default function CustomerManagement() {
               <Label className="mb-1.5 block">商業登記文件</Label>
               <DragDropUpload value={newCustomer.br_document_url} onChange={url => setNewCustomer({ ...newCustomer, br_document_url: url })} accept="image/*,.pdf" label="上傳商業登記 (BR)" hint="PNG / JPG / PDF，最大 10MB" />
             </div>
+            <div><Label>臨時密碼 <span className="text-muted-foreground text-xs">（用戶首次登入後須更改）</span></Label><Input value={newCustomer.temp_password} onChange={e => setNewCustomer({ ...newCustomer, temp_password: e.target.value })} placeholder="選填，設定後用戶須強制更改" /></div>
             <div>
               <Label>區域</Label>
               <Select value={newCustomer.region} onValueChange={v => setNewCustomer({ ...newCustomer, region: v })}>

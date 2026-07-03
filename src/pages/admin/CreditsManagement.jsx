@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Download } from 'lucide-react';
-import { PLANS } from '@/lib/planConfig';
+
 
 export default function CreditsManagement() {
   const [search, setSearch] = useState('');

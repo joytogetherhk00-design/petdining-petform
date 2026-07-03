@@ -66,7 +66,7 @@ export default function CustomerManagement() {
       br_address: newCustomer.br_address,
       logo_url: newCustomer.logo_url,
       br_document_url: newCustomer.br_document_url,
-      status: 'pending',
+      status: 'active',
       credits_balance: 0,
       user_email: newCustomer.email,
       onboarding_completed: true,

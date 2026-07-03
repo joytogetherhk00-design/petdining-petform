@@ -33,7 +33,7 @@ import AdminManagement from '@/pages/admin/AdminManagement';
 import AllBranches from '@/pages/admin/AllBranches';
 import ApplicationManagement from '@/pages/admin/ApplicationManagement';
 import TransactionManagement from '@/pages/admin/TransactionManagement';
-import UserManagement from '@/pages/admin/UserManagement';
+
 import CreditsTopup from '@/pages/customer/CreditsTopup';
 import MyCredits from '@/pages/customer/MyCredits';
 import CreditsSuccess from '@/pages/customer/CreditsSuccess';
@@ -151,7 +151,6 @@ const AuthenticatedApp = () => {
         <Route path="/admin/branches" element={<AllBranches />} />
         <Route path="/admin/applications" element={<ApplicationManagement />} />
         <Route path="/admin/transactions" element={<TransactionManagement />} />
-        <Route path="/admin/users" element={<UserManagement />} />
       </Route>
 
       <Route path="*" element={<PageNotFound />} />

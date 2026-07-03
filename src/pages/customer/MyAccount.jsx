@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { CreditCard, MessageCircle, ArrowUpCircle, Pencil, Plus, MapPin, Building2, Lock } from 'lucide-react';
 import ChangePassword from '@/pages/customer/ChangePassword';
-import { PLANS } from '@/lib/planConfig';
 import { toast } from 'sonner';
 import { addDays, format } from 'date-fns';
 
@@ -63,7 +62,6 @@ export default function MyAccount() {
 
   const hasPendingTopup = topupHistory.some(t => t.status === 'pending');
   const mustChangePassword = customer?.must_change_password === true;
-  const plan = customer?.plan ? PLANS[customer.plan] : null;
   const nextReset = customer?.approved_date
     ? format(addDays(new Date(customer.approved_date), 30), 'yyyy/MM/dd')
     : '-';
@@ -199,18 +197,13 @@ export default function MyAccount() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
-            <div><span className="text-muted-foreground">計劃：</span>{plan ? `${plan.name} (HK$${plan.fee.toLocaleString()}/月, ${plan.credits.toLocaleString()} Credits)` : '-'}</div>
             <div className="p-4 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl">
               <p className="text-muted-foreground text-xs mb-1">Credits 餘額</p>
               <p className="text-3xl font-bold text-primary">{(customer.credits_balance || 0).toLocaleString()}</p>
             </div>
-            <div><span className="text-muted-foreground">每月 Credits：</span>{customer.monthly_credits || plan?.credits || '-'}</div>
             <div><span className="text-muted-foreground">下次更新日期：</span>{nextReset}</div>
             {customer.contract_end_date && (
               <div><span className="text-muted-foreground">合約到期：</span>{customer.contract_end_date}</div>
-            )}
-            {(customer.plan === 'plan_a' || customer.plan === 'plan_b') && (
-              <Button variant="outline" className="w-full border-secondary text-secondary" size="sm">升級計劃</Button>
             )}
           </CardContent>
         </Card>

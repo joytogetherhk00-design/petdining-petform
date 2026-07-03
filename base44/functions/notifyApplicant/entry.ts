@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { application_id, action, rejection_reason, plan, region, temp_password } = await req.json();
+    const { application_id, action, rejection_reason, region, temp_password } = await req.json();
 
     const apps = await base44.asServiceRole.entities.Application.filter({ id: application_id });
     if (!apps.length) {
@@ -21,14 +21,6 @@ Deno.serve(async (req) => {
       const regionCode = region || 'PDK';
       const existing = customers.filter(c => (c.customer_id || '').startsWith(regionCode));
       const customerId = `${regionCode}${String(1000 + existing.length + 1)}`;
-
-      const planMap = {
-        plan_a: { credits: 1000, name: '計劃 A' },
-        plan_b: { credits: 1000, name: '計劃 B' },
-        plan_c: { credits: 1500, name: '計劃 C' },
-        plan_d: { credits: 1500, name: '計劃 D' },
-      };
-      const selectedPlan = planMap[plan] || planMap['plan_a'];
 
       await base44.asServiceRole.entities.Customers.create({
         customer_id: customerId,
@@ -43,32 +35,16 @@ Deno.serve(async (req) => {
         logo_url: app.logo_url || '',
         br_document_url: app.br_document_url || '',
         status: 'active',
-        plan: plan || 'plan_a',
-        monthly_credits: selectedPlan.credits,
-        credits_balance: selectedPlan.credits,
+        credits_balance: 0,
         approved_date: new Date().toISOString().split('T')[0],
         user_email: app.email || '',
         onboarding_completed: false,
-        quota_remaining: 0,
-        monthly_quota: 0,
         ...(temp_password ? { temp_password, must_change_password: true } : {}),
-      });
-
-      const now = new Date();
-      await base44.asServiceRole.entities.CreditsLog.create({
-        customer_id: customerId,
-        month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
-        allocated: selectedPlan.credits,
-        used: 0,
-        remaining: selectedPlan.credits,
-        type: 'allocation',
-        status: 'active',
       });
 
       await base44.asServiceRole.entities.Application.update(app.id, {
         status: 'approved',
         customer_id: customerId,
-        plan: plan || 'plan_a',
         region: regionCode,
       });
 
@@ -93,8 +69,7 @@ Deno.serve(async (req) => {
               <p>您的 <strong>PetDining PetForm</strong> 帳戶申請已獲批准！以下是您的帳戶詳情：</p>
               <div style="background:#f9fafb;padding:16px;border-radius:8px;margin:16px 0;">
                 <p style="margin:4px 0;"><strong>帳戶編號：</strong>${customerId}</p>
-                <p style="margin:4px 0;"><strong>計劃：</strong>${selectedPlan.name}</p>
-                <p style="margin:4px 0;"><strong>每月 Credits：</strong>${(selectedPlan.credits || 0).toLocaleString()}</p>
+                <p style="margin:4px 0;"><strong>公司名稱：</strong>${app.company_name || '-'}</p>
                 ${temp_password ? `<p style="margin:8px 0 4px;border-top:1px solid #e5e7eb;padding-top:8px;"><strong>臨時登入密碼：</strong><span style="font-family:monospace;background:#fff3cd;padding:2px 6px;border-radius:4px;">${temp_password}</span></p><p style="margin:4px 0;font-size:12px;color:#dc2626;">⚠️ 首次登入後請立即更改密碼</p>` : ''}
               </div>
               <a href="https://www.petdining.biz" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:8px 0;">立即登入</a>

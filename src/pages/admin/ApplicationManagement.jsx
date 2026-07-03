@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Search, Check, X, Building2, ExternalLink } from 'lucide-react';
-import { PLANS, PLAN_LABELS, REGIONS } from '@/lib/planConfig';
+import { REGIONS } from '@/lib/planConfig';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -23,7 +23,6 @@ export default function ApplicationManagement() {
   const [approveOpen, setApproveOpen] = useState(null);
   const [rejectOpen, setRejectOpen] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [approvePlan, setApprovePlan] = useState('plan_a');
   const [approveRegion, setApproveRegion] = useState('PDK');
   const [tempPassword, setTempPassword] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -51,7 +50,6 @@ export default function ApplicationManagement() {
     const res = await base44.functions.invoke('notifyApplicant', {
       application_id: approveOpen.id,
       action: 'approve',
-      plan: approvePlan,
       region: approveRegion,
       temp_password: tempPassword,
     });
@@ -153,7 +151,7 @@ export default function ApplicationManagement() {
                 <TableCell onClick={e => e.stopPropagation()}>
                   {app.status === 'pending' && (
                     <div className="flex gap-1">
-                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => { setApproveOpen(app); setApprovePlan('plan_a'); setApproveRegion('PDK'); }}>
+                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => { setApproveOpen(app); setApproveRegion('PDK'); }}>
                         <Check className="h-3 w-3 mr-1" />批准
                       </Button>
                       <Button size="sm" variant="outline" className="text-destructive border-destructive/30" onClick={() => { setRejectOpen(app); setRejectionReason(''); }}>
@@ -250,15 +248,6 @@ export default function ApplicationManagement() {
             <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
             <SelectContent>
               {Object.entries(REGIONS).map(([k, v]) => <SelectItem key={k} value={k}>{k} - {v}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>計劃</Label>
-          <Select value={approvePlan} onValueChange={setApprovePlan}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {Object.entries(PLAN_LABELS).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>

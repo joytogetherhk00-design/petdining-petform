@@ -52,7 +52,7 @@ const adminGroups = [
       { label: '控制台總覽', icon: LayoutDashboard, path: '/admin' },
       { label: '帳戶申請', icon: ClipboardList, path: '/admin/applications', badge: true },
       { label: '帳戶管理', icon: Users, path: '/admin/customers' },
-      { label: '用戶管理', icon: UsersRound, path: '/admin/users' },
+
       { label: '管理員', icon: Shield, path: '/admin/admins' },
     ],
   },

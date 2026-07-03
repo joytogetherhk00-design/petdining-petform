@@ -20,6 +20,7 @@ export default function Apply() {
   const [form, setForm] = useState({
     logo_url: '',
     company_name: '',
+    restaurant_name: '',
     contact: '',
     phone: '',
     email: '',
@@ -124,6 +125,10 @@ export default function Apply() {
 
             <Field label="公司名稱" required>
               <Input value={form.company_name} onChange={set('company_name')} placeholder="例：Happy Paws Café Ltd." />
+            </Field>
+
+            <Field label="餐廳名稱">
+              <Input value={form.restaurant_name} onChange={set('restaurant_name')} placeholder="例：Happy Paws Café" />
             </Field>
 
             <Field label="聯絡人姓名" required>

@@ -132,7 +132,7 @@ export default function MyCredits() {
           <CardContent className="space-y-3">
             <Link to="/credits/topup" className="block">
               <Button className="w-full bg-primary">
-                <CreditCard className="h-4 w-4 mr-2" />Stripe 信用卡
+                <CreditCard className="h-4 w-4 mr-2" />信用卡
               </Button>
             </Link>
           </CardContent>

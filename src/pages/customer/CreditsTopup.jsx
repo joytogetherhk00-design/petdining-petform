@@ -52,8 +52,8 @@ export default function CreditsTopup() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-lg mx-auto">
-        <Link to="/account" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
-          <ArrowLeft className="h-4 w-4" /> 返回我的帳戶
+        <Link to="/credits" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
+          <ArrowLeft className="h-4 w-4" /> 返回我的 Credits
         </Link>
 
         <div className="mb-6">

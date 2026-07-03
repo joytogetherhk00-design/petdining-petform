@@ -27,7 +27,7 @@ export default function CustomerManagement() {
   const [editOpen, setEditOpen] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [newCustomer, setNewCustomer] = useState({
-    company_name: '', contact: '', phone: '', email: '',
+    company_name: '', restaurant_name: '', contact: '', phone: '', email: '',
     delivery_address: '', branch_address: '', br_address: '', region: 'PDK',
     logo_url: '', br_document_url: '',
   });
@@ -57,6 +57,7 @@ export default function CustomerManagement() {
       customer_id: accountNum,
       account_number: accountNum,
       company_name: newCustomer.company_name,
+      restaurant_name: newCustomer.restaurant_name,
       contact: newCustomer.contact,
       phone: newCustomer.phone,
       email: newCustomer.email,
@@ -72,7 +73,7 @@ export default function CustomerManagement() {
     });
     queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
     setAddOpen(false);
-    setNewCustomer({ company_name: '', contact: '', phone: '', email: '', delivery_address: '', branch_address: '', br_address: '', region: 'PDK', logo_url: '', br_document_url: '' });
+    setNewCustomer({ company_name: '', restaurant_name: '', contact: '', phone: '', email: '', delivery_address: '', branch_address: '', br_address: '', region: 'PDK', logo_url: '', br_document_url: '' });
     toast.success('客戶已新增（待審批）');
   };
 
@@ -272,6 +273,7 @@ export default function CustomerManagement() {
               <DragDropUpload value={newCustomer.logo_url} onChange={url => setNewCustomer({ ...newCustomer, logo_url: url })} accept="image/*" label="上傳 Logo" hint="PNG / JPG" />
             </div>
             <div><Label>公司名稱</Label><Input value={newCustomer.company_name} onChange={e => setNewCustomer({ ...newCustomer, company_name: e.target.value })} /></div>
+            <div><Label>餐廳名稱</Label><Input value={newCustomer.restaurant_name} onChange={e => setNewCustomer({ ...newCustomer, restaurant_name: e.target.value })} /></div>
             <div><Label>聯絡人</Label><Input value={newCustomer.contact} onChange={e => setNewCustomer({ ...newCustomer, contact: e.target.value })} /></div>
             <div><Label>電話</Label><Input value={newCustomer.phone} onChange={e => setNewCustomer({ ...newCustomer, phone: e.target.value })} /></div>
             <div><Label>電郵</Label><Input value={newCustomer.email} onChange={e => setNewCustomer({ ...newCustomer, email: e.target.value })} /></div>

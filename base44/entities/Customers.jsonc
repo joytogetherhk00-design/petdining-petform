@@ -10,6 +10,10 @@
       "type": "string",
       "description": "\u516c\u53f8\u540d\u7a31"
     },
+    "restaurant_name": {
+      "type": "string",
+      "description": "\u9910\u5ef3\u540d\u7a31"
+    },
     "logo_url": {
       "type": "string",
       "description": "\u516c\u53f8Logo URL"

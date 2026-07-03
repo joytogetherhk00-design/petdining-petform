@@ -7,9 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, User, Mail, Calendar, Shield, Trash2, Ban, CheckCircle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Search, User, Mail, Calendar, Shield, Trash2, Ban, CheckCircle, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import StatusBadge from '@/components/shared/StatusBadge';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function UserManagement() {
   const [search, setSearch] = useState('');
@@ -17,6 +21,13 @@ export default function UserManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [filterType, setFilterType] = useState('all'); // 'all', 'business', 'general'
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [roleUser, setRoleUser] = useState(null);
+  const [newRole, setNewRole] = useState('');
+  const [savingRole, setSavingRole] = useState(false);
+  const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  const isSuperAdmin = currentUser?.admin_role === 'super_admin' || (currentUser?.role === 'admin' && !currentUser?.admin_role);
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['allUsers'],
@@ -49,13 +60,14 @@ export default function UserManagement() {
     return matchesSearch && matchesType;
   });
 
-  const handleDisableUser = async (user) => {
+  const handleDisableUser = async (targetUser) => {
     try {
-      await base44.entities.User.update(user.id, { 
-        disabled: !user.disabled,
-        disabled_reason: user.disabled ? null : '管理員停用'
+      await base44.entities.User.update(targetUser.id, { 
+        disabled: !targetUser.disabled,
+        disabled_reason: targetUser.disabled ? null : '管理員停用'
       });
-      toast.success(`用戶已${user.disabled ? '啟用' : '停用'}`);
+      toast.success(`用戶已${targetUser.disabled ? '啟用' : '停用'}`);
+      queryClient.invalidateQueries({ queryKey: ['allUsers'] });
     } catch (error) {
       toast.error('操作失敗');
     }
@@ -68,6 +80,7 @@ export default function UserManagement() {
       toast.success('用戶已刪除');
       setDeleteDialogOpen(false);
       setUserToDelete(null);
+      queryClient.invalidateQueries({ queryKey: ['allUsers'] });
     } catch (error) {
       toast.error('刪除失敗');
     }
@@ -76,6 +89,42 @@ export default function UserManagement() {
   const openDeleteDialog = (user) => {
     setUserToDelete(user);
     setDeleteDialogOpen(true);
+  };
+
+  // Derive composite role value from user fields
+  const getCompositeRole = (user) => {
+    if (user.role === 'admin') return user.admin_role || 'super_admin';
+    return 'user';
+  };
+
+  const openRoleDialog = (user) => {
+    setRoleUser(user);
+    setNewRole(getCompositeRole(user));
+    setRoleDialogOpen(true);
+  };
+
+  const handleChangeRole = async () => {
+    if (!roleUser) return;
+    setSavingRole(true);
+    try {
+      let updateData = {};
+      if (newRole === 'super_admin') {
+        updateData = { role: 'admin', admin_role: 'super_admin' };
+      } else if (newRole === 'course_admin') {
+        updateData = { role: 'admin', admin_role: 'course_admin' };
+      } else {
+        updateData = { role: 'user', admin_role: null };
+      }
+      await base44.entities.User.update(roleUser.id, updateData);
+      await queryClient.invalidateQueries({ queryKey: ['allUsers'] });
+      const label = { super_admin: '超級管理員', course_admin: '課程管理員', user: '一般用戶' }[newRole];
+      toast.success(`已將 ${roleUser.full_name || roleUser.email} 的角色更新為「${label}」`);
+      setRoleDialogOpen(false);
+    } catch (error) {
+      toast.error('更改角色失敗');
+    } finally {
+      setSavingRole(false);
+    }
   };
 
   return (
@@ -207,6 +256,15 @@ export default function UserManagement() {
                     </TableCell>
                     <TableCell onClick={e => e.stopPropagation()}>
                       <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openRoleDialog(user)}
+                          className="text-purple-600 hover:text-purple-700"
+                        >
+                          <Pencil className="h-3 w-3 mr-1" />
+                          角色
+                        </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
@@ -215,14 +273,17 @@ export default function UserManagement() {
                         >
                           {user.disabled ? '啟用' : '停用'}
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openDeleteDialog(user)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          刪除
-                        </Button>
+                        {isSuperAdmin && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openDeleteDialog(user)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            刪除
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -333,6 +394,49 @@ export default function UserManagement() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Role Dialog */}
+      <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>更改用戶角色</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="text-sm text-muted-foreground">
+              用戶：<strong>{roleUser?.full_name || roleUser?.email}</strong>
+            </div>
+            <div className="space-y-2">
+              <Label>選擇角色</Label>
+              <Select value={newRole} onValueChange={setNewRole}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="super_admin">🛡️ 超級管理員 — 所有後台權限</SelectItem>
+                  <SelectItem value="course_admin">🎓 課程管理員 — 僅課程相關功能</SelectItem>
+                  <SelectItem value="user">👤 一般用戶 — 移除管理員權限</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {(newRole === 'super_admin' || newRole === 'course_admin') && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-800">
+                ⚠️ 此用戶將獲得管理後台訪問權限，請確認後再操作。
+              </div>
+            )}
+            {newRole === 'user' && roleUser?.role === 'admin' && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800">
+                ⚠️ 此操作將移除該用戶的所有管理員權限。
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRoleDialogOpen(false)}>取消</Button>
+            <Button onClick={handleChangeRole} disabled={savingRole}>
+              {savingRole ? '儲存中...' : '確認更改'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

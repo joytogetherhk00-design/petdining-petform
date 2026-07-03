@@ -24,7 +24,7 @@ export default function Welcome() {
       if (viewParam === 'business') {
         navigate('/products');
       } else if (viewParam === 'general') {
-        navigate('/courses');
+        navigate('/credits');
       }
     }
     checkUser();
@@ -106,7 +106,7 @@ export default function Welcome() {
       
       // 根據類型跳轉
       if (userType === 'general') {
-        navigate('/courses');
+        navigate('/credits');
       } else if (userType === 'business') {
         if (customer) {
           if (customer.status === 'active') {

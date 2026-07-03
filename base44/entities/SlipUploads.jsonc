@@ -1,43 +1,33 @@
 {
-  "name": "CreditTransaction",
+  "name": "SlipUploads",
   "type": "object",
   "properties": {
     "customer_id": {
       "type": "string",
       "description": "\u5ba2\u6236\u7de8\u865f"
     },
-    "customer_email": {
+    "user_email": {
       "type": "string",
-      "description": "\u5ba2\u6236\u96fb\u90f5"
+      "description": "\u7528\u6236\u96fb\u90f5"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "\u516c\u53f8\u540d\u7a31"
     },
     "amount": {
       "type": "number",
-      "description": "Credits \u91d1\u984d"
+      "description": "\u8f49\u5e33\u91d1\u984d (HKD)"
     },
-    "type": {
+    "slip_url": {
       "type": "string",
-      "enum": [
-        "topup",
-        "deduction",
-        "refund"
-      ],
-      "default": "topup",
-      "description": "\u4ea4\u6613\u985e\u578b"
-    },
-    "payment_amount": {
-      "type": "number",
-      "description": "\u5be6\u969b\u4ed8\u6b3e\u91d1\u984d (HKD)"
-    },
-    "stripe_session_id": {
-      "type": "string",
-      "description": "Stripe Session ID"
+      "description": "\u5165\u6578\u7d19\u5716\u7247 URL"
     },
     "status": {
       "type": "string",
       "enum": [
         "pending",
-        "completed",
-        "failed"
+        "approved",
+        "rejected"
       ],
       "default": "pending",
       "description": "\u72c0\u614b"
@@ -49,14 +39,13 @@
   },
   "required": [
     "customer_id",
-    "amount",
-    "type"
+    "slip_url"
   ],
   "rls": {
     "create": {
       "$or": [
         {
-          "data.customer_id": "{{user.data.customer_id}}"
+          "data.user_email": "{{user.email}}"
         },
         {
           "user_condition": {
@@ -68,7 +57,7 @@
     "read": {
       "$or": [
         {
-          "data.customer_id": "{{user.data.customer_id}}"
+          "data.user_email": "{{user.email}}"
         },
         {
           "user_condition": {

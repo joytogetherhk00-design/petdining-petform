@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageHeader from '@/components/shared/PageHeader';
@@ -20,6 +20,11 @@ export default function ProductCatalog() {
   const [activeOrigin, setActiveOrigin] = useState('all');
   const [activeMeat, setActiveMeat] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    base44.auth.isAuthenticated().then(setIsLoggedIn).catch(() => setIsLoggedIn(false));
+  }, []);
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
@@ -130,7 +135,7 @@ export default function ProductCatalog() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map(product => (
-            <ProductCard key={product.id} product={product} onAddToCart={handleAdd} onViewDetail={() => setSelectedProduct(product)} />
+            <ProductCard key={product.id} product={product} onAddToCart={handleAdd} onViewDetail={() => setSelectedProduct(product)} showPrice={isLoggedIn} />
           ))}
         </div>
       )}
@@ -139,6 +144,7 @@ export default function ProductCatalog() {
         open={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAdd}
+        showPrice={isLoggedIn}
       />
     </div>
   );

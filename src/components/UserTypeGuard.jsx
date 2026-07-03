@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import LoginGate from '@/components/shared/LoginGate';
 
 export default function UserTypeGuard({ children, allowedTypes }) {
   const [user, setUser] = useState(null);
@@ -39,14 +40,14 @@ export default function UserTypeGuard({ children, allowedTypes }) {
   }
 
   if (!user) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+    return <LoginGate />;
   }
 
   // 如果有 preview 參數，跳過用戶類型檢查（管理員預覽模式）
   if (previewParam) {
     const previewType = previewParam === 'general' ? 'general' : 'business';
     if (!allowedTypes.includes(previewType)) {
-      return <Navigate to="/courses" replace />;
+      return <Navigate to="/credits" replace />;
     }
     return children;
   }
@@ -55,7 +56,7 @@ export default function UserTypeGuard({ children, allowedTypes }) {
   
   if (!allowedTypes.includes(userType)) {
     if (userType === 'general') {
-      return <Navigate to="/courses" replace />;
+      return <Navigate to="/credits" replace />;
     } else {
       return <Navigate to="/admin" replace />;
     }

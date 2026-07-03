@@ -32,22 +32,17 @@ export default function CreditsTopup() {
       toast.error('最低充值金額為 HK$1,000');
       return;
     }
-    if (!customer) {
-      toast.error('找不到客戶資料');
-      return;
-    }
-
     setLoading(true);
     const origin = window.location.origin;
     const res = await base44.functions.invoke('createCheckoutSession', {
       amount: finalAmount,
-      customer_id: customer.customer_id,
+      customer_id: customer?.customer_id || '',
       success_url: `${origin}/credits/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/credits/cancel`,
     });
 
     if (res.data?.url) {
-      window.location.href = res.data.url;
+      window.open(res.data.url, '_blank');
     } else {
       toast.error(res.data?.error || '建立付款失敗，請稍後重試');
       setLoading(false);
@@ -57,8 +52,8 @@ export default function CreditsTopup() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-lg mx-auto">
-        <Link to="/account" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
-          <ArrowLeft className="h-4 w-4" /> 返回我的帳戶
+        <Link to="/credits" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6">
+          <ArrowLeft className="h-4 w-4" /> 返回我的 Credits
         </Link>
 
         <div className="mb-6">
@@ -132,7 +127,7 @@ export default function CreditsTopup() {
 
             <Button
               className="w-full bg-primary h-12 text-base font-semibold"
-              disabled={!finalAmount || finalAmount < 1000 || loading || !customer}
+              disabled={!finalAmount || finalAmount < 1000 || loading}
               onClick={handleCheckout}
             >
               {loading ? (

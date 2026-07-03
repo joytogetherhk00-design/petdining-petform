@@ -2,18 +2,14 @@
   "name": "User",
   "type": "object",
   "properties": {
-    "user_type": {
+    "role": {
       "type": "string",
       "enum": [
-        "business",
-        "general"
+        "admin",
+        "user"
       ],
-      "default": "general",
-      "description": "\u7528\u6236\u985e\u578b\uff1abusiness\uff08\u5546\u696d\u5ba2\u6236\uff09\u6216 general\uff08\u4e00\u822c\u5ba2\u6236\uff09"
-    },
-    "customer_id": {
-      "type": "string",
-      "description": "\u5546\u696d\u5ba2\u6236 ID\uff08\u50c5 business \u985e\u578b\u9700\u8981\uff09"
+      "default": "user",
+      "description": "\u7528\u6236\u89d2\u8272"
     },
     "admin_role": {
       "type": "string",
@@ -21,8 +17,7 @@
         "super_admin",
         "course_admin"
       ],
-      "default": "super_admin",
-      "description": "\u7ba1\u7406\u54e1\u89d2\u8272\uff1asuper_admin\uff08\u8d85\u7d1a\u7ba1\u7406\u54e1\uff09\u6216 course_admin\uff08\u8ab2\u7a0b\u7ba1\u7406\u54e1\uff09"
+      "description": "\u7ba1\u7406\u54e1\u5b50\u89d2\u8272"
     },
     "status": {
       "type": "string",
@@ -33,18 +28,38 @@
       "default": "active",
       "description": "\u5e33\u6236\u72c0\u614b"
     },
+    "user_type": {
+      "type": "string",
+      "enum": [
+        "general",
+        "business"
+      ],
+      "default": "general",
+      "description": "\u7528\u6236\u985e\u578b\uff1ageneral=\u500b\u4eba\u7528\u6236, business=\u5546\u696d\u5ba2\u6236"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "\u95dc\u806f\u5546\u696d\u5ba2\u6236 ID"
+    },
     "privacy_accepted": {
       "type": "boolean",
       "default": false,
-      "description": "\u5df2\u63a5\u53d7\u79c1\u96b1\u653f\u7b56"
+      "description": "\u662f\u5426\u5df2\u63a5\u53d7\u79c1\u96b1\u653f\u7b56"
     },
     "privacy_accepted_at": {
       "type": "string",
       "format": "date-time",
-      "description": "\u63a5\u53d7\u6642\u9593"
+      "description": "\u63a5\u53d7\u79c1\u96b1\u653f\u7b56\u7684\u6642\u9593"
+    },
+    "is_first_login": {
+      "type": "boolean",
+      "default": true,
+      "description": "\u662f\u5426\u7b2c\u4e00\u6b21\u767b\u5165\uff08\u65b0\u7ba1\u7406\u54e1\u9080\u8acb\u5f8c\u6a19\u8a18\uff09"
+    },
+    "invited_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u9080\u8acb\u6642\u9593"
     }
-  },
-  "required": [
-    "customer_id"
-  ]
+  }
 }

@@ -10,6 +10,10 @@
       "type": "string",
       "description": "Logo URL"
     },
+    "app_url": {
+      "type": "string",
+      "description": "\u6b63\u5f0f\u7db2\u7ad9 URL\uff08\u7528\u65bc\u9080\u8acb\u9023\u7d50\uff09"
+    },
     "min_order_amount": {
       "type": "number",
       "description": "\u6700\u4f4e\u8a02\u55ae\u91d1\u984d"
@@ -29,7 +33,7 @@
     },
     "bank_account": {
       "type": "string",
-      "description": "\u9280\u884c\u5e33\u865f"
+      "description": "\u9280\u884c\u5e33\u6236\u865f\u78bc"
     },
     "account_holder": {
       "type": "string",
@@ -37,11 +41,12 @@
     },
     "fps_id": {
       "type": "string",
-      "description": "FPS ID"
+      "description": "FPS ID / \u8f49\u6578\u5feb\u8b58\u5225\u78bc"
     },
     "fps_account_name": {
       "type": "string",
-      "description": "FPS 帳戶名"
+      "description": "FPS \u5e33\u6236\u540d\u7a31"
+    },
     },
     "stripe_publishable_key": {
       "type": "string",
@@ -55,5 +60,36 @@
   },
   "required": [
     "company_name"
-  ]
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "user"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
 }

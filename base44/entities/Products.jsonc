@@ -4,15 +4,15 @@
   "properties": {
     "sku": {
       "type": "string",
-      "description": "\u7522\u54c1\u7de8\u865f"
+      "description": "產品編號"
     },
     "name": {
       "type": "string",
-      "description": "\u7522\u54c1\u540d\u7a31"
+      "description": "產品名稱"
     },
     "category": {
       "type": "string",
-      "description": "\u7522\u54c1\u5206\u985e"
+      "description": "產品分類"
     },
     "meat_type": {
       "type": "string",
@@ -25,63 +25,63 @@
         "seafood",
         "other"
       ],
-      "description": "\u8089\u985e Series"
+      "description": "肉類 Series"
     },
     "description": {
       "type": "string",
-      "description": "\u7522\u54c1\u63cf\u8ff0"
+      "description": "產品描述"
     },
     "wholesale_price": {
       "type": "number",
-      "description": "\u6279\u767c\u50f9"
+      "description": "批發價"
     },
     "min_order": {
       "type": "number",
-      "description": "\u6700\u4f4e\u8a02\u8cfc\u91cf"
+      "description": "最低訂購量"
     },
     "unit": {
       "type": "string",
-      "description": "\u55ae\u4f4d"
+      "description": "單位"
     },
     "net_weight": {
       "type": "string",
-      "description": "\u6de8\u91cd"
+      "description": "淨重"
     },
     "nutrition_info": {
       "type": "string",
-      "description": "\u71df\u990a\u8cc7\u6599"
+      "description": "營養資料"
     },
     "stock": {
       "type": "number",
-      "description": "\u5eab\u5b58"
+      "description": "庫存"
     },
     "image1": {
       "type": "string",
-      "description": "\u5716\u72471 URL"
+      "description": "圖片1 URL"
     },
     "image2": {
       "type": "string",
-      "description": "\u5716\u72472 URL"
+      "description": "圖片2 URL"
     },
     "image3": {
       "type": "string",
-      "description": "\u5716\u72473 URL"
+      "description": "圖片3 URL"
     },
     "country_of_origin": {
       "type": "string",
       "enum": [
-        "\u4e2d\u570b",
-        "\u9999\u6e2f",
-        "\u53f0\u7063",
-        "\u65e5\u672c",
-        "\u97d3\u570b",
-        "\u7f8e\u570b",
-        "\u6b50\u6d32",
-        "\u6fb3\u6d32",
-        "\u6cf0\u570b",
-        "\u5176\u4ed6"
+        "中國",
+        "香港",
+        "台灣",
+        "日本",
+        "韓國",
+        "美國",
+        "歐洲",
+        "澳洲",
+        "泰國",
+        "其他"
       ],
-      "description": "\u539f\u7522\u5730"
+      "description": "原產地"
     },
     "status": {
       "type": "string",
@@ -90,12 +90,12 @@
         "inactive"
       ],
       "default": "active",
-      "description": "\u72c0\u614b"
+      "description": "狀態"
     },
     "is_visible": {
       "type": "boolean",
       "default": true,
-      "description": "\u662f\u5426\u986f\u793a\u65bc\u5ba2\u6236\u7aef"
+      "description": "是否顯示於客戶端"
     }
   },
   "required": [
@@ -105,9 +105,21 @@
     "wholesale_price"
   ],
   "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "read": {},
-    "write": {
-      "admin": true
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }

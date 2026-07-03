@@ -114,10 +114,11 @@ Deno.serve(async (req) => {
 
     // Credits 充值邏輯
     const customerId = metadata.customer_id || '';
+    const customerEmail = metadata.customer_email || '';
     const creditsAmount = Number(metadata.credits_amount || 0);
 
-    if (!customerId || !creditsAmount) {
-      return Response.json({ error: 'Missing metadata' }, { status: 400 });
+    if (!creditsAmount) {
+      return Response.json({ error: 'Missing credits_amount metadata' }, { status: 400 });
     }
 
     // Idempotency
@@ -129,21 +130,38 @@ Deno.serve(async (req) => {
       return Response.json({ received: true, already_processed: true });
     }
 
-    const customers = await base44.asServiceRole.entities.Customers.filter({ customer_id: customerId });
-    if (!customers.length) {
-      return Response.json({ error: 'Customer not found' }, { status: 404 });
+    // Find customer by customer_id first, fallback to email
+    let customer = null;
+    if (customerId) {
+      const byId = await base44.asServiceRole.entities.Customers.filter({ customer_id: customerId });
+      if (byId.length > 0) customer = byId[0];
     }
-    const customer = customers[0];
-    const newBalance = (customer.credits_balance || 0) + creditsAmount;
+    if (!customer && customerEmail) {
+      const byEmail = await base44.asServiceRole.entities.Customers.filter({ user_email: customerEmail });
+      if (byEmail.length > 0) customer = byEmail[0];
+    }
 
-    await base44.asServiceRole.entities.Customers.update(customer.id, { credits_balance: newBalance });
+    if (customer) {
+      const newBalance = (customer.credits_balance || 0) + creditsAmount;
+      await base44.asServiceRole.entities.Customers.update(customer.id, { credits_balance: newBalance });
+    }
 
     const transactions = await base44.asServiceRole.entities.CreditTransaction.filter({ stripe_session_id: session.id });
     if (transactions.length > 0) {
       await base44.asServiceRole.entities.CreditTransaction.update(transactions[0].id, { status: 'completed' });
+    } else {
+      await base44.asServiceRole.entities.CreditTransaction.create({
+        customer_id: customer?.customer_id || customerId || '',
+        customer_email: customerEmail,
+        amount: creditsAmount,
+        type: 'topup',
+        payment_amount: creditsAmount,
+        stripe_session_id: session.id,
+        status: 'completed',
+      });
     }
 
-    return Response.json({ received: true, credits_added: creditsAmount, new_balance: newBalance });
+    return Response.json({ received: true, credits_added: creditsAmount });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

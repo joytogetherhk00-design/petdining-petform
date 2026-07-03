@@ -2,43 +2,14 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { Shield, Mail, Loader2 } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     setLoading(true);
-
-    try {
-      // 先檢查用戶是否存在
-      const users = await base44.entities.User.list();
-      const user = users.find(u => u.email === email);
-
-      if (!user) {
-        toast.error('用戶不存在');
-        setLoading(false);
-        return;
-      }
-
-      if (user.role !== 'admin') {
-        toast.error('此賬戶沒有管理員權限');
-        setLoading(false);
-        return;
-      }
-
-      // 引導用戶到 Base44 登入流程
-      await base44.auth.redirectToLogin('/admin');
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('登入失敗，請稍後再試');
-      setLoading(false);
-    }
+    await base44.auth.redirectToLogin('/admin');
   };
 
   return (
@@ -52,56 +23,40 @@ export default function AdminLogin() {
           </div>
           <CardTitle className="text-2xl font-bold">管理員登入</CardTitle>
           <CardDescription>
-            請輸入您的管理員賬戶電郵
+            點擊下方按鈕，系統會發送登入連結到您的管理員電郵
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">電郵地址</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@example.com"
-                  className="pl-10"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
+        <CardContent className="space-y-4">
+          <Button
+            className="w-full"
+            size="lg"
+            disabled={loading}
+            onClick={handleLogin}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                跳轉中...
+              </>
+            ) : (
+              <>
+                <Shield className="mr-2 h-4 w-4" />
+                管理員登入
+              </>
+            )}
+          </Button>
+          <div className="text-center text-xs text-muted-foreground">
+            登入後如無管理員權限，將自動跳轉回此頁面
+          </div>
+          <div className="pt-2 border-t">
             <Button
-              type="submit"
+              variant="ghost"
               className="w-full"
-              disabled={loading || !email}
+              onClick={() => window.location.href = '/'}
             >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  處理中...
-                </>
-              ) : (
-                '登入'
-              )}
+              返回首頁
             </Button>
-
-            <div className="text-center text-sm text-muted-foreground">
-              需要管理員權限才能訪問後台系統
-            </div>
-
-            <div className="pt-4 border-t">
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() => window.location.href = '/welcome'}
-              >
-                返回用戶選擇頁面
-              </Button>
-            </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
     </div>

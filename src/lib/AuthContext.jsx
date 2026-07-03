@@ -79,7 +79,6 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(false);
           setAuthChecked(true);
         }
-        setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error('App state check failed:', appError);
         
@@ -108,6 +107,8 @@ export const AuthProvider = ({ children }) => {
             message: appError.message || 'Failed to load app'
           });
         }
+      } finally {
+        // Always ensure loading states are cleared
         setIsLoadingPublicSettings(false);
         setIsLoadingAuth(false);
       }

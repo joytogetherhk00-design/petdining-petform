@@ -4,24 +4,36 @@
   "properties": {
     "category_id": {
       "type": "string",
-      "description": "\u5206\u985e\u7de8\u865f"
+      "description": "分類編號"
     },
     "name": {
       "type": "string",
-      "description": "\u5206\u985e\u540d\u7a31"
+      "description": "分類名稱"
     },
     "description": {
       "type": "string",
-      "description": "\u5206\u985e\u63cf\u8ff0"
+      "description": "分類描述"
     }
   },
   "required": [
     "name"
   ],
   "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "read": {},
-    "write": {
-      "admin": true
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }

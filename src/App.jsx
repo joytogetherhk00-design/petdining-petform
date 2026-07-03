@@ -18,10 +18,7 @@ import ProductCatalog from '@/pages/customer/ProductCatalog';
 import Cart from '@/pages/customer/Cart';
 import OrderHistory from '@/pages/customer/OrderHistory';
 import MyAccount from '@/pages/customer/MyAccount';
-import CourseCatalog from '@/pages/customer/CourseCatalog';
-import EnrollmentForm from '@/pages/customer/EnrollmentForm';
-import EnrollmentSuccess from '@/pages/customer/EnrollmentSuccess';
-import MyCourses from '@/pages/customer/MyCourses';
+
 
 // Admin pages
 import Dashboard from '@/pages/admin/Dashboard';
@@ -36,22 +33,16 @@ import AdminManagement from '@/pages/admin/AdminManagement';
 import AllBranches from '@/pages/admin/AllBranches';
 import ApplicationManagement from '@/pages/admin/ApplicationManagement';
 import TransactionManagement from '@/pages/admin/TransactionManagement';
-import CourseManagement from '@/pages/admin/CourseManagement';
-import InstructorManagement from '@/pages/admin/InstructorManagement';
-import EnrollmentManagement from '@/pages/admin/EnrollmentManagement';
-import CourseSchedule from '@/pages/admin/CourseSchedule';
 import UserManagement from '@/pages/admin/UserManagement';
-import StudentsManagement from '@/pages/admin/StudentsManagement';
-import CourseEnrollmentDetail from '@/pages/admin/CourseEnrollmentDetail';
 import CreditsTopup from '@/pages/customer/CreditsTopup';
+import MyCredits from '@/pages/customer/MyCredits';
 import CreditsSuccess from '@/pages/customer/CreditsSuccess';
 import CreditsCancel from '@/pages/customer/CreditsCancel';
+import AdminGuard from '@/components/AdminGuard';
 import Apply from '@/pages/Apply';
 import Privacy from '@/pages/Privacy';
 import PrivacyConsent from '@/pages/PrivacyConsent';
 import AdminLogin from '@/pages/AdminLogin';
-import TestEnrollmentFlow from '@/pages/TestEnrollmentFlow';
-import Welcome from '@/pages/Welcome';
 import Pending from '@/pages/Pending';
 
 const AuthenticatedApp = () => {
@@ -63,15 +54,6 @@ const AuthenticatedApp = () => {
         <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
       </div>
     );
-  }
-
-  // 如果已登入但不是 admin，嘗試訪問後台時跳轉到登入頁
-  if (user && user.role !== 'admin') {
-    const pathname = window.location.pathname;
-    if (pathname.startsWith('/admin')) {
-      window.location.href = '/admin-login';
-      return null;
-    }
   }
 
   if (authError) {
@@ -88,41 +70,31 @@ const AuthenticatedApp = () => {
     }
   }
 
+  // Extra security: block non-admin users from /admin/* routes entirely (but not /admin-login)
+  if (!isLoadingAuth && user && user.role !== 'admin' && window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin-login') {
+    window.location.href = '/admin-login';
+    return null;
+  }
+
+  // Block unauthenticated users from /admin/* routes (but not /admin-login)
+  if (!isLoadingAuth && !user && window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin-login') {
+    window.location.href = '/admin-login';
+    return null;
+  }
+
   return (
     <Routes>
     {/* Public pages - no layout wrapper */}
-    <Route path="/" element={<Welcome />} />
     <Route path="/onboarding" element={<Onboarding />} />
     <Route path="/apply" element={<Apply />} />
     <Route path="/privacy" element={<Privacy />} />
     <Route path="/privacy-consent" element={<PrivacyConsent />} />
     <Route path="/admin-login" element={<AdminLogin />} />
-    <Route path="/test-enrollment" element={<TestEnrollmentFlow />} />
     <Route path="/pending" element={<Pending />} />
 
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>
-        {/* General client routes - courses, cart, orders */}
-        <Route path="/courses" element={
-          <UserTypeGuard allowedTypes={['general', 'business']}>
-            <CourseCatalog />
-          </UserTypeGuard>
-        } />
-        <Route path="/courses/:courseId/enroll" element={
-          <UserTypeGuard allowedTypes={['general', 'business']}>
-            <EnrollmentForm />
-          </UserTypeGuard>
-        } />
-        <Route path="/enrollment/success" element={
-          <UserTypeGuard allowedTypes={['general', 'business']}>
-            <EnrollmentSuccess />
-          </UserTypeGuard>
-        } />
-        <Route path="/my-courses" element={
-          <UserTypeGuard allowedTypes={['general', 'business']}>
-            <MyCourses />
-          </UserTypeGuard>
-        } />
+        {/* General client routes - cart, orders */}
         <Route path="/cart" element={
           <UserTypeGuard allowedTypes={['general', 'business']}>
             <Cart />
@@ -139,32 +111,36 @@ const AuthenticatedApp = () => {
           </UserTypeGuard>
         } />
         
-        {/* Business client routes - products only */}
-        <Route path="/products" element={
-          <UserTypeGuard allowedTypes={['business']}>
-            <ProductCatalog />
+        {/* Products - public, price hidden for guests; also serves as home */}
+        <Route path="/" element={<ProductCatalog />} />
+        <Route path="/products" element={<ProductCatalog />} />
+        <Route path="/credits" element={
+          <UserTypeGuard allowedTypes={['general', 'business']}>
+            <MyCredits />
           </UserTypeGuard>
         } />
         <Route path="/credits/topup" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <CreditsTopup />
           </UserTypeGuard>
         } />
         <Route path="/credits/success" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <CreditsSuccess />
           </UserTypeGuard>
         } />
         <Route path="/credits/cancel" element={
-          <UserTypeGuard allowedTypes={['business']}>
+          <UserTypeGuard allowedTypes={['general', 'business']}>
             <CreditsCancel />
           </UserTypeGuard>
         } />
       </Route>
 
-      {/* Admin side */}
-      <Route element={<AppLayout isAdmin={true} />}>
+      {/* Admin side - protected by AdminGuard with role-based access */}
+      <Route element={<AdminGuard><AppLayout isAdmin={true} /></AdminGuard>}>
         <Route path="/admin" element={<Dashboard />} />
+
+        {/* super_admin only */}
         <Route path="/admin/customers" element={<CustomerManagement />} />
         <Route path="/admin/orders" element={<OrderManagement />} />
         <Route path="/admin/products" element={<ProductManagement />} />
@@ -176,12 +152,6 @@ const AuthenticatedApp = () => {
         <Route path="/admin/branches" element={<AllBranches />} />
         <Route path="/admin/applications" element={<ApplicationManagement />} />
         <Route path="/admin/transactions" element={<TransactionManagement />} />
-        <Route path="/admin/courses" element={<CourseManagement />} />
-        <Route path="/admin/instructors" element={<InstructorManagement />} />
-        <Route path="/admin/enrollments" element={<EnrollmentManagement />} />
-        <Route path="/admin/enrollments/:scheduleId" element={<CourseEnrollmentDetail />} />
-        <Route path="/admin/students" element={<StudentsManagement />} />
-        <Route path="/admin/schedule" element={<CourseSchedule />} />
         <Route path="/admin/users" element={<UserManagement />} />
       </Route>
 

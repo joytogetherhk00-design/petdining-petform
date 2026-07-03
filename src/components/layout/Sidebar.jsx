@@ -89,14 +89,12 @@ const adminGroups = [
 
 const businessClientNav = [
   { label: '產品目錄', icon: Package, path: '/products' },
-  { label: '我的Credits', icon: CreditCard, path: '/credits' },
   { label: '購物車', icon: ShoppingCart, path: '/cart' },
   { label: '訂單記錄', icon: ClipboardList, path: '/orders' },
   { label: '我的帳戶', icon: User, path: '/account' },
 ];
 
 const generalClientNav = [
-  { label: '我的Credits', icon: CreditCard, path: '/credits' },
   { label: '購物車', icon: ShoppingCart, path: '/cart' },
   { label: '訂單記錄', icon: ClipboardList, path: '/orders' },
   { label: '我的帳戶', icon: User, path: '/account' },

@@ -168,6 +168,7 @@ export default function CustomerManagement() {
               <TableHead>公司名稱</TableHead>
               <TableHead>餐廳名稱</TableHead>
               <TableHead>聯絡人</TableHead>
+              <TableHead>電郵</TableHead>
               <TableHead>Credits</TableHead>
               <TableHead>狀態</TableHead>
               <TableHead>操作</TableHead>
@@ -189,6 +190,7 @@ export default function CustomerManagement() {
                 <TableCell className="font-medium">{c.company_name}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{c.restaurant_name || '-'}</TableCell>
                 <TableCell className="text-sm">{c.contact}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">{c.email || '-'}</TableCell>
                 <TableCell className="font-semibold">{(c.credits_balance || 0).toLocaleString()}</TableCell>
                 <TableCell><StatusBadge status={c.status} /></TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>

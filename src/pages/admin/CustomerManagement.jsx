@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 
 export default function CustomerManagement() {
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState('pending');
+  const [tab, setTab] = useState('active');
   const [addOpen, setAddOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(null);
   const [pendingOpen, setPendingOpen] = useState(null);

@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
@@ -44,9 +44,20 @@ import Privacy from '@/pages/Privacy';
 import PrivacyConsent from '@/pages/PrivacyConsent';
 import AdminLogin from '@/pages/AdminLogin';
 import Pending from '@/pages/Pending';
+import AccountBlocked from '@/pages/AccountBlocked';
+import { base44 } from '@/api/base44Client';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+
+  const { data: myCustomer, isLoading: isLoadingCustomer } = useQuery({
+    queryKey: ['myCustomerStatus', user?.id],
+    queryFn: async () => {
+      const results = await base44.entities.Customers.filter({ user_email: user.email });
+      return results[0] || null;
+    },
+    enabled: !!user && user.role !== 'admin',
+  });
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -79,6 +90,21 @@ const AuthenticatedApp = () => {
   if (!isLoadingAuth && !user && window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin-login') {
     window.location.href = '/admin-login';
     return null;
+  }
+
+  // Show loading while checking customer status for non-admin users
+  if (!isLoadingAuth && user && user.role !== 'admin' && isLoadingCustomer) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Block non-active customers (pending/suspended/rejected)
+  if (!isLoadingAuth && !isLoadingCustomer && user && user.role !== 'admin' && myCustomer && myCustomer.status !== 'active') {
+    if (myCustomer.status === 'pending') return <Pending customer={myCustomer} />;
+    return <AccountBlocked customer={myCustomer} />;
   }
 
   return (

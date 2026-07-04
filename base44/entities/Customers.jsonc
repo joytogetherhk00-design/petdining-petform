@@ -58,7 +58,8 @@
       "enum": [
         "active",
         "pending",
-        "suspended"
+        "suspended",
+        "rejected"
       ],
       "default": "pending",
       "description": "\u72c0\u614b"

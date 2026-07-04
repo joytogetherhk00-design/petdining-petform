@@ -236,6 +236,12 @@ export default function MyAccount() {
             {customer.contract_end_date && (
               <div><span className="text-muted-foreground">合約到期：</span>{customer.contract_end_date}</div>
             )}
+            <a
+              href="tel:+85298673497"
+              className="flex items-center justify-center gap-2 w-full text-sm text-green-600 hover:text-green-700 py-1"
+            >
+              <MessageCircle className="h-4 w-4" />WhatsApp 查詢
+            </a>
           </CardContent>
         </Card>
 
@@ -272,45 +278,6 @@ export default function MyAccount() {
           </Card>
         )}
 
-        {/* Top-up */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2"><ArrowUpCircle className="h-4 w-4" />Credits Top-up</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <Link to="/credits/topup" className="flex-1">
-                <Button className="w-full bg-primary">
-                  <CreditCard className="h-4 w-4 mr-2" />信用卡 Top-up
-                </Button>
-              </Link>
-              <Button variant="outline" disabled={hasPendingTopup} onClick={() => { setTopupMode('bank'); setTopupOpen(true); }}>
-                {hasPendingTopup ? '轉帳審批中...' : '銀行轉帳'}
-              </Button>
-            </div>
-
-            {topupHistory.length > 0 && (
-              <div className="space-y-2 mt-1">
-                <p className="text-xs font-medium text-muted-foreground">Top-up 記錄</p>
-                {topupHistory.map(t => (
-                  <div key={t.id} className="flex items-center justify-between text-sm p-2 bg-muted rounded-lg">
-                    <span>HK${t.amount?.toLocaleString()}</span>
-                    <StatusBadge status={t.status} />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <a
-              href="https://api.whatsapp.com/send?phone=85298673497&text=你好，我想查詢有關我的帳戶"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full text-sm text-green-600 hover:text-green-700 py-1"
-            >
-              <MessageCircle className="h-4 w-4" />WhatsApp 查詢
-            </a>
-          </CardContent>
-        </Card>
       </div>
       )}
 

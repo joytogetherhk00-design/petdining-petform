@@ -106,10 +106,14 @@ export default function CustomerManagement() {
   };
 
   const handleDelete = async (customer) => {
-    await base44.entities.Customers.delete(customer.id);
-    queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
-    setDeleteConfirm(null);
-    toast.success('客戶已刪除');
+    try {
+      await base44.functions.invoke('deleteCustomerAccount', { customer_id: customer.id });
+      queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
+      setDeleteConfirm(null);
+      toast.success('客戶及相關用戶帳號已刪除');
+    } catch (err) {
+      toast.error('刪除失敗：' + (err?.response?.data?.error || err.message));
+    }
   };
 
   const rejectPending = async (customer) => {

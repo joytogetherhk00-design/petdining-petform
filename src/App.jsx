@@ -1,5 +1,6 @@
+import { useEffect, useRef } from 'react';
 import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider, useQuery } from '@tanstack/react-query'
+import { QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
@@ -58,6 +59,22 @@ const AuthenticatedApp = () => {
     },
     enabled: !!user && user.role !== 'admin',
   });
+
+  const queryClient = useQueryClient();
+  const ensureCustomerRef = useRef(false);
+
+  // Auto-create a pending Customer record for new users (no admin approval yet)
+  useEffect(() => {
+    if (!isLoadingAuth && !isLoadingCustomer && user && user.role !== 'admin' && !myCustomer && !ensureCustomerRef.current) {
+      ensureCustomerRef.current = true;
+      base44.functions.invoke('ensureCustomerRecord', {})
+        .then(() => queryClient.invalidateQueries({ queryKey: ['myCustomerStatus', user.id] }))
+        .catch(err => {
+          console.error('Failed to ensure customer record:', err);
+          ensureCustomerRef.current = false;
+        });
+    }
+  }, [isLoadingAuth, isLoadingCustomer, user, myCustomer, queryClient]);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (

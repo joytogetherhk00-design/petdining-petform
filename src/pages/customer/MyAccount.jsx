@@ -151,6 +151,33 @@ export default function MyAccount() {
               <div><span className="text-muted-foreground">用戶類型：</span>一般客戶</div>
             </CardContent>
           </Card>
+
+          {/* Credits */}
+          {customer && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />Credits 與計劃
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="p-4 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl">
+                  <p className="text-muted-foreground text-xs mb-1">Credits 餘額</p>
+                  <p className="text-3xl font-bold text-primary">{(customer.credits_balance || 0).toLocaleString()}</p>
+                </div>
+                <div><span className="text-muted-foreground">下次更新日期：</span>{nextReset}</div>
+                {customer.contract_end_date && (
+                  <div><span className="text-muted-foreground">合約到期：</span>{customer.contract_end_date}</div>
+                )}
+                <Link to="/credits/topup">
+                  <Button className="w-full bg-primary">
+                    <ArrowUpCircle className="h-4 w-4 mr-2" />Credits 增值
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
+
           {showChangePassword ? (
             <ChangePassword userId={user?.id} onSuccess={() => setShowChangePassword(false)} />
           ) : (

@@ -35,11 +35,11 @@ export default function CustomerManagement() {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['allCustomers'],
-    queryFn: () => base44.entities.Customers.list('-created_date'),
+    queryFn: () => base44.entities.Customers.list('-created_date', 1000),
   });
 
   const pendingCustomers = customers.filter(c => c.status === 'pending');
-  const activeCustomers = customers.filter(c => c.status === 'active' || c.status === 'suspended');
+  const activeCustomers = customers;
 
   const filtered = (tab === 'pending' ? pendingCustomers : activeCustomers).filter(c => {
     const q = search.toLowerCase();
@@ -141,7 +141,7 @@ export default function CustomerManagement() {
           className={tab === 'active' ? 'bg-primary' : ''}
           onClick={() => setTab('active')}
         >
-          👥 現有帳戶
+          👥 全部帳戶
           {activeCustomers.length > 0 && (
             <span className={`ml-1.5 text-xs font-bold rounded-full px-1.5 py-0.5 leading-none ${tab === 'active' ? 'bg-white text-primary' : 'bg-primary text-white'}`}>
               {activeCustomers.length}

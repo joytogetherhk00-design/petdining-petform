@@ -84,7 +84,7 @@ export default function MyAccount() {
 
   const submitBankTopup = async () => {
     const amount = Number(topupAmount);
-    if (amount < 1000) { toast.error('最低增值金額為 HK$1,000'); return; }
+    if (amount < 500) { toast.error('最少充值金額 $500'); return; }
     try {
       const me = await base44.auth.me();
       await base44.entities.CreditsTopup.create({
@@ -97,7 +97,7 @@ export default function MyAccount() {
       queryClient.invalidateQueries({ queryKey: ['myTopups'] });
       setTopupOpen(false);
       setTopupAmount('');
-      toast.success('增值申請已提交');
+      toast.success('充值申請已提交');
     } catch (err) {
       toast.error('提交失敗：' + (err?.response?.data?.error || err.message));
     }
@@ -171,7 +171,7 @@ export default function MyAccount() {
                 )}
                 <Link to="/credits/topup">
                   <Button className="w-full bg-primary">
-                    <ArrowUpCircle className="h-4 w-4 mr-2" />Credits 增值
+                    <ArrowUpCircle className="h-4 w-4 mr-2" />Credits 充值
                   </Button>
                 </Link>
               </CardContent>
@@ -304,7 +304,7 @@ export default function MyAccount() {
         <Dialog open={topupOpen} onOpenChange={setTopupOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>{topupMode === 'stripe' ? '信用卡增值' : '銀行轉帳增值'}</DialogTitle>
+              <DialogTitle>{topupMode === 'stripe' ? '信用卡充值' : '銀行轉帳充值'}</DialogTitle>
             </DialogHeader>
             {topupMode === 'stripe' ? (
               <StripeTopup customer={customer} onSuccess={handleStripeSuccess} onCancel={() => setTopupOpen(false)} />
@@ -318,12 +318,12 @@ export default function MyAccount() {
                   <p className="text-xs text-muted-foreground mt-2">請轉帳到此帳戶，並保留收據</p>
                 </div>
                 <div>
-                  <Label>增值金額 (最低 HK$1,000)</Label>
-                  <Input type="number" min={1000} step={100} value={topupAmount} onChange={e => setTopupAmount(e.target.value)} placeholder="1000" />
+                  <Label>充值金額 (最少 $500)</Label>
+                  <Input type="number" min={500} step={100} value={topupAmount} onChange={e => setTopupAmount(e.target.value)} placeholder="500" />
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setTopupOpen(false)}>取消</Button>
-                  <Button className="bg-primary" onClick={submitBankTopup}>申請增值</Button>
+                  <Button className="bg-primary" onClick={submitBankTopup}>申請充值</Button>
                 </DialogFooter>
               </div>
             )}

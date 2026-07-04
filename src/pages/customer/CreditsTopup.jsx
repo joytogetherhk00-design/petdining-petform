@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { CreditCard, ArrowLeft, Loader2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 
-const PRESET_AMOUNTS = [1000, 2000, 5000, 10000];
+const PRESET_AMOUNTS = [500, 1000, 3000, 5000];
 
 export default function CreditsTopup() {
   const [selected, setSelected] = useState(null);
@@ -28,8 +28,8 @@ export default function CreditsTopup() {
   const finalAmount = selected !== null ? selected : (custom ? Number(custom) : null);
 
   const handleCheckout = async () => {
-    if (!finalAmount || finalAmount < 1000) {
-      toast.error('最低充值金額為 HK$1,000');
+    if (!finalAmount || finalAmount < 500) {
+      toast.error('最少充值金額 $500');
       return;
     }
     setLoading(true);
@@ -63,7 +63,7 @@ export default function CreditsTopup() {
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Credits 充值 / Top Up</h1>
-          <p className="text-muted-foreground text-sm mt-1">1 Credit = HK$1，最低充值 HK$1,000</p>
+          <p className="text-muted-foreground text-sm mt-1">1 Credit = HK$1，最少充值金額 $500</p>
         </div>
 
         {/* Current balance */}
@@ -104,26 +104,26 @@ export default function CreditsTopup() {
 
             {/* Custom amount */}
             <div>
-              <Label className="mb-1.5 block text-sm">自訂金額（最少 HK$1,000）</Label>
+              <Label className="mb-1.5 block text-sm">自訂金額（最少充值金額 $500）</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm font-medium">HKD</span>
                 <Input
                   type="number"
-                  min={1000}
+                  min={500}
                   step={100}
                   value={custom}
                   onChange={e => { setCustom(e.target.value); setSelected(null); }}
-                  placeholder="1000"
+                  placeholder="500"
                   className="pl-14"
                 />
               </div>
-              {custom && Number(custom) >= 1000 && (
+              {custom && Number(custom) >= 500 && (
                 <p className="text-xs text-muted-foreground mt-1">= {Number(custom).toLocaleString()} Credits</p>
               )}
             </div>
 
             {/* Summary */}
-            {finalAmount && finalAmount >= 1000 && (
+            {finalAmount && finalAmount >= 500 && (
               <div className="p-3 bg-muted rounded-lg text-sm flex items-center justify-between">
                 <span className="text-muted-foreground">充值 Credits</span>
                 <span className="font-bold text-primary">{finalAmount.toLocaleString()} Credits</span>
@@ -132,7 +132,7 @@ export default function CreditsTopup() {
 
             <Button
               className="w-full bg-primary h-12 text-base font-semibold"
-              disabled={!finalAmount || finalAmount < 1000 || loading}
+              disabled={!finalAmount || finalAmount < 500 || loading}
               onClick={handleCheckout}
             >
               {loading ? (

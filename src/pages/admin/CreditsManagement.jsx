@@ -42,7 +42,7 @@ export default function CreditsManagement() {
     a.click();
   };
 
-  const typeLabels = { allocation: '分配', usage: '使用', topup: '增值', expiry: '過期' };
+  const typeLabels = { allocation: '分配', usage: '使用', topup: '充值', expiry: '過期' };
 
   return (
     <div>

@@ -8,12 +8,12 @@ import { toast } from 'sonner';
 
 // This component now redirects to Stripe Checkout (secure, webhook-verified flow)
 export default function StripeTopup({ customer, onSuccess, onCancel }) {
-  const [amount, setAmount] = useState(1000);
+  const [amount, setAmount] = useState(500);
   const [loading, setLoading] = useState(false);
 
   const handleCheckout = async () => {
-    if (amount < 1000) {
-      toast.error('最低 Top-up 金額為 HK$1,000');
+    if (amount < 500) {
+      toast.error('最少充值金額 $500');
       return;
     }
     if (!customer) {
@@ -41,18 +41,18 @@ export default function StripeTopup({ customer, onSuccess, onCancel }) {
   return (
     <div className="space-y-4">
       <div>
-        <Label>Top-up 金額 (HK$，最低 $1,000)</Label>
+        <Label>充值金額 (HK$，最少 $500)</Label>
         <Input
           type="number"
-          min={1000}
+          min={500}
           step={100}
           value={amount}
           onChange={e => setAmount(Number(e.target.value))}
           className="mt-1 text-lg font-semibold"
         />
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        {[1000, 2000, 5000].map(v => (
+      <div className="grid grid-cols-2 gap-2">
+        {[500, 1000, 3000, 5000].map(v => (
           <button
             key={v}
             onClick={() => setAmount(v)}

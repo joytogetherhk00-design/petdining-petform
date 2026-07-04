@@ -42,13 +42,13 @@ export default function TopupManagement() {
 
     queryClient.invalidateQueries({ queryKey: ['allTopups'] });
     queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
-    toast.success('增值已批准，積分已加入');
+    toast.success('充值已批准，積分已加入');
   };
 
   const reject = async (topup) => {
     await base44.entities.CreditsTopup.update(topup.id, { status: 'rejected' });
     queryClient.invalidateQueries({ queryKey: ['allTopups'] });
-    toast.success('增值申請已拒絕');
+    toast.success('充值申請已拒絕');
   };
 
   const getCustomerName = (cid) => {

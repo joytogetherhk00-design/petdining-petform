@@ -56,7 +56,7 @@ export default function MyCredits() {
 
   const handleSlipUpload = async () => {
     if (!slipFile) { toast.error('請選擇入數紙圖片'); return; }
-    if (!slipAmount || Number(slipAmount) < 1000) { toast.error('最低增值金額為 HK$1,000'); return; }
+    if (!slipAmount || Number(slipAmount) < 500) { toast.error('最少充值金額 $500'); return; }
     if (!customer) { toast.error('找不到客戶資料'); return; }
 
     setUploading(true);
@@ -131,7 +131,7 @@ export default function MyCredits() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ArrowUpCircle className="h-5 w-5" />信用卡增值
+              <ArrowUpCircle className="h-5 w-5" />信用卡充值
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -149,7 +149,7 @@ export default function MyCredits() {
         <Card className="mb-6 border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Banknote className="h-5 w-5 text-primary" />轉數快（FPS）增值
+              <Banknote className="h-5 w-5 text-primary" />轉數快（FPS）充值
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
@@ -181,12 +181,12 @@ export default function MyCredits() {
                 <Label className="text-xs mb-1 block">轉帳金額 (HKD)</Label>
                 <Input
                   type="number"
-                  min={1000}
-                  placeholder="例如：1000"
+                  min={500}
+                  placeholder="例如：500"
                   value={slipAmount}
                   onChange={e => setSlipAmount(e.target.value)}
                 />
-                <p className="text-xs text-primary font-medium mt-1">最少增值金額 $1,000</p>
+                <p className="text-xs text-primary font-medium mt-1">最少充值金額 $500</p>
               </div>
               <div>
                 <Label className="text-xs mb-1 block">入數紙截圖</Label>
@@ -206,7 +206,7 @@ export default function MyCredits() {
                 {uploading ? (
                   <><Loader2 className="h-4 w-4 mr-2 animate-spin" />上傳中...</>
                 ) : (
-                  <><Upload className="h-4 w-4 mr-2" />提交增值申請</>
+                  <><Upload className="h-4 w-4 mr-2" />提交充值申請</>
                 )}
               </Button>
             </div>
@@ -241,7 +241,7 @@ export default function MyCredits() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />Stripe 增值記錄
+            <TrendingUp className="h-5 w-5" />Stripe 充值記錄
           </CardTitle>
         </CardHeader>
         <CardContent>

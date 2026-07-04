@@ -179,11 +179,12 @@ export default function MyCredits() {
                 <Label className="text-xs mb-1 block">轉帳金額 (HKD)</Label>
                 <Input
                   type="number"
-                  min={1}
+                  min={1000}
                   placeholder="例如：1000"
                   value={slipAmount}
                   onChange={e => setSlipAmount(e.target.value)}
                 />
+                <p className="text-xs text-primary font-medium mt-1">最少增值金額 $1,000</p>
               </div>
               <div>
                 <Label className="text-xs mb-1 block">入數紙截圖</Label>

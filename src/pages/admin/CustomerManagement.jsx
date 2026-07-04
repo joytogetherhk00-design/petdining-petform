@@ -88,10 +88,14 @@ export default function CustomerManagement() {
   };
 
   const toggleStatus = async (customer) => {
-    const newStatus = customer.status === 'active' ? 'suspended' : 'active';
-    await base44.entities.Customers.update(customer.id, { status: newStatus });
-    queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
-    toast.success(`客戶已${newStatus === 'active' ? '啟用' : '暫停'}`);
+    const action = customer.status === 'active' ? 'suspend' : 'approve';
+    try {
+      await base44.functions.invoke('notifyCustomerStatus', { customer_id: customer.id, action });
+      queryClient.invalidateQueries({ queryKey: ['allCustomers'] });
+      toast.success(`客戶已${action === 'approve' ? '啟用' : '暫停'}${action === 'approve' ? '，電郵通知已發送' : ''}`);
+    } catch (err) {
+      toast.error('操作失敗：' + (err?.response?.data?.error || err.message));
+    }
   };
 
   const approvePending = async (customer) => {

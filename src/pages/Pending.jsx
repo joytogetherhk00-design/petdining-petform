@@ -1,10 +1,23 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/lib/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, LogOut } from 'lucide-react';
 
-export default function Pending({ customer }) {
+export default function Pending() {
+  const { user } = useAuth();
+
+  const { data: customer } = useQuery({
+    queryKey: ['pendingCustomer', user?.id],
+    queryFn: async () => {
+      const results = await base44.entities.Customers.filter({ user_email: user.email });
+      return results[0] || null;
+    },
+    enabled: !!user && user.role !== 'admin',
+  });
+
   const handleLogout = () => base44.auth.logout('/');
 
   return (
@@ -18,7 +31,7 @@ export default function Pending({ customer }) {
           </div>
           <CardTitle className="text-2xl font-bold">帳戶仍在審批中</CardTitle>
           <CardDescription className="text-base mt-2">
-            您的商業客戶申請正在審批中，請耐心等待
+            您的帳戶正在審批中，請耐心等待管理員批准
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

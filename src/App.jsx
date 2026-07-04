@@ -123,11 +123,11 @@ const AuthenticatedApp = () => {
     return <AccountBlocked customer={myCustomer} />;
   }
 
-  // Block pending users (or users without a customer record) from customer feature routes
+  // Redirect pending users (or users without a customer record) to the pending page — not /products
   if (!isLoadingAuth && !isLoadingCustomer && user && user.role !== 'admin' && (myCustomer?.status === 'pending' || !myCustomer)) {
-    const blockedPaths = ['/cart', '/orders', '/credits', '/account'];
-    if (blockedPaths.some(p => window.location.pathname.startsWith(p))) {
-      return <Navigate to="/" replace />;
+    const allowedPaths = ['/pending', '/apply', '/privacy', '/privacy-consent', '/onboarding'];
+    if (!allowedPaths.includes(window.location.pathname)) {
+      return <Navigate to="/pending" replace />;
     }
   }
 

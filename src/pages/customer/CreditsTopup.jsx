@@ -33,18 +33,23 @@ export default function CreditsTopup() {
       return;
     }
     setLoading(true);
-    const origin = window.location.origin;
-    const res = await base44.functions.invoke('createCheckoutSession', {
-      amount: finalAmount,
-      customer_id: customer?.customer_id || '',
-      success_url: `${origin}/credits/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/credits/cancel`,
-    });
+    try {
+      const origin = window.location.origin;
+      const res = await base44.functions.invoke('createCheckoutSession', {
+        amount: finalAmount,
+        customer_id: customer?.customer_id || '',
+        success_url: `${origin}/credits/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/credits/cancel`,
+      });
 
-    if (res.data?.url) {
-      window.open(res.data.url, '_blank');
-    } else {
-      toast.error(res.data?.error || '建立付款失敗，請稍後重試');
+      if (res.data?.url) {
+        window.location.href = res.data.url;
+      } else {
+        toast.error(res.data?.error || '建立付款失敗，請稍後重試');
+        setLoading(false);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || err.message || '建立付款失敗，請稍後重試');
       setLoading(false);
     }
   };

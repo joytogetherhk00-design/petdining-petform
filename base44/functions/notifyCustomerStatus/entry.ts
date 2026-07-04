@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
                   <p style="margin:4px 0;"><strong>公司名稱：</strong>${customer.company_name || '-'}</p>
                   ${customer.temp_password ? `<p style="margin:8px 0 4px;border-top:1px solid #e5e7eb;padding-top:8px;"><strong>臨時登入密碼：</strong><span style="font-family:monospace;background:#fff3cd;padding:2px 6px;border-radius:4px;">${customer.temp_password}</span></p><p style="margin:4px 0;font-size:12px;color:#dc2626;">⚠️ 首次登入後請立即更改密碼</p>` : ''}
                 </div>
-                <a href="https://www.petdining.biz" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:8px 0;">立即登入</a>
+                <a href="https://petdiningpetform.com" style="display:inline-block;background:#f97316;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:8px 0;">立即登入</a>
                 <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
                 <p style="font-size:13px;color:#6b7280;">如有查詢，請 WhatsApp：<a href="https://wa.me/85298673497">9867 3497</a> 或電郵：info@petdininghk.com</p>
               </div>

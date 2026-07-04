@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import PageHeader from '@/components/shared/PageHeader';
@@ -13,6 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ORIGINS } from '@/components/shared/OriginBadge';
 import { MEAT_TYPES } from '@/components/shared/MeatBadge';
 import ProductDetailDrawer from '@/components/customer/ProductDetailDrawer';
+import { useCustomerStatus } from '@/hooks/useCustomerStatus';
+import { Clock } from 'lucide-react';
 
 export default function ProductCatalog() {
   const [search, setSearch] = useState('');
@@ -20,11 +22,7 @@ export default function ProductCatalog() {
   const [activeOrigin, setActiveOrigin] = useState('all');
   const [activeMeat, setActiveMeat] = useState('all');
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    base44.auth.isAuthenticated().then(setIsLoggedIn).catch(() => setIsLoggedIn(false));
-  }, []);
+  const { isActive, isPending } = useCustomerStatus();
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products'],
@@ -50,6 +48,10 @@ export default function ProductCatalog() {
   });
 
   const handleAdd = (product) => {
+    if (!isActive) {
+      toast.error('您的帳戶仍在審批中，暫時無法落訂單');
+      return;
+    }
     addToCart(product);
     toast.success(`已加入 ${product.name}`);
   };
@@ -57,6 +59,16 @@ export default function ProductCatalog() {
   return (
     <div>
       <PageHeader title="產品目錄" description="瀏覽我們的批發寵物產品" />
+
+      {isPending && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4 flex items-center gap-3">
+          <Clock className="h-5 w-5 text-amber-600 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-amber-900">帳戶仍在審批中</p>
+            <p className="text-xs text-amber-700">您的帳戶尚未批准，目前可瀏覽產品但無法查看價格或落訂單。批准後將收到電郵通知。</p>
+          </div>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative mb-4">
@@ -135,7 +147,7 @@ export default function ProductCatalog() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map(product => (
-            <ProductCard key={product.id} product={product} onAddToCart={handleAdd} onViewDetail={() => setSelectedProduct(product)} showPrice={isLoggedIn} />
+            <ProductCard key={product.id} product={product} onAddToCart={handleAdd} onViewDetail={() => setSelectedProduct(product)} showPrice={isActive} />
           ))}
         </div>
       )}
@@ -144,7 +156,7 @@ export default function ProductCatalog() {
         open={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAdd}
-        showPrice={isLoggedIn}
+        showPrice={isActive}
       />
     </div>
   );

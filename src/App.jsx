@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -101,10 +101,17 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Block non-active customers (pending/suspended/rejected)
-  if (!isLoadingAuth && !isLoadingCustomer && user && user.role !== 'admin' && myCustomer && myCustomer.status !== 'active') {
-    if (myCustomer.status === 'pending') return <Pending customer={myCustomer} />;
+  // Block suspended/rejected users entirely
+  if (!isLoadingAuth && !isLoadingCustomer && user && user.role !== 'admin' && myCustomer && (myCustomer.status === 'suspended' || myCustomer.status === 'rejected')) {
     return <AccountBlocked customer={myCustomer} />;
+  }
+
+  // Block pending users (or users without a customer record) from customer feature routes
+  if (!isLoadingAuth && !isLoadingCustomer && user && user.role !== 'admin' && (myCustomer?.status === 'pending' || !myCustomer)) {
+    const blockedPaths = ['/cart', '/orders', '/credits', '/account'];
+    if (blockedPaths.some(p => window.location.pathname.startsWith(p))) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return (

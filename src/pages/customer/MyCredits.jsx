@@ -56,33 +56,38 @@ export default function MyCredits() {
 
   const handleSlipUpload = async () => {
     if (!slipFile) { toast.error('請選擇入數紙圖片'); return; }
-    if (!slipAmount || Number(slipAmount) < 1) { toast.error('請輸入轉帳金額'); return; }
+    if (!slipAmount || Number(slipAmount) < 1000) { toast.error('最低增值金額為 HK$1,000'); return; }
     if (!customer) { toast.error('找不到客戶資料'); return; }
 
     setUploading(true);
-    const me = await base44.auth.me();
+    try {
+      const me = await base44.auth.me();
 
-    // Upload file
-    const { file_url } = await base44.integrations.Core.UploadFile({ file: slipFile });
+      // Upload file
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: slipFile });
 
-    // Create slip record
-    const slip = await base44.entities.SlipUploads.create({
-      customer_id: customer.customer_id,
-      user_email: me.email,
-      company_name: customer.company_name,
-      amount: Number(slipAmount),
-      slip_url: file_url,
-      status: 'pending',
-    });
+      // Create slip record
+      const slip = await base44.entities.SlipUploads.create({
+        customer_id: customer.customer_id,
+        user_email: me.email,
+        company_name: customer.company_name,
+        amount: Number(slipAmount),
+        slip_url: file_url,
+        status: 'pending',
+      });
 
-    // Notify admin
-    await base44.functions.invoke('notifyFpsTopup', { slip_id: slip.id });
+      // Notify admin
+      await base44.functions.invoke('notifyFpsTopup', { slip_id: slip.id });
 
-    toast.success('入數紙已上傳，等待管理員審批');
-    setSlipFile(null);
-    setSlipAmount('');
-    queryClient.invalidateQueries({ queryKey: ['mySlips'] });
-    setUploading(false);
+      toast.success('入數紙已上傳，等待管理員審批');
+      setSlipFile(null);
+      setSlipAmount('');
+      queryClient.invalidateQueries({ queryKey: ['mySlips'] });
+    } catch (err) {
+      toast.error(err?.message || '提交失敗，請稍後重試');
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (isLoading) return (

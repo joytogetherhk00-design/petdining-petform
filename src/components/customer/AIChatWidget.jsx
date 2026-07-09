@@ -23,61 +23,41 @@ export default function AIChatWidget() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  // Subscribe to conversation updates
-  useEffect(() => {
-    if (!conversation?.id) return;
-    const unsub = base44.agents.subscribeToConversation(conversation.id, (data) => {
-      setMessages(data.messages || []);
-      setLoading(false);
-    });
-    return unsub;
-  }, [conversation?.id]);
-
-  const startConversation = async () => {
-    const convo = await base44.agents.createConversation({ agent_name: AGENT_NAME });
-    setConversation(convo);
-    setMessages([{
-      role: 'assistant',
-      content: '你好！我係 PetDining 嘅 AI 助手 🐾\n\n我可以幫你解答：\n- 🛍️ 產品介紹\n- 📦 如何下單\n- 💳 Credits 查詢\n- 🚚 送貨安排\n- 📋 訂單狀態\n- 🔧 售後服務\n\n有咩可以幫到你？',
-    }]);
-  };
-
-  const handleOpen = async () => {
+  const handleOpen = () => {
     setOpen(true);
-    if (!conversation) await startConversation();
+    if (!conversation) {
+      setConversation({ started: true });
+      setMessages([{
+        role: 'assistant',
+        content: '你好！我係 PetDining 嘅 AI 助手 🐾\n\n我可以幫你解答：\n- 🛍️ 產品介紹\n- 📦 如何下單\n- 💳 Credits 查詢\n- 🚚 送貨安排\n- 📋 訂單狀態\n- 🔧 售後服務\n\n有咩可以幫到你？',
+      }]);
+    }
   };
 
   const sendMessage = async () => {
     const text = input.trim();
-    if (!text || loading || !conversation) return;
+    if (!text || loading) return;
     setInput('');
     setLoading(true);
-    // Optimistically add user message
     setMessages(prev => [...prev, { role: 'user', content: text }]);
 
     try {
-      // addMessage returns the full assistant response — use it directly
-      const response = await base44.agents.addMessage(conversation, { role: 'user', content: text });
+      const res = await base44.functions.invoke('sendAgentMessage', {
+        message: text,
+        conversation_id: conversation?.id || null,
+      });
+      const data = res.data || res;
 
-      if (response && response.content) {
-        setMessages(prev => {
-          // Avoid duplicate if subscription already added the response
-          const last = prev[prev.length - 1];
-          if (last && last.role === 'assistant' && last.content === response.content) {
-            return prev;
-          }
-          return [...prev, { role: 'assistant', content: response.content }];
-        });
+      // Store conversation_id for subsequent messages
+      if (data.conversation_id && !conversation?.id) {
+        setConversation({ id: data.conversation_id, started: true });
       }
 
-      // Save to ChatMessage entity (non-blocking — must not break the chat flow)
-      const user = await base44.auth.me().catch(() => null);
-      base44.entities.ChatMessage.create({
-        conversation_id: conversation.id,
-        user_email: user?.email || 'guest',
-        role: 'user',
-        content: text,
-      }).catch(() => {});
+      if (data.content) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.content }]);
+      } else {
+        throw new Error('No response content');
+      }
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -88,19 +68,8 @@ export default function AIChatWidget() {
     }
   };
 
-  const handleEscalate = async () => {
+  const handleEscalate = () => {
     setEscalated(true);
-    // Save escalation marker
-    const user = await base44.auth.me().catch(() => null);
-    if (conversation?.id) {
-      await base44.entities.ChatMessage.create({
-        conversation_id: conversation.id,
-        user_email: user?.email || 'guest',
-        role: 'assistant',
-        content: '[用戶已請求人工客服]',
-        escalated_to_human: true,
-      });
-    }
   };
 
   const handleKeyDown = (e) => {

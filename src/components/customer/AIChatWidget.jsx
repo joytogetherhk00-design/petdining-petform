@@ -56,17 +56,7 @@ export default function AIChatWidget() {
     setMessages(prev => [...prev, { role: 'user', content: text }]);
 
     try {
-      // Save to ChatMessage entity
-      const user = await base44.auth.me().catch(() => null);
-      await base44.entities.ChatMessage.create({
-        conversation_id: conversation.id,
-        user_email: user?.email || 'guest',
-        role: 'user',
-        content: text,
-      });
-
       // addMessage returns the full assistant response — use it directly
-      // (subscription may not always fire reliably)
       const response = await base44.agents.addMessage(conversation, { role: 'user', content: text });
 
       if (response && response.content) {
@@ -79,6 +69,15 @@ export default function AIChatWidget() {
           return [...prev, { role: 'assistant', content: response.content }];
         });
       }
+
+      // Save to ChatMessage entity (non-blocking — must not break the chat flow)
+      const user = await base44.auth.me().catch(() => null);
+      base44.entities.ChatMessage.create({
+        conversation_id: conversation.id,
+        user_email: user?.email || 'guest',
+        role: 'user',
+        content: text,
+      }).catch(() => {});
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'assistant',

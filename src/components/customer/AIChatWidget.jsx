@@ -55,16 +55,38 @@ export default function AIChatWidget() {
     // Optimistically add user message
     setMessages(prev => [...prev, { role: 'user', content: text }]);
 
-    // Save to ChatMessage entity
-    const user = await base44.auth.me().catch(() => null);
-    await base44.entities.ChatMessage.create({
-      conversation_id: conversation.id,
-      user_email: user?.email || 'guest',
-      role: 'user',
-      content: text,
-    });
+    try {
+      // Save to ChatMessage entity
+      const user = await base44.auth.me().catch(() => null);
+      await base44.entities.ChatMessage.create({
+        conversation_id: conversation.id,
+        user_email: user?.email || 'guest',
+        role: 'user',
+        content: text,
+      });
 
-    await base44.agents.addMessage(conversation, { role: 'user', content: text });
+      // addMessage returns the full assistant response — use it directly
+      // (subscription may not always fire reliably)
+      const response = await base44.agents.addMessage(conversation, { role: 'user', content: text });
+
+      if (response && response.content) {
+        setMessages(prev => {
+          // Avoid duplicate if subscription already added the response
+          const last = prev[prev.length - 1];
+          if (last && last.role === 'assistant' && last.content === response.content) {
+            return prev;
+          }
+          return [...prev, { role: 'assistant', content: response.content }];
+        });
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: '抱歉，系統暫時無法回應，請稍後再試或 WhatsApp 9867 3497 聯絡我們。',
+      }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEscalate = async () => {

@@ -14,6 +14,12 @@ import AppLayout from '@/components/layout/AppLayout';
 // Onboarding
 import Onboarding from '@/pages/Onboarding';
 
+// Landing pages
+import LandingLayout from '@/components/landing/LandingLayout';
+import Home from '@/pages/Home';
+import About from '@/pages/About';
+import Services from '@/pages/Services';
+
 // Customer pages
 import ProductCatalog from '@/pages/customer/ProductCatalog';
 import Cart from '@/pages/customer/Cart';
@@ -141,6 +147,13 @@ const AuthenticatedApp = () => {
     <Route path="/admin-login" element={<AdminLogin />} />
     <Route path="/pending" element={<Pending />} />
 
+    {/* Landing pages - public, with landing layout */}
+    <Route element={<LandingLayout />}>
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/services" element={<Services />} />
+    </Route>
+
     {/* Customer side */}
     <Route element={<AppLayout isAdmin={false} />}>
         {/* General client routes - cart, orders */}
@@ -160,8 +173,7 @@ const AuthenticatedApp = () => {
           </UserTypeGuard>
         } />
         
-        {/* Products - public, price hidden for guests; also serves as home */}
-        <Route path="/" element={<ProductCatalog />} />
+        {/* Products - price hidden for guests */}
         <Route path="/products" element={<ProductCatalog />} />
         <Route path="/credits" element={
           <UserTypeGuard allowedTypes={['general', 'business']}>

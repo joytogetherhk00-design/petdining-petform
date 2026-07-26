@@ -18,6 +18,20 @@ Deno.serve(async (req) => {
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '');
 
+    // Validate origin against an allowlist of trusted application domains
+    const ALLOWED_ORIGINS = [
+      'https://petdiningpetform.com',
+      'https://www.petdiningpetform.com',
+      'https://petdining.biz',
+      'https://www.petdining.biz',
+      'https://petdininghk.com',
+      'https://www.petdininghk.com',
+    ];
+    const requestOrigin = req.headers.get('origin') || '';
+    const appOrigin = ALLOWED_ORIGINS.includes(requestOrigin)
+      ? requestOrigin
+      : (ALLOWED_ORIGINS[0] || 'https://petdiningpetform.com');
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -34,8 +48,8 @@ Deno.serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${req.headers.get('origin') || ''}/enrollment/success?enrollment_id=${enrollmentId || ''}`,
-      cancel_url: `${req.headers.get('origin') || ''}/courses?payment=cancelled`,
+      success_url: `${appOrigin}/enrollment/success?enrollment_id=${enrollmentId || ''}`,
+      cancel_url: `${appOrigin}/courses?payment=cancelled`,
       metadata: {
         enrollmentId: enrollmentId || '',
         courseId: courseId || '',

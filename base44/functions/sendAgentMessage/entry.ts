@@ -10,15 +10,30 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Message is required' }, { status: 400 });
     }
 
+    // Authenticate the caller — only logged-in users may send messages
+    let user;
+    try {
+      user = await base44.auth.me();
+    } catch (_) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     let conversation;
     if (conversation_id) {
-      // Reuse existing conversation
+      // Reuse existing conversation — enforce ownership via metadata
       conversation = await base44.asServiceRole.agents.getConversation(conversation_id);
+      const owner = conversation?.metadata?.user_email || conversation?.metadata?.owner_email;
+      if (!owner || owner !== user.email) {
+        return Response.json({ error: 'Forbidden' }, { status: 403 });
+      }
     } else {
-      // Create new conversation
-      conversation = await base44.asServiceRole.agents.createConversation({ 
+      // Create new conversation, tag with the authenticated user's email
+      conversation = await base44.asServiceRole.agents.createConversation({
         agent_name: 'petdining_cs',
-        metadata: { source: 'website_chat' }
+        metadata: { source: 'website_chat', user_email: user.email }
       });
     }
 
